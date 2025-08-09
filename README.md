@@ -32,7 +32,7 @@ Comprehensive documentation is available in the `/docs` directory:
 - **[Getting Started](docs/getting-started.md)** - Setup and first steps
 - **[Stack Management](docs/stack-management.md)** - Available stacks and operations
 - **[Container Reference](docs/containers.md)** - Complete container and service documentation
-- **[⚙Configuration Guide](docs/configuration.md)** - Detailed configuration reference
+- **[Configuration Guide](docs/configuration.md)** - Detailed configuration reference
 - **[Performance Monitoring](docs/monitoring.md)** - Monitoring and profiling tools
 - **[Troubleshooting](docs/troubleshooting.md)** - Common issues and solutions
 
