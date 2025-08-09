@@ -58,13 +58,12 @@ scrape_configs:
       - targets: ['nginx-exporter:9113']
     scrape_interval: 30s
 
-# Storage configuration
-storage:
-  tsdb:
-    path: /prometheus
-    retention.time: 30d
-    retention.size: 10GB
-    wal-compression: true
+# Storage configuration is handled via command-line args in docker-compose.yml
+# These settings would be passed as:
+# --storage.tsdb.path=/prometheus
+# --storage.tsdb.retention.time=30d
+# --storage.tsdb.retention.size=10GB
+# --enable-feature=memory-snapshot-on-shutdown
 
 # Remote write configuration (for Prometheus 3.x compatibility)
 remote_write:

@@ -10,9 +10,9 @@ services:
       - ./:/app
       - ./docker/php/conf.d:/usr/local/etc/php/conf.d
     ports:
-      - "80:80"
-      - "443:443"
-      - "443:443/udp"  # HTTP/3 support
+      - "8080:80"
+      - "8443:443"
+      - "8443:443/udp"  # HTTP/3 support
     environment:
       - DB_HOST=mysql
       - REDIS_HOST=redis
