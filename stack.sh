@@ -68,6 +68,7 @@ show_usage() {
     echo "  restart    Restart the specified stack"
     echo "  logs       Show logs for the specified stack"
     echo "  status     Show status of running containers"
+    echo "  stop-all   Stop all project containers (any stack)"
     echo "  clean      Remove all containers, networks, and volumes"
     echo "  list       List available stacks and components"
     echo "  setup      Create directory structure for configurations"
@@ -338,6 +339,35 @@ clean_all() {
     echo -e "${GREEN}Cleanup complete!${NC}"
 }
 
+# Function to stop all containers for this project
+stop_all() {
+    echo -e "${BLUE}Stopping all $PROJECT_NAME containers...${NC}"
+    
+    # Get all running containers for this project
+    local running_containers
+    running_containers=$(docker ps --filter "label=com.docker.compose.project=$PROJECT_NAME" --format "{{.Names}}" 2>/dev/null || echo "")
+    
+    if [ -z "$running_containers" ]; then
+        echo -e "${YELLOW}No $PROJECT_NAME containers are currently running${NC}"
+        exit 0
+    fi
+    
+    # Count containers
+    local container_count
+    container_count=$(echo "$running_containers" | wc -l | tr -d ' ')
+    echo -e "${YELLOW}Found $container_count running container(s)${NC}"
+    
+    # Stop all containers
+    echo "$running_containers" | while read -r container; do
+        if [ -n "$container" ]; then
+            echo "Stopping $container..."
+            docker stop "$container" 2>/dev/null || true
+        fi
+    done
+    
+    echo -e "${GREEN}All $PROJECT_NAME containers have been stopped${NC}"
+}
+
 # Function to list available stacks
 list_stacks() {
     echo -e "${BLUE}Available Stacks and Components${NC}"
@@ -435,7 +465,7 @@ while [ $# -gt 0 ]; do
             COMMAND=$1
             shift
             ;;
-        status|clean|list|setup|help)
+        status|stop-all|clean|list|setup|help)
             COMMAND=$1
             shift
             break
@@ -480,6 +510,10 @@ done
 case ${COMMAND:-} in
     status)
         show_status
+        exit 0
+        ;;
+    stop-all)
+        stop_all
         exit 0
         ;;
     clean)
