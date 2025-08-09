@@ -7,17 +7,30 @@ services:
       dockerfile: docker/octane/Dockerfile
     container_name: laravel-perf-octane
     volumes:
-      - ./:/var/www/html
+      - ./:/app
+      - ./docker/php/conf.d:/usr/local/etc/php/conf.d
     ports:
       - "80:8000"
     environment:
       - DB_HOST=mysql
       - REDIS_HOST=redis
+      - OCTANE_SERVER=swoole
+      - OCTANE_HOST=0.0.0.0
+      - OCTANE_PORT=8000
+      - OCTANE_WORKERS=4
+      - OCTANE_TASK_WORKERS=6
+      - OCTANE_MAX_REQUESTS=500
     depends_on:
       - mysql
       - redis
     networks:
       - laravel-perf
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
 networks:
   laravel-perf:

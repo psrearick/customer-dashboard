@@ -1,5 +1,3 @@
-# ProxySQL Configuration File for Laravel Performance Testing
-
 # Data directory
 datadir="/var/lib/proxysql"
 
