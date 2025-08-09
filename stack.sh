@@ -15,28 +15,47 @@ NC='\033[0m' # No Color
 # Script configuration
 PROJECT_NAME="laravel-perf"
 
-# Available compose files
-declare -A COMPOSE_FILES=(
-    ["base"]="docker-compose.yml"
-    ["traditional"]="docker-compose.traditional.yml"
-    ["frankenphp"]="docker-compose.frankenphp.yml"
-    ["octane"]="docker-compose.octane.yml"
-    ["monitoring"]="docker-compose.monitoring.yml"
-    ["multitenant"]="docker-compose.multitenant.yml"
-    ["database-tools"]="docker-compose.database-tools.yml"
-)
+# Function to get compose file for a component
+get_compose_file() {
+    local component=$1
+    case $component in
+        base) echo "docker-compose.yml" ;;
+        traditional) echo "docker-compose.traditional.yml" ;;
+        frankenphp) echo "docker-compose.frankenphp.yml" ;;
+        octane) echo "docker-compose.octane.yml" ;;
+        monitoring) echo "docker-compose.monitoring.yml" ;;
+        multitenant) echo "docker-compose.multitenant.yml" ;;
+        database-tools) echo "docker-compose.database-tools.yml" ;;
+        *) echo "" ;;
+    esac
+}
 
-# Predefined stack configurations
-declare -A STACKS=(
-    ["traditional"]="base traditional"
-    ["frankenphp"]="base frankenphp"
-    ["octane"]="base octane"
-    ["performance"]="base traditional monitoring"
-    ["enterprise"]="base traditional monitoring multitenant database-tools"
-    ["comparison"]="base traditional frankenphp octane monitoring"
-    ["full"]="base traditional frankenphp octane monitoring multitenant database-tools"
-    ["minimal"]="base traditional"
-)
+# Function to get stack components
+get_stack_components() {
+    local stack=$1
+    case $stack in
+        traditional) echo "base traditional" ;;
+        frankenphp) echo "base frankenphp" ;;
+        octane) echo "base octane" ;;
+        performance) echo "base traditional monitoring" ;;
+        enterprise) echo "base traditional monitoring multitenant database-tools" ;;
+        comparison) echo "base traditional frankenphp octane monitoring" ;;
+        full) echo "base traditional frankenphp octane monitoring multitenant database-tools" ;;
+        minimal) echo "base traditional" ;;
+        *) echo "" ;;
+    esac
+}
+
+# Function to check if stack exists
+stack_exists() {
+    local stack=$1
+    local components
+    components=$(get_stack_components "$stack")
+    if [ -z "$components" ]; then
+        return 1
+    fi
+    return 0
+}
 
 # Function to display usage information
 show_usage() {
@@ -86,9 +105,9 @@ show_usage() {
 # Function to validate stack name
 validate_stack() {
     local stack=$1
-    if [[ ! ${STACKS[$stack]+_} ]]; then
+    if ! stack_exists "$stack"; then
         echo -e "${RED}Error: Unknown stack '$stack'${NC}" >&2
-        echo -e "${YELLOW}Available stacks:${NC} ${!STACKS[*]}" >&2
+        echo -e "${YELLOW}Available stacks:${NC} traditional frankenphp octane performance enterprise comparison full minimal" >&2
         exit 1
     fi
 }
@@ -96,12 +115,15 @@ validate_stack() {
 # Function to build compose file arguments
 build_compose_args() {
     local stack=$1
-    local components=${STACKS[$stack]}
+    local components
+    components=$(get_stack_components "$stack")
     local args=""
 
     for component in $components; do
-        if [[ ${COMPOSE_FILES[$component]+_} ]]; then
-            args="$args -f ${COMPOSE_FILES[$component]}"
+        local file
+        file=$(get_compose_file "$component")
+        if [ -n "$file" ]; then
+            args="$args -f $file"
         else
             echo -e "${RED}Error: Unknown component '$component' in stack '$stack'${NC}" >&2
             exit 1
@@ -114,58 +136,73 @@ build_compose_args() {
 # Function to check if required files exist
 check_files() {
     local stack=$1
-    local components=${STACKS[$stack]}
-    local missing_files=()
+    local components
+    components=$(get_stack_components "$stack")
+    local missing_files=""
 
     for component in $components; do
-        local file=${COMPOSE_FILES[$component]}
-        if [[ ! -f "$file" ]]; then
-            missing_files+=("$file")
+        local file
+        file=$(get_compose_file "$component")
+        if [ ! -f "$file" ]; then
+            if [ -z "$missing_files" ]; then
+                missing_files="$file"
+            else
+                missing_files="$missing_files $file"
+            fi
         fi
     done
 
     # Check for required configuration files
-    if [[ "$stack" == *"monitoring"* ]] || [[ "$stack" == "enterprise" ]] || [[ "$stack" == "full" ]]; then
-        local required_configs=(
-            "docker/prometheus/prometheus.yml"
-            "docker/grafana/datasources/datasources.yml"
-        )
+    case $stack in
+        *monitoring*|enterprise|full)
+            local required_configs="docker/prometheus/prometheus.yml docker/grafana/datasources/datasources.yml"
+            for config in $required_configs; do
+                if [ ! -f "$config" ]; then
+                    if [ -z "$missing_files" ]; then
+                        missing_files="$config"
+                    else
+                        missing_files="$missing_files $config"
+                    fi
+                fi
+            done
+            ;;
+    esac
 
-        for config in "${required_configs[@]}"; do
-            if [[ ! -f "$config" ]]; then
-                missing_files+=("$config")
-            fi
-        done
-    fi
+    case $stack in
+        traditional|enterprise|full)
+            local nginx_configs="docker/nginx/nginx.conf docker/nginx/conf.d/laravel.conf"
+            for config in $nginx_configs; do
+                if [ ! -f "$config" ]; then
+                    if [ -z "$missing_files" ]; then
+                        missing_files="$config"
+                    else
+                        missing_files="$missing_files $config"
+                    fi
+                fi
+            done
+            ;;
+    esac
 
-    if [[ "$stack" == "traditional" ]] || [[ "$stack" == "enterprise" ]] || [[ "$stack" == "full" ]]; then
-        local nginx_configs=(
-            "docker/nginx/nginx.conf"
-            "docker/nginx/conf.d/laravel.conf"
-        )
+    case $stack in
+        frankenphp|enterprise|full)
+            local frankenphp_configs="docker/frankenphp/Caddyfile"
+            for config in $frankenphp_configs; do
+                if [ ! -f "$config" ]; then
+                    if [ -z "$missing_files" ]; then
+                        missing_files="$config"
+                    else
+                        missing_files="$missing_files $config"
+                    fi
+                fi
+            done
+            ;;
+    esac
 
-        for config in "${nginx_configs[@]}"; do
-            if [[ ! -f "$config" ]]; then
-                missing_files+=("$config")
-            fi
-        done
-    fi
-
-    if [[ "$stack" == "frankenphp" ]] || [[ "$stack" == "enterprise" ]] || [[ "$stack" == "full" ]]; then
-        local frankenphp_configs=(
-            "docker/frankenphp/Caddyfile"
-        )
-
-        for config in "${frankenphp_configs[@]}"; do
-            if [[ ! -f "$config" ]]; then
-                missing_files+=("$config")
-            fi
-        done
-    fi
-
-    if [[ ${#missing_files[@]} -gt 0 ]]; then
+    if [ -n "$missing_files" ]; then
         echo -e "${RED}Error: Missing required files:${NC}" >&2
-        printf '  %s\n' "${missing_files[@]}" >&2
+        for file in $missing_files; do
+            echo "  $file" >&2
+        done
         echo -e "${YELLOW}Hint: Make sure you've created all configuration files for the selected stack.${NC}" >&2
         exit 1
     fi
@@ -174,13 +211,16 @@ check_files() {
 # Function to display stack information
 show_stack_info() {
     local stack=$1
-    local components=${STACKS[$stack]}
+    local components
+    components=$(get_stack_components "$stack")
 
     echo -e "${BLUE}Stack: $stack${NC}"
     echo -e "${YELLOW}Components:${NC} $components"
     echo -e "${YELLOW}Compose files:${NC}"
     for component in $components; do
-        echo "  - ${COMPOSE_FILES[$component]}"
+        local file
+        file=$(get_compose_file "$component")
+        echo "  - $file"
     done
     echo ""
 }
@@ -195,12 +235,11 @@ run_compose() {
     validate_stack "$stack"
     check_files "$stack"
 
-     local compose_args
-
+    local compose_args
     compose_args=$(build_compose_args "$stack")
     local full_command="docker-compose -p $PROJECT_NAME $compose_args $command $additional_args"
 
-    if [[ "$VERBOSE" == "true" ]]; then
+    if [ "$VERBOSE" = "true" ]; then
         echo -e "${BLUE}Executing:${NC} $full_command"
         echo ""
     fi
@@ -217,9 +256,16 @@ show_status() {
     local running_containers
     running_containers=$(docker ps --filter "label=com.docker.compose.project=$PROJECT_NAME" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" 2>/dev/null || echo "")
 
-    if [[ -n "$running_containers" && "$running_containers" != *"NAMES"* ]]; then
-        echo -e "${GREEN}Running containers:${NC}"
-        echo "$running_containers"
+    if [ -n "$running_containers" ]; then
+        case "$running_containers" in
+            *NAMES*) 
+                echo -e "${YELLOW}No containers currently running${NC}"
+                ;;
+            *)
+                echo -e "${GREEN}Running containers:${NC}"
+                echo "$running_containers"
+                ;;
+        esac
     else
         echo -e "${YELLOW}No containers currently running${NC}"
     fi
@@ -229,9 +275,14 @@ show_status() {
     # Show network information
     local networks
     networks=$(docker network ls --filter "name=${PROJECT_NAME}" --format "table {{.Name}}\t{{.Driver}}\t{{.Scope}}" 2>/dev/null || echo "")
-    if [[ -n "$networks" && "$networks" != *"NAME"* ]]; then
-        echo -e "${GREEN}Active networks:${NC}"
-        echo "$networks"
+    if [ -n "$networks" ]; then
+        case "$networks" in
+            *NAME*) ;;
+            *)
+                echo -e "${GREEN}Active networks:${NC}"
+                echo "$networks"
+                ;;
+        esac
     fi
 
     echo ""
@@ -239,9 +290,14 @@ show_status() {
     # Show volume information
     local volumes
     volumes=$(docker volume ls --filter "name=${PROJECT_NAME}" --format "table {{.Name}}\t{{.Driver}}" 2>/dev/null || echo "")
-    if [[ -n "$volumes" && "$volumes" != *"VOLUME NAME"* ]]; then
-        echo -e "${GREEN}Created volumes:${NC}"
-        echo "$volumes"
+    if [ -n "$volumes" ]; then
+        case "$volumes" in
+            *"VOLUME NAME"*) ;;
+            *)
+                echo -e "${GREEN}Created volumes:${NC}"
+                echo "$volumes"
+                ;;
+        esac
     fi
 }
 
@@ -250,12 +306,17 @@ clean_all() {
     echo -e "${YELLOW}This will remove all containers, networks, and volumes for this project.${NC}"
     echo -e "${RED}This action cannot be undone!${NC}"
     echo ""
-    read -p "Are you sure you want to continue? (y/N): " -r
+    printf "Are you sure you want to continue? (y/N): "
+    read -r REPLY
 
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        echo "Cancelled."
-        exit 0
-    fi
+    case "$REPLY" in
+        [Yy]|[Yy][Ee][Ss])
+            ;;
+        *)
+            echo "Cancelled."
+            exit 0
+            ;;
+    esac
 
     echo -e "${BLUE}Cleaning up...${NC}"
 
@@ -276,15 +337,24 @@ list_stacks() {
     echo ""
 
     echo -e "${YELLOW}Predefined Stacks:${NC}"
-    for stack in "${!STACKS[@]}"; do
-        echo -e "  ${GREEN}$stack${NC}: ${STACKS[$stack]}"
-    done
+    echo -e "  ${GREEN}traditional${NC}: base traditional"
+    echo -e "  ${GREEN}frankenphp${NC}: base frankenphp"
+    echo -e "  ${GREEN}octane${NC}: base octane"
+    echo -e "  ${GREEN}performance${NC}: base traditional monitoring"
+    echo -e "  ${GREEN}enterprise${NC}: base traditional monitoring multitenant database-tools"
+    echo -e "  ${GREEN}comparison${NC}: base traditional frankenphp octane monitoring"
+    echo -e "  ${GREEN}full${NC}: base traditional frankenphp octane monitoring multitenant database-tools"
+    echo -e "  ${GREEN}minimal${NC}: base traditional"
 
     echo ""
     echo -e "${YELLOW}Available Components:${NC}"
-    for component in "${!COMPOSE_FILES[@]}"; do
-        echo -e "  ${GREEN}$component${NC}: ${COMPOSE_FILES[$component]}"
-    done
+    echo -e "  ${GREEN}base${NC}: docker-compose.yml"
+    echo -e "  ${GREEN}traditional${NC}: docker-compose.traditional.yml"
+    echo -e "  ${GREEN}frankenphp${NC}: docker-compose.frankenphp.yml"
+    echo -e "  ${GREEN}octane${NC}: docker-compose.octane.yml"
+    echo -e "  ${GREEN}monitoring${NC}: docker-compose.monitoring.yml"
+    echo -e "  ${GREEN}multitenant${NC}: docker-compose.multitenant.yml"
+    echo -e "  ${GREEN}database-tools${NC}: docker-compose.database-tools.yml"
 }
 
 # Function to create directory structure and example configs
@@ -292,23 +362,9 @@ setup_configs() {
     echo -e "${BLUE}Setting up configuration directory structure...${NC}"
 
     # Create directory structure
-    local dirs=(
-        "docker/prometheus"
-        "docker/grafana/datasources"
-        "docker/grafana/dashboards/laravel"
-        "docker/grafana/dashboards/system"
-        "docker/nginx/conf.d"
-        "docker/frankenphp"
-        "docker/php/conf.d"
-        "docker/mysql/conf.d"
-        "docker/mysql/init"
-        "docker/redis"
-        "docker/percona/scripts"
-        "docker/artillery"
-        "docker/proxysql"
-    )
+    local dirs="docker/prometheus docker/grafana/datasources docker/grafana/dashboards/laravel docker/grafana/dashboards/system docker/nginx/conf.d docker/frankenphp docker/php/conf.d docker/mysql/conf.d docker/mysql/init docker/redis docker/percona/scripts docker/artillery docker/proxysql"
 
-    for dir in "${dirs[@]}"; do
+    for dir in $dirs; do
         mkdir -p "$dir"
         echo "Created directory: $dir"
     done
@@ -324,31 +380,37 @@ validate_configs() {
     echo -e "${BLUE}Validating configuration files for stack: $stack${NC}"
 
     # Validate Prometheus config if monitoring is included
-    if [[ "$stack" == *"monitoring"* ]] || [[ "$stack" == "enterprise" ]] || [[ "$stack" == "full" ]]; then
-        if [[ -f "docker/prometheus/prometheus.yml" ]]; then
-            echo "✓ Prometheus configuration found"
-        else
-            echo -e "${YELLOW}⚠ Prometheus configuration missing${NC}"
-        fi
-    fi
+    case $stack in
+        *monitoring*|enterprise|full)
+            if [ -f "docker/prometheus/prometheus.yml" ]; then
+                echo "✓ Prometheus configuration found"
+            else
+                echo -e "${YELLOW}⚠ Prometheus configuration missing${NC}"
+            fi
+            ;;
+    esac
 
     # Validate Nginx config if traditional stack
-    if [[ "$stack" == "traditional" ]] || [[ "$stack" == "enterprise" ]] || [[ "$stack" == "full" ]]; then
-        if [[ -f "docker/nginx/nginx.conf" ]]; then
-            echo "✓ Nginx configuration found"
-        else
-            echo -e "${YELLOW}⚠ Nginx configuration missing${NC}"
-        fi
-    fi
+    case $stack in
+        traditional|enterprise|full)
+            if [ -f "docker/nginx/nginx.conf" ]; then
+                echo "✓ Nginx configuration found"
+            else
+                echo -e "${YELLOW}⚠ Nginx configuration missing${NC}"
+            fi
+            ;;
+    esac
 
     # Validate FrankenPHP config
-    if [[ "$stack" == "frankenphp" ]] || [[ "$stack" == "enterprise" ]] || [[ "$stack" == "full" ]]; then
-        if [[ -f "docker/frankenphp/Caddyfile" ]]; then
-            echo "✓ FrankenPHP Caddyfile found"
-        else
-            echo -e "${YELLOW}⚠ FrankenPHP Caddyfile missing${NC}"
-        fi
-    fi
+    case $stack in
+        frankenphp|enterprise|full)
+            if [ -f "docker/frankenphp/Caddyfile" ]; then
+                echo "✓ FrankenPHP Caddyfile found"
+            else
+                echo -e "${YELLOW}⚠ FrankenPHP Caddyfile missing${NC}"
+            fi
+            ;;
+    esac
 
     echo -e "${GREEN}Configuration validation complete${NC}"
 }
@@ -359,7 +421,7 @@ DETACH=false
 BUILD=false
 NO_DEPS=false
 
-while [[ $# -gt 0 ]]; do
+while [ $# -gt 0 ]; do
     case $1 in
         up|down|restart|logs|build|pull)
             COMMAND=$1
@@ -429,6 +491,11 @@ esac
 # Handle commands that require a stack
 case ${COMMAND:-} in
     validate)
+        if [ -z "${STACK:-}" ]; then
+            echo -e "${RED}Error: Stack name is required for 'validate' command${NC}" >&2
+            show_usage
+            exit 1
+        fi
         validate_stack "$STACK"
         validate_configs "$STACK"
         exit 0
@@ -436,7 +503,7 @@ case ${COMMAND:-} in
 esac
 
 # Validate that we have both command and stack for commands that need them
-if [[ -z ${COMMAND:-} ]]; then
+if [ -z "${COMMAND:-}" ]; then
     echo -e "${RED}Error: Command is required${NC}" >&2
     show_usage
     exit 1
@@ -445,7 +512,7 @@ fi
 # Commands that require a stack
 case $COMMAND in
     up|down|restart|logs|build|pull)
-        if [[ -z ${STACK:-} ]]; then
+        if [ -z "${STACK:-}" ]; then
             echo -e "${RED}Error: Stack name is required for '$COMMAND' command${NC}" >&2
             show_usage
             exit 1
@@ -456,20 +523,20 @@ esac
 # Build additional arguments
 ADDITIONAL_ARGS=""
 
-if [[ "$DETACH" == "true" ]]; then
+if [ "$DETACH" = "true" ]; then
     ADDITIONAL_ARGS="$ADDITIONAL_ARGS -d"
 fi
 
-if [[ "$BUILD" == "true" ]]; then
+if [ "$BUILD" = "true" ]; then
     ADDITIONAL_ARGS="$ADDITIONAL_ARGS --build"
 fi
 
-if [[ "$NO_DEPS" == "true" ]]; then
+if [ "$NO_DEPS" = "true" ]; then
     ADDITIONAL_ARGS="$ADDITIONAL_ARGS --no-deps"
 fi
 
 # Show stack information in verbose mode
-if [[ "$VERBOSE" == "true" ]]; then
+if [ "$VERBOSE" = "true" ]; then
     show_stack_info "$STACK"
 fi
 
