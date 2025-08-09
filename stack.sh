@@ -1,11 +1,10 @@
 #!/bin/bash
 
-# Laravel Performance Testing Environment Manager
+# Customer Dashboard Environment Manager
 # Simplifies running different Docker stack combinations for performance testing
 
 set -e
 
-# Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -59,7 +58,7 @@ stack_exists() {
 
 # Function to display usage information
 show_usage() {
-    echo -e "${BLUE}Laravel Performance Testing Environment Manager${NC}"
+    echo -e "${BLUE}Customer Dashboard Environment Manager${NC}"
     echo ""
     echo "Usage: $0 [COMMAND] [STACK] [OPTIONS]"
     echo ""
@@ -88,6 +87,7 @@ show_usage() {
     echo -e "${YELLOW}Options:${NC}"
     echo "  -d, --detach   Run in background (daemon mode)"
     echo "  -b, --build    Force rebuild of images"
+    echo "  -r, --recreate    Build with new images"
     echo "  -v, --verbose  Show verbose output"
     echo "  --no-deps      Don't start dependent services"
     echo ""
@@ -249,25 +249,24 @@ run_compose() {
 
 # Function to show status of all containers
 show_status() {
-    echo -e "${BLUE}Laravel Performance Testing Environment Status${NC}"
+    echo -e "${BLUE}Costumer Dashboard Environment Status${NC}"
     echo ""
 
     # Check if any containers are running
     local running_containers
     running_containers=$(docker ps --filter "label=com.docker.compose.project=$PROJECT_NAME" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" 2>/dev/null || echo "")
 
-    if [ -n "$running_containers" ]; then
-        case "$running_containers" in
-            *NAMES*) 
-                echo -e "${YELLOW}No containers currently running${NC}"
-                ;;
-            *)
-                echo -e "${GREEN}Running containers:${NC}"
-                echo "$running_containers"
-                ;;
-        esac
-    else
+    if [ -z "$running_containers" ]; then
         echo -e "${YELLOW}No containers currently running${NC}"
+    else
+        local containers_line_count
+        containers_line_count=$(echo "$running_containers" | wc -l | tr -d ' ')
+        if [ "$containers_line_count" -eq 1 ]; then
+            echo -e "${YELLOW}No containers currently running${NC}"
+        else
+            echo -e "${GREEN}Running containers:${NC}"
+            echo "$running_containers"
+        fi
     fi
 
     echo ""
@@ -275,14 +274,18 @@ show_status() {
     # Show network information
     local networks
     networks=$(docker network ls --filter "name=${PROJECT_NAME}" --format "table {{.Name}}\t{{.Driver}}\t{{.Scope}}" 2>/dev/null || echo "")
-    if [ -n "$networks" ]; then
-        case "$networks" in
-            *NAME*) ;;
-            *)
-                echo -e "${GREEN}Active networks:${NC}"
-                echo "$networks"
-                ;;
-        esac
+
+    if [ -z "$networks" ]; then
+        echo -e "${YELLOW}No active networks${NC}"
+    else
+        local networks_line_count
+        networks_line_count=$(echo "$networks" | wc -l | tr -d ' ')
+        if [ "$networks_line_count" -eq 1 ]; then
+            echo -e "${YELLOW}No active networks${NC}"
+        else
+            echo -e "${GREEN}Active networks:${NC}"
+            echo "$networks"
+        fi
     fi
 
     echo ""
@@ -290,14 +293,18 @@ show_status() {
     # Show volume information
     local volumes
     volumes=$(docker volume ls --filter "name=${PROJECT_NAME}" --format "table {{.Name}}\t{{.Driver}}" 2>/dev/null || echo "")
-    if [ -n "$volumes" ]; then
-        case "$volumes" in
-            *"VOLUME NAME"*) ;;
-            *)
-                echo -e "${GREEN}Created volumes:${NC}"
-                echo "$volumes"
-                ;;
-        esac
+
+    if [ -z "$volumes" ]; then
+        echo -e "${YELLOW}No created volumes${NC}"
+    else
+        local volumes_line_count
+        volumes_line_count=$(echo "$volumes" | wc -l | tr -d ' ')
+        if [ "$volumes_line_count" -eq 1 ]; then
+            echo -e "${YELLOW}No created volumes${NC}"
+        else
+            echo -e "${GREEN}Created Volumes:${NC}"
+            echo "$volumes"
+        fi
     fi
 }
 
@@ -420,6 +427,7 @@ VERBOSE=false
 DETACH=false
 BUILD=false
 NO_DEPS=false
+RECREATE=false
 
 while [ $# -gt 0 ]; do
     case $1 in
@@ -438,6 +446,10 @@ while [ $# -gt 0 ]; do
             ;;
         -d|--detach)
             DETACH=true
+            shift
+            ;;
+        -r|--recreate)
+            RECREATE=true
             shift
             ;;
         -b|--build)
@@ -529,6 +541,10 @@ fi
 
 if [ "$BUILD" = "true" ]; then
     ADDITIONAL_ARGS="$ADDITIONAL_ARGS --build"
+fi
+
+if [ "$RECREATE" = "true" ]; then
+    ADDITIONAL_ARGS="$ADDITIONAL_ARGS --force-recreate"
 fi
 
 if [ "$NO_DEPS" = "true" ]; then

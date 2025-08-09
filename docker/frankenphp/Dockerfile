@@ -18,30 +18,18 @@ RUN apt-get update && apt-get install -y \
 # Install PHP extensions for performance and profiling
 RUN docker-php-ext-install \
     bcmath \
-    ctype \
     fileinfo \
     mbstring \
     pdo_mysql \
-    tokenizer \
     xml \
     zip \
     intl \
-    pcntl
+    pcntl \
+    opcache
 
-# Install and configure OPcache
-RUN docker-php-ext-install opcache
-
-# Install Redis extension
-RUN pecl install redis && docker-php-ext-enable redis
-
-# Install Xdebug for profiling
-RUN pecl install xdebug && docker-php-ext-enable xdebug
-
-# Install additional performance profiling extensions
-RUN pecl install apcu && docker-php-ext-enable apcu
-
-# Install XHProf for detailed profiling
-RUN pecl install xhprof && docker-php-ext-enable xhprof
+# Install PECL extensions
+RUN pecl install redis xdebug apcu xhprof \
+    && docker-php-ext-enable redis xdebug apcu xhprof
 
 # Install Blackfire probe for production profiling
 RUN version=$(php -r "echo PHP_MAJOR_VERSION.PHP_MINOR_VERSION;") \
@@ -58,25 +46,35 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Set working directory
 WORKDIR /app
 
-# Copy application files
-COPY . /app
-
-# Install Composer dependencies
-RUN composer install --no-dev --optimize-autoloader
-
-# Copy custom PHP configuration
+# Copy configuration files first
 COPY docker/php/conf.d/performance.ini /usr/local/etc/php/conf.d/
 COPY docker/php/conf.d/xdebug.ini /usr/local/etc/php/conf.d/
 COPY docker/php/conf.d/opcache.ini /usr/local/etc/php/conf.d/
-
-# Copy FrankenPHP Caddyfile
 COPY docker/frankenphp/Caddyfile /etc/caddy/Caddyfile
 
-# Set permissions
-RUN chown -R www-data:www-data /app/storage /app/bootstrap/cache
-RUN chmod -R 775 /app/storage /app/bootstrap/cache
+# Copy application files
+COPY . /app
 
-# Expose port
+# Install composer dependencies if composer.json exists
+RUN if [ -f composer.json ]; then \
+        composer install --no-dev --optimize-autoloader --no-scripts; \
+        composer run-script post-autoload-dump 2>/dev/null || true; \
+    fi
+
+# Set permissions for Laravel directories if they exist
+RUN if [ -d "/app/storage" ]; then \
+        chown -R www-data:www-data /app/storage; \
+        chmod -R 775 /app/storage; \
+    fi \
+    && if [ -d "/app/bootstrap/cache" ]; then \
+        chown -R www-data:www-data /app/bootstrap/cache; \
+        chmod -R 775 /app/bootstrap/cache; \
+    fi
+
+# Ensure proper ownership of all files
+RUN chown -R www-data:www-data /app
+
+# Expose ports
 EXPOSE 80 443
 
 CMD ["frankenphp", "run", "--config", "/etc/caddy/Caddyfile"]

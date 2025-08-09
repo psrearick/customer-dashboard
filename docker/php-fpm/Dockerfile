@@ -1,6 +1,6 @@
 FROM php:8.4-fpm-bookworm
 
-# Install system dependencies
+# Install system dependencies (this layer changes rarely, so it gets cached)
 RUN apt-get update && apt-get install -y \
     git \
     curl \
@@ -15,35 +15,23 @@ RUN apt-get update && apt-get install -y \
     default-mysql-client \
     && rm -rf /var/lib/apt/lists/*
 
-# Install PHP extensions for performance and profiling
+# Install PHP extensions in one layer
 RUN docker-php-ext-install \
     bcmath \
-    ctype \
     fileinfo \
     mbstring \
     pdo_mysql \
-    tokenizer \
     xml \
     zip \
     intl \
-    pcntl
+    pcntl \
+    opcache
 
-# Install and configure OPcache
-RUN docker-php-ext-install opcache
+# Install PECL extensions in one layer for better caching
+RUN pecl install redis xdebug apcu xhprof \
+    && docker-php-ext-enable redis xdebug apcu xhprof
 
-# Install Redis extension
-RUN pecl install redis && docker-php-ext-enable redis
-
-# Install Xdebug for profiling
-RUN pecl install xdebug && docker-php-ext-enable xdebug
-
-# Install additional performance profiling extensions
-RUN pecl install apcu && docker-php-ext-enable apcu
-
-# Install XHProf for detailed profiling
-RUN pecl install xhprof && docker-php-ext-enable xhprof
-
-# Install Blackfire probe for production profiling
+# Install Blackfire probe (separate since it uses curl)
 RUN version=$(php -r "echo PHP_MAJOR_VERSION.PHP_MINOR_VERSION;") \
     && architecture=$(uname -m) \
     && curl -A "Docker" -o /tmp/blackfire-probe.tar.gz -D - -L -s https://blackfire.io/api/v1/releases/probe/php/linux/$architecture/$version \
@@ -52,32 +40,42 @@ RUN version=$(php -r "echo PHP_MAJOR_VERSION.PHP_MINOR_VERSION;") \
     && mv /tmp/blackfire/blackfire-*.so $(php -r "echo ini_get ('extension_dir');")/blackfire.so \
     && rm -rf /tmp/blackfire /tmp/blackfire-probe.tar.gz
 
-# Get Composer
+# Get Composer (cached layer since composer image doesn't change often)
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Set working directory
 WORKDIR /var/www/html
 
-# Copy application files
-COPY . /var/www/html
-
-# Install Composer dependencies
-RUN composer install --no-dev --optimize-autoloader
-
-# Copy custom PHP configuration
+# Copy configuration files first (they change less frequently than app code)
 COPY docker/php/conf.d/performance.ini /usr/local/etc/php/conf.d/
 COPY docker/php/conf.d/opcache.ini /usr/local/etc/php/conf.d/
 COPY docker/php/conf.d/xdebug.ini /usr/local/etc/php/conf.d/
-
-# Copy PHP-FPM configuration
 COPY docker/php-fpm/www.conf /usr/local/etc/php-fpm.d/www.conf
 
-# Set permissions
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
-RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+# Copy application code
+COPY . /var/www/html
+
+# Install composer dependencies if composer.json exists
+RUN if [ -f composer.json ]; then \
+        composer install --no-dev --optimize-autoloader --no-scripts; \
+        composer run-script post-autoload-dump 2>/dev/null || true; \
+    fi
+
+# Set permissions for Laravel directories if they exist
+RUN if [ -d "/var/www/html/storage" ]; then \
+        chown -R www-data:www-data /var/www/html/storage; \
+        chmod -R 775 /var/www/html/storage; \
+    fi \
+    && if [ -d "/var/www/html/bootstrap/cache" ]; then \
+        chown -R www-data:www-data /var/www/html/bootstrap/cache; \
+        chmod -R 775 /var/www/html/bootstrap/cache; \
+    fi
 
 # Create Xdebug output directory
 RUN mkdir -p /var/www/html/storage/logs/xdebug && chown -R www-data:www-data /var/www/html/storage/logs/xdebug
+
+# Ensure proper ownership of all files
+RUN chown -R www-data:www-data /var/www/html
 
 # Expose port 9000
 EXPOSE 9000
