@@ -1,0 +1,38 @@
+groups:
+  - name: laravel-performance
+    rules:
+      - alert: HighResponseTime
+        expr: http_request_duration_seconds{quantile="0.95"} > 2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High response time detected"
+          description: "95th percentile response time is above 2 seconds for {{ $labels.instance }}"
+
+      - alert: HighMemoryUsage
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes > 0.8
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage"
+          description: "Memory usage is above 80% for {{ $labels.instance }}"
+
+      - alert: MySQLSlowQueries
+        expr: rate(mysql_global_status_slow_queries[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "MySQL slow queries detected"
+          description: "MySQL slow query rate is {{ $value }} per second"
+
+      - alert: RedisConnectionFailures
+        expr: redis_connected_clients < 1
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Redis connection failure"
+          description: "Redis has no connected clients"

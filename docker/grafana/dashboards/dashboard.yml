@@ -1,0 +1,24 @@
+apiVersion: 1
+
+providers:
+  # Dashboard provider for Laravel performance monitoring
+  - name: 'Laravel Performance'
+    orgId: 1
+    folder: 'Laravel'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 10
+    allowUiUpdates: true
+    options:
+      path: /etc/grafana/provisioning/dashboards/laravel
+
+  # System monitoring dashboards
+  - name: 'System Monitoring'
+    orgId: 1
+    folder: 'System'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 10
+    allowUiUpdates: true
+    options:
+      path: /etc/grafana/provisioning/dashboards/system

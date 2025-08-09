@@ -1,0 +1,93 @@
+version: '3.8'
+
+services:
+  # Separate databases for tenant isolation testing
+  mysql-tenant-1:
+    image: mysql:8.4
+    container_name: laravel-perf-mysql-tenant-1
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: tenant_1
+      MYSQL_USER: tenant_user
+      MYSQL_PASSWORD: tenant_password
+    volumes:
+      - mysql_tenant_1_data:/var/lib/mysql
+      - ./docker/mysql/conf.d:/etc/mysql/conf.d
+    ports:
+      - "3307:3306"
+    networks:
+      - laravel-perf
+
+  mysql-tenant-2:
+    image: mysql:8.4
+    container_name: laravel-perf-mysql-tenant-2
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: tenant_2
+      MYSQL_USER: tenant_user
+      MYSQL_PASSWORD: tenant_password
+    volumes:
+      - mysql_tenant_2_data:/var/lib/mysql
+      - ./docker/mysql/conf.d:/etc/mysql/conf.d
+    ports:
+      - "3308:3306"
+    networks:
+      - laravel-perf
+
+  # Redis clusters for distributed caching
+  redis-cluster-1:
+    image: redis:8-alpine
+    container_name: laravel-perf-redis-cluster-1
+    command: redis-server --port 7000 --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000 --appendonly yes
+    ports:
+      - "7000:7000"
+    volumes:
+      - redis_cluster_1_data:/data
+    networks:
+      - laravel-perf
+
+  redis-cluster-2:
+    image: redis:8-alpine
+    container_name: laravel-perf-redis-cluster-2
+    command: redis-server --port 7001 --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000 --appendonly yes
+    ports:
+      - "7001:7001"
+    volumes:
+      - redis_cluster_2_data:/data
+    networks:
+      - laravel-perf
+
+  redis-cluster-3:
+    image: redis:8-alpine
+    container_name: laravel-perf-redis-cluster-3
+    command: redis-server --port 7002 --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000 --appendonly yes
+    ports:
+      - "7002:7002"
+    volumes:
+      - redis_cluster_3_data:/data
+    networks:
+      - laravel-perf
+
+  # Load balancer for multi-instance testing
+  nginx-lb:
+    image: nginx:alpine
+    container_name: laravel-perf-nginx-lb
+    volumes:
+      - ./docker/nginx/load-balancer.conf:/etc/nginx/nginx.conf
+    ports:
+      - "8000:80"
+    depends_on:
+      - app
+    networks:
+      - laravel-perf
+
+volumes:
+  mysql_tenant_1_data:
+  mysql_tenant_2_data:
+  redis_cluster_1_data:
+  redis_cluster_2_data:
+  redis_cluster_3_data:
+
+networks:
+  laravel-perf:
+    external: true

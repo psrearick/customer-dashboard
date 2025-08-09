@@ -1,0 +1,109 @@
+config:
+  target: 'http://nginx-lb:80'
+  phases:
+    # Warm-up phase
+    - duration: 30
+      arrivalRate: 1
+      name: "Warm-up"
+
+    # Baseline load
+    - duration: 120
+      arrivalRate: 5
+      name: "Baseline Load"
+
+    # Ramp up
+    - duration: 60
+      arrivalRate: 10
+      name: "Ramp Up"
+
+    # Peak load
+    - duration: 180
+      arrivalRate: 25
+      name: "Peak Load"
+
+    # Stress test
+    - duration: 60
+      arrivalRate: 50
+      name: "Stress Test"
+
+    # Cool down
+    - duration: 30
+      arrivalRate: 1
+      name: "Cool Down"
+
+  processor: "./custom-functions.js"
+
+scenarios:
+  # Main dashboard load test (primary endpoint)
+  - name: "Dashboard Performance Test"
+    weight: 40
+    flow:
+      - get:
+          url: "/dashboard/{{ $randomInt(1, 100) }}"
+          headers:
+            Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+          capture:
+            - json: "$.user.id"
+              as: "userId"
+          think: 2
+
+      # Follow-up requests that a real user might make
+      - get:
+          url: "/api/user/{{ userId }}/stats"
+          headers:
+            Accept: "application/json"
+          think: 1
+
+  # API endpoint testing
+  - name: "API Performance Test"
+    weight: 30
+    flow:
+      - get:
+          url: "/api/orders?page={{ $randomInt(1, 10) }}"
+          headers:
+            Accept: "application/json"
+            Authorization: "Bearer test-token"
+          think: 1
+
+      - post:
+          url: "/api/orders"
+          headers:
+            Content-Type: "application/json"
+            Accept: "application/json"
+          json:
+            product_id: "{{ $randomInt(1, 50) }}"
+            quantity: "{{ $randomInt(1, 5) }}"
+          think: 3
+
+  # Static asset testing
+  - name: "Static Assets Test"
+    weight: 20
+    flow:
+      - get:
+          url: "/css/app.css"
+          headers:
+            Accept: "text/css"
+      - get:
+          url: "/js/app.js"
+          headers:
+            Accept: "application/javascript"
+      - get:
+          url: "/images/logo.png"
+          headers:
+            Accept: "image/png"
+
+  # Database-heavy operations
+  - name: "Heavy Database Operations"
+    weight: 10
+    flow:
+      - get:
+          url: "/reports/analytics?range=30d"
+          headers:
+            Accept: "application/json"
+          think: 5
+
+      - get:
+          url: "/search?q={{ $randomString() }}&limit=20"
+          headers:
+            Accept: "application/json"
+          think: 2

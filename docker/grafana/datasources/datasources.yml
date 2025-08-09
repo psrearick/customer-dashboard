@@ -1,0 +1,63 @@
+apiVersion: 1
+
+datasources:
+  # Prometheus data source
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    orgId: 1
+    url: http://prometheus:9090
+    basicAuth: false
+    isDefault: true
+    version: 1
+    editable: false
+    jsonData:
+      httpMethod: POST
+      manageAlerts: true
+      prometheusType: Prometheus
+      prometheusVersion: 3.5.0
+      cacheLevel: 'High'
+      disableRecordingRules: false
+      incrementalQueryOverlapWindow: 10m
+
+  # MySQL data source (optional, for direct database queries)
+  - name: MySQL
+    type: mysql
+    access: proxy
+    orgId: 1
+    url: mysql:3306
+    database: laravel_perf
+    user: laravel
+    secureJsonData:
+      password: password
+    basicAuth: false
+    isDefault: false
+    version: 1
+    editable: false
+    jsonData:
+      maxOpenConns: 100
+      maxIdleConns: 100
+      maxIdleConnsAuto: true
+      connMaxLifetime: 14400
+      queryTimeout: 60s
+      tlsAuth: false
+      tlsAuthWithCACert: false
+
+  # InfluxDB data source (if using for custom metrics)
+  - name: InfluxDB
+    type: influxdb
+    access: proxy
+    orgId: 1
+    url: http://influxdb:8086
+    database: laravel_metrics
+    user: admin
+    secureJsonData:
+      password: password
+    basicAuth: false
+    isDefault: false
+    version: 1
+    editable: false
+    jsonData:
+      version: '1.8'
+      timeInterval: "10s"
+      httpMode: GET

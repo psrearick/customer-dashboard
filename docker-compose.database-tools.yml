@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  # MySQL performance monitoring
+  percona-toolkit:
+    image: percona/percona-toolkit
+    container_name: laravel-perf-percona-toolkit
+    volumes:
+      - ./docker/percona:/scripts
+      - mysql_data:/var/lib/mysql
+    command: tail -f /dev/null
+    networks:
+      - laravel-perf
+
+  # Query performance analyzer
+  pt-query-digest:
+    image: percona/percona-toolkit
+    container_name: laravel-perf-pt-query-digest
+    volumes:
+      - ./storage/logs/mysql:/logs
+      - ./docker/percona/reports:/reports
+    working_dir: /reports
+    command: tail -f /dev/null
+    networks:
+      - laravel-perf
+
+  # Database connection pooler (for connection pool testing)
+  pgbouncer:
+    image: pgbouncer/pgbouncer:latest
+    container_name: laravel-perf-pgbouncer
+    environment:
+      - DATABASES_HOST=mysql
+      - DATABASES_PORT=3306
+      - DATABASES_USER=laravel
+      - DATABASES_PASSWORD=password
+      - DATABASES_DBNAME=laravel_perf
+      - POOL_MODE=transaction
+      - MAX_CLIENT_CONN=100
+      - DEFAULT_POOL_SIZE=25
+    ports:
+      - "6432:5432"
+    depends_on:
+      - mysql
+    networks:
+      - laravel-perf
+
+  # MySQL proxy for read/write splitting demonstration
+  proxysql:
+    image: proxysql/proxysql:latest
+    container_name: laravel-perf-proxysql
+    volumes:
+      - ./docker/proxysql/proxysql.cnf:/etc/proxysql.cnf
+    ports:
+      - "6033:6033"  # MySQL protocol
+      - "6032:6032"  # Admin interface
+    depends_on:
+      - mysql
+    networks:
+      - laravel-perf
+
+networks:
+  laravel-perf:
+    external: true

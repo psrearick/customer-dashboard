@@ -1,0 +1,86 @@
+version: '3.8'
+
+services:
+  # APM and performance monitoring
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.4
+    container_name: laravel-perf-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - xpack.security.enabled=false
+      - action.destructive_requires_name=false
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    networks:
+      - laravel-perf
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.15.4
+    container_name: laravel-perf-kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - XPACK_SECURITY_ENABLED=false
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+    networks:
+      - laravel-perf
+
+  # Custom metrics collection
+  statsd:
+    image: prom/statsd-exporter
+    container_name: laravel-perf-statsd
+    ports:
+      - "9102:9102"
+      - "9125:9125/udp"
+    networks:
+      - laravel-perf
+
+  # Database performance monitoring
+  mysql-exporter:
+    image: prom/mysqld-exporter
+    container_name: laravel-perf-mysql-exporter
+    environment:
+      - DATA_SOURCE_NAME=laravel:password@(mysql:3306)/laravel_perf
+    ports:
+      - "9104:9104"
+    depends_on:
+      - mysql
+    networks:
+      - laravel-perf
+
+  # Redis monitoring
+  redis-exporter:
+    image: oliver006/redis_exporter
+    container_name: laravel-perf-redis-exporter
+    environment:
+      - REDIS_ADDR=redis://redis:6379
+    ports:
+      - "9121:9121"
+    depends_on:
+      - redis
+    networks:
+      - laravel-perf
+
+  # Application performance monitoring
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: laravel-perf-jaeger
+    environment:
+      - COLLECTOR_ZIPKIN_HOST_PORT=:9411
+    ports:
+      - "16686:16686"  # Jaeger UI
+      - "14268:14268"  # HTTP collector
+    networks:
+      - laravel-perf
+
+volumes:
+  elasticsearch_data:
+
+networks:
+  laravel-perf:
+    external: true

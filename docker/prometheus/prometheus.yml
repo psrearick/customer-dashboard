@@ -1,0 +1,76 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    monitor: 'laravel-performance-monitor'
+    environment: 'development'
+
+# Rule files for alerting and recording rules
+rule_files:
+  - "alert_rules.yml"
+  - "recording_rules.yml"
+
+# Alerting configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - "alertmanager:9093"
+
+# Scrape configuration for Laravel performance monitoring
+scrape_configs:
+  # Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+    scrape_interval: 5s
+    metrics_path: /metrics
+
+  # Laravel application metrics (if using custom metrics)
+  - job_name: 'laravel-app'
+    static_configs:
+      - targets: ['frankenphp:80', 'nginx-lb:80']
+    scrape_interval: 30s
+    metrics_path: /metrics
+    scrape_timeout: 10s
+
+  # MySQL performance metrics
+  - job_name: 'mysql'
+    static_configs:
+      - targets: ['mysql-exporter:9104']
+    scrape_interval: 30s
+
+  # Redis performance metrics
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis-exporter:9121']
+    scrape_interval: 30s
+
+  # Node exporter for system metrics
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+    scrape_interval: 30s
+
+  # Nginx metrics (if using nginx-prometheus-exporter)
+  - job_name: 'nginx'
+    static_configs:
+      - targets: ['nginx-exporter:9113']
+    scrape_interval: 30s
+
+# Storage configuration
+storage:
+  tsdb:
+    path: /prometheus
+    retention.time: 30d
+    retention.size: 10GB
+    wal-compression: true
+
+# Remote write configuration (for Prometheus 3.x compatibility)
+remote_write:
+  - url: "http://remote-storage:8086/api/v1/prom/write"
+    # Note: enable_http2 defaults to false in Prometheus 3.x
+    queue_config:
+      max_samples_per_send: 1000
+      max_shards: 200
+      capacity: 2500
