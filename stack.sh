@@ -71,7 +71,6 @@ show_usage() {
     echo "  stop-all   Stop all project containers (any stack)"
     echo "  clean      Remove all containers, networks, and volumes"
     echo "  list       List available stacks and components"
-    echo "  setup      Create directory structure for configurations"
     echo "  validate   Validate configuration files for a stack"
     echo "  help       Show this help message"
     echo ""
@@ -93,7 +92,6 @@ show_usage() {
     echo "  --no-deps      Don't start dependent services"
     echo ""
     echo -e "${YELLOW}Examples:${NC}"
-    echo "  $0 setup                        # Create configuration directory structure"
     echo "  $0 validate traditional         # Validate configs for traditional stack"
     echo "  $0 up traditional               # Start traditional Nginx + PHP-FPM stack"
     echo "  $0 up performance -d            # Start performance testing stack in background"
@@ -200,11 +198,15 @@ check_files() {
     esac
 
     if [ -n "$missing_files" ]; then
-        echo -e "${RED}Error: Missing required files:${NC}" >&2
+        echo -e "${RED}Error: Missing required configuration files:${NC}" >&2
         for file in $missing_files; do
             echo "  $file" >&2
         done
-        echo -e "${YELLOW}Hint: Make sure you've created all configuration files for the selected stack.${NC}" >&2
+        echo -e "${YELLOW}The configuration files should be included with the project.${NC}" >&2
+        echo -e "${YELLOW}If files are missing, check that you have the complete repository:${NC}" >&2
+        echo "  git status" >&2
+        echo "  git pull origin main" >&2
+        echo -e "${YELLOW}For configuration help, see: docs/configuration-reference.md${NC}" >&2
         exit 1
     fi
 }
@@ -394,62 +396,99 @@ list_stacks() {
     echo -e "  ${GREEN}database-tools${NC}: docker-compose.database-tools.yml"
 }
 
-# Function to create directory structure and example configs
-setup_configs() {
-    echo -e "${BLUE}Setting up configuration directory structure...${NC}"
-
-    # Create directory structure
-    local dirs="docker/prometheus docker/grafana/datasources docker/grafana/dashboards/laravel docker/grafana/dashboards/system docker/nginx/conf.d docker/frankenphp docker/php/conf.d docker/mysql/conf.d docker/mysql/init docker/redis docker/percona/scripts docker/artillery docker/proxysql"
-
-    for dir in $dirs; do
-        mkdir -p "$dir"
-        echo "Created directory: $dir"
-    done
-
-    echo -e "${GREEN}Directory structure created successfully!${NC}"
-    echo -e "${YELLOW}Note: You'll need to create the actual configuration files.${NC}"
-    echo -e "${YELLOW}Refer to the documentation for example configurations.${NC}"
-}
 
 # Function to validate configuration files
 validate_configs() {
     local stack=$1
     echo -e "${BLUE}Validating configuration files for stack: $stack${NC}"
+    echo ""
+
+    local validation_passed=true
 
     # Validate Prometheus config if monitoring is included
     case $stack in
-        *monitoring*|enterprise|full)
+        *monitoring*|enterprise|full|comparison)
             if [ -f "docker/prometheus/prometheus.yml" ]; then
                 echo "✓ Prometheus configuration found"
             else
-                echo -e "${YELLOW}⚠ Prometheus configuration missing${NC}"
+                echo -e "${RED}✗ Prometheus configuration missing${NC}"
+                validation_passed=false
+            fi
+            if [ -f "docker/grafana/datasources/datasources.yml" ]; then
+                echo "✓ Grafana data sources configured"
+            else
+                echo -e "${RED}✗ Grafana datasources configuration missing${NC}"
+                validation_passed=false
             fi
             ;;
     esac
 
     # Validate Nginx config if traditional stack
     case $stack in
-        traditional|enterprise|full)
+        traditional|enterprise|full|comparison|performance)
             if [ -f "docker/nginx/nginx.conf" ]; then
-                echo "✓ Nginx configuration found"
+                echo "✓ Nginx main configuration found"
             else
-                echo -e "${YELLOW}⚠ Nginx configuration missing${NC}"
+                echo -e "${RED}✗ Nginx main configuration missing${NC}"
+                validation_passed=false
+            fi
+            if [ -f "docker/nginx/conf.d/laravel.conf" ]; then
+                echo "✓ Nginx Laravel virtual host configured"
+            else
+                echo -e "${RED}✗ Nginx Laravel virtual host missing${NC}"
+                validation_passed=false
             fi
             ;;
     esac
 
     # Validate FrankenPHP config
     case $stack in
-        frankenphp|enterprise|full)
+        frankenphp|enterprise|full|comparison)
             if [ -f "docker/frankenphp/Caddyfile" ]; then
                 echo "✓ FrankenPHP Caddyfile found"
             else
-                echo -e "${YELLOW}⚠ FrankenPHP Caddyfile missing${NC}"
+                echo -e "${RED}✗ FrankenPHP Caddyfile missing${NC}"
+                validation_passed=false
             fi
             ;;
     esac
 
-    echo -e "${GREEN}Configuration validation complete${NC}"
+    # Validate PHP configurations
+    if [ -f "docker/php/conf.d/opcache.ini" ]; then
+        echo "✓ PHP OPcache configuration found"
+    else
+        echo -e "${YELLOW}⚠ PHP OPcache configuration missing (performance will be impacted)${NC}"
+    fi
+
+    if [ -f "docker/php/conf.d/performance.ini" ]; then
+        echo "✓ PHP performance configuration found"
+    else
+        echo -e "${YELLOW}⚠ PHP performance configuration missing${NC}"
+    fi
+
+    # Validate database configurations
+    if [ -f "docker/mysql/conf.d/performance.cnf" ]; then
+        echo "✓ MySQL performance configuration found"
+    else
+        echo -e "${YELLOW}⚠ MySQL performance configuration missing${NC}"
+    fi
+
+    if [ -f "docker/redis/redis.conf" ]; then
+        echo "✓ Redis configuration found"
+    else
+        echo -e "${YELLOW}⚠ Redis configuration missing${NC}"
+    fi
+
+    echo ""
+    if [ "$validation_passed" = true ]; then
+        echo -e "${GREEN}✓ All required configurations found for stack: $stack${NC}"
+        echo -e "${BLUE}For configuration details, see: docs/configuration-reference.md${NC}"
+    else
+        echo -e "${RED}✗ Configuration validation failed${NC}"
+        echo -e "${YELLOW}Some required configuration files are missing.${NC}"
+        echo -e "${YELLOW}Check that you have the complete repository and all files are present.${NC}"
+        exit 1
+    fi
 }
 
 # Parse command line arguments
@@ -465,7 +504,7 @@ while [ $# -gt 0 ]; do
             COMMAND=$1
             shift
             ;;
-        status|stop-all|clean|list|setup|help)
+        status|stop-all|clean|list|help)
             COMMAND=$1
             shift
             break
@@ -522,10 +561,6 @@ case ${COMMAND:-} in
         ;;
     list)
         list_stacks
-        exit 0
-        ;;
-    setup)
-        setup_configs
         exit 0
         ;;
     help|"")
