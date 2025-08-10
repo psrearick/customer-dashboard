@@ -10,12 +10,12 @@
 $xhprof_runs_dir = '/var/www/html/storage/logs/xhprof';
 $xhprof_url = '/xhprof';
 
-// Include XHProf library (assuming it's installed via Composer)
+// XHProf library (Composer)
 if (file_exists('/var/www/html/vendor/autoload.php')) {
     require_once '/var/www/html/vendor/autoload.php';
 }
 
-// Simple file browser for XHProf runs
+// File browser for XHProf runs
 if (!isset($_GET['run']) || !isset($_GET['source'])) {
     echo "<h1>Laravel Performance Profiling - XHProf Results</h1>";
     echo "<p>Select a profiling run to view detailed performance analysis:</p>";
@@ -64,11 +64,10 @@ if (!isset($_GET['run']) || !isset($_GET['source'])) {
     exit;
 }
 
-// Display XHProf results
+// XHProf results
 $run_id = $_GET['run'];
 $source = $_GET['source'];
 
-// Basic XHProf display logic
 echo "<h1>XHProf Results: Run {$run_id}</h1>";
 echo "<p><a href='?'>← Back to run list</a></p>";
 

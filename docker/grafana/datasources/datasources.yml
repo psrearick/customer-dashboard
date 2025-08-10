@@ -1,7 +1,6 @@
 apiVersion: 1
 
 datasources:
-  # Prometheus data source
   - name: Prometheus
     type: prometheus
     access: proxy
@@ -20,7 +19,6 @@ datasources:
       disableRecordingRules: false
       incrementalQueryOverlapWindow: 10m
 
-  # MySQL data source (optional, for direct database queries)
   - name: MySQL
     type: mysql
     access: proxy
@@ -43,7 +41,6 @@ datasources:
       tlsAuth: false
       tlsAuthWithCACert: false
 
-  # InfluxDB data source (if using for custom metrics)
   - name: InfluxDB
     type: influxdb
     access: proxy

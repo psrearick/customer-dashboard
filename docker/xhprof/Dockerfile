@@ -1,15 +1,15 @@
 FROM php:8.4-apache-bookworm
 
-# Install required extensions
+# Rquired extensions
 RUN docker-php-ext-install pdo_mysql
 
-# Install XHProf
+# XHProf
 RUN pecl install xhprof && docker-php-ext-enable xhprof
 
-# Enable Apache rewrite module
+# Apache rewrite module
 RUN a2enmod rewrite
 
-# Copy XHProf interface
+# XHProf interface
 COPY docker/xhprof/index.php /var/www/html/index.php
 
 # Set permissions

@@ -1,32 +1,26 @@
 config:
   target: 'http://nginx-lb:80'
   phases:
-    # Warm-up phase
     - duration: 30
       arrivalRate: 1
       name: "Warm-up"
 
-    # Baseline load
     - duration: 120
       arrivalRate: 5
       name: "Baseline Load"
 
-    # Ramp up
     - duration: 60
       arrivalRate: 10
       name: "Ramp Up"
 
-    # Peak load
     - duration: 180
       arrivalRate: 25
       name: "Peak Load"
 
-    # Stress test
     - duration: 60
       arrivalRate: 50
       name: "Stress Test"
 
-    # Cool down
     - duration: 30
       arrivalRate: 1
       name: "Cool Down"
@@ -34,7 +28,6 @@ config:
   processor: "./custom-functions.js"
 
 scenarios:
-  # Main dashboard load test (primary endpoint)
   - name: "Dashboard Performance Test"
     weight: 40
     flow:
@@ -47,14 +40,12 @@ scenarios:
               as: "userId"
           think: 2
 
-      # Follow-up requests that a real user might make
       - get:
           url: "/api/user/{{ userId }}/stats"
           headers:
             Accept: "application/json"
           think: 1
 
-  # API endpoint testing
   - name: "API Performance Test"
     weight: 30
     flow:
@@ -75,7 +66,6 @@ scenarios:
             quantity: "{{ $randomInt(1, 5) }}"
           think: 3
 
-  # Static asset testing
   - name: "Static Assets Test"
     weight: 20
     flow:
@@ -92,7 +82,6 @@ scenarios:
           headers:
             Accept: "image/png"
 
-  # Database-heavy operations
   - name: "Heavy Database Operations"
     weight: 10
     flow:

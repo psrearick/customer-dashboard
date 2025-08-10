@@ -1,6 +1,6 @@
 FROM dunglas/frankenphp:1-php8.4-bookworm
 
-# Install system dependencies
+# System dependencies
 RUN apt-get update && apt-get install -y \
     git \
     curl \
@@ -17,12 +17,12 @@ RUN apt-get update && apt-get install -y \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Node.js 20
+# Node.js 20
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y nodejs \
     && rm -rf /var/lib/apt/lists/*
 
-# Install PHP extensions for performance and profiling
+# PHP extensions for performance and profiling
 RUN docker-php-ext-install \
     bcmath \
     fileinfo \
@@ -34,11 +34,11 @@ RUN docker-php-ext-install \
     pcntl \
     opcache
 
-# Install PECL extensions
+# PECL extensions
 RUN pecl install redis xdebug apcu xhprof \
     && docker-php-ext-enable redis xdebug apcu xhprof
 
-# Install Blackfire probe for production profiling
+# Blackfire
 RUN version=$(php -r "echo PHP_MAJOR_VERSION.PHP_MINOR_VERSION;") \
     && architecture=$(uname -m) \
     && curl -A "Docker" -o /tmp/blackfire-probe.tar.gz -D - -L -s https://blackfire.io/api/v1/releases/probe/php/linux/$architecture/$version \
@@ -47,35 +47,31 @@ RUN version=$(php -r "echo PHP_MAJOR_VERSION.PHP_MINOR_VERSION;") \
     && mv /tmp/blackfire/blackfire-*.so $(php -r "echo ini_get ('extension_dir');")/blackfire.so \
     && rm -rf /tmp/blackfire /tmp/blackfire-probe.tar.gz
 
-# Get Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Set working directory
 WORKDIR /app
 
-# Copy configuration files first
+# Configuration files
 COPY docker/php/conf.d/performance.ini /usr/local/etc/php/conf.d/
 COPY docker/php/conf.d/xdebug.ini /usr/local/etc/php/conf.d/
 COPY docker/php/conf.d/opcache.ini /usr/local/etc/php/conf.d/
 COPY docker/php/conf.d/docker-php-ext-redis.ini /usr/local/etc/php/conf.d/
 COPY docker/frankenphp/Caddyfile /etc/caddy/Caddyfile
 
-# Copy application files
+# Application files
 COPY . /app
 
-# Install composer dependencies if composer.json exists
 RUN if [ -f composer.json ]; then \
         composer install --no-dev --optimize-autoloader --no-scripts; \
         composer run-script post-autoload-dump 2>/dev/null || true; \
     fi
 
-# Install npm dependencies and build assets if package.json exists
 RUN if [ -f package.json ]; then \
         npm ci; \
         npm run build; \
     fi
 
-# Set permissions for Laravel directories if they exist
+# Set permissions for Laravel directories
 RUN if [ -d "/app/storage" ]; then \
         chown -R www-data:www-data /app/storage; \
         chmod -R 775 /app/storage; \
@@ -85,10 +81,8 @@ RUN if [ -d "/app/storage" ]; then \
         chmod -R 775 /app/bootstrap/cache; \
     fi
 
-# Ensure proper ownership of all files
 RUN chown -R www-data:www-data /app
 
-# Expose ports
 EXPOSE 80 443
 
 CMD ["frankenphp", "run", "--config", "/etc/caddy/Caddyfile"]

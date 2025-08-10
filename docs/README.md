@@ -1,196 +1,149 @@
-# Laravel Performance Testing Environment - Documentation
+# Customer Dashboard - Documentation
 
-Welcome to the comprehensive documentation for the Laravel Performance Testing Environment. This documentation provides
-everything you need to understand, set up, and use this powerful Docker-based testing platform.
+Welcome to the documentation for the Customer Dashboard project. This is a Laravel learning and reference project designed to teach modern Laravel development patterns through practical examples.
 
 ## Documentation Structure
 
 ### Getting Started
-
 - **[Getting Started Guide](getting-started.md)** - Setup instructions and first steps
-- **[Stack Management](stack-management.md)** - Available stacks and management commands
-- **[Development Helper Commands](dev-commands.md)** - Sail-like shortcuts for PHP, Artisan, Composer, NPM
+- **[Architecture Overview](architecture/overview.md)** - Why things are built this way
+- **[Docker Setup](architecture/docker-setup.md)** - Understanding the development environment
 
-### Reference Documentation
+### Learning Resources
+- **[Tutorials](tutorials/)** - Step-by-step guides for Laravel patterns
+- **[Branch Guide](branches/branch-guide.md)** - What each git branch demonstrates
+- **[Frontend Development](frontend-development.md)** - React 19 + Inertia.js patterns
 
-- **[Container Reference](containers.md)** - Complete container and service documentation
-- **[Configuration Guide](configuration.md)** - Configuration file structures and examples
-- **[Configuration Reference](configuration-reference.md)** - Comprehensive configuration tuning guide
-- **[Performance Monitoring](monitoring.md)** - Monitoring and profiling tools
+### Reference
+- **[Command Reference](reference/commands.md)** - Quick command lookup
+- **[Troubleshooting](reference/troubleshooting.md)** - Common issues and solutions
+- **[Development Commands](dev-commands.md)** - Helper script documentation
 
-### Support
-
-- **[Troubleshooting](troubleshooting.md)** - Common issues and solutions
+### Architecture & Configuration
+- **[Configuration Guide](architecture/configuration-guide.md)** - Configuration principles
+- **[Container Reference](containers.md)** - Docker service details
+- **[Stack Management](stack-management.md)** - Docker stack operations
 
 ## Quick Navigation
 
-### New Users
-
+### New to Laravel
 1. Start with [Getting Started Guide](getting-started.md)
-2. Learn about [Stack Management](stack-management.md)
-3. Explore [Performance Monitoring](monitoring.md)
+2. Understand [Architecture Decisions](architecture/overview.md)
+3. Try the [Repository Pattern Tutorial](tutorials/repository-pattern.md)
 
-### Advanced Users
+### Learning Specific Patterns
+1. Browse [Available Tutorials](tutorials/)
+2. Check out [Branch Guide](branches/branch-guide.md) for git branches
+3. Follow along with blog posts and examples
 
-1. Review [Container Reference](containers.md) for technical details
-2. Customize with [Configuration Guide](configuration.md)
-3. Debug issues using [Troubleshooting](troubleshooting.md)
+### Need Quick Help
+1. [Command Reference](reference/commands.md) for common commands
+2. [Troubleshooting](reference/troubleshooting.md) for common issues
+3. [Docker Setup](architecture/docker-setup.md) for environment problems
 
-### Developers & Contributors
+### Contributing or Extending
+1. Read [Architecture Overview](architecture/overview.md)
+2. Review [Configuration Guide](architecture/configuration-guide.md)
+3. Check [Container Reference](containers.md) for technical details
 
-1. Understand the architecture in [Container Reference](containers.md)
-2. Extend configurations using [Configuration Guide](configuration.md)
-3. Add monitoring with [Performance Monitoring](monitoring.md)
+## Project Overview
 
-## Environment Overview
+The Customer Dashboard is a learning-focused Laravel project that demonstrates:
 
-The Laravel Performance Testing Environment provides:
+### **Modern Laravel Stack**
 
-### **Multiple Web Server Configurations**
+- **Laravel 12**: Latest framework features and best practices
+- **React 19 + Inertia.js**: Modern SPA without API complexity
+- **TypeScript**: Type-safe frontend development
+- **Radix UI**: Accessible, unstyled component library
 
-- **Traditional**: Nginx + PHP-FPM (industry standard)
-- **Modern**: FrankenPHP with HTTP/3 and worker mode
-- **High-Performance**: Laravel Octane with Swoole
+### **Development Environment**
 
-### **Comprehensive Database Stack**
+- **Docker-based**: Consistent development environment
+- **Multiple Stacks**: Traditional (Nginx), Modern (FrankenPHP), High-performance (Octane)
+- **Hot Reloading**: Vite for fast frontend development
+- **Database Seeding**: Realistic test data
 
-- **MySQL 8.4**: Primary database with performance tuning
-- **Redis 8**: High-performance caching with clustering
-- **Multi-tenant**: Separate database instances for isolation testing
-- **Proxies**: ProxySQL and PgBouncer for connection management
+### **Learning Features**
 
-### **Advanced Monitoring & Profiling**
-
-- **Prometheus + Grafana**: Metrics collection and visualization
-- **ELK Stack**: Elasticsearch + Kibana for log analysis
-- **Jaeger**: Distributed tracing for request analysis
-- **XHProf**: Detailed PHP function profiling
-- **Database Exporters**: MySQL and Redis specific metrics
-
-### **Performance Analysis Tools**
-
-- **Percona Toolkit**: MySQL query analysis and optimization
-- **Load Testing**: Artillery integration for performance testing
-- **Health Monitoring**: Comprehensive service health checks
-- **Resource Monitoring**: Container and system resource tracking
-
-## Architecture Highlights
-
-### Container Architecture
-
-- **25+ specialized containers** for different testing scenarios
-- **7 docker-compose files** for flexible stack combinations
-- **External networking** for service discovery and communication
-- **Persistent volumes** for data retention and performance
-
-### Performance Features
-
-- **HTTP/3 Support** via FrankenPHP for next-generation web performance
-- **Worker Mode** for eliminating PHP bootstrap overhead
-- **Connection Pooling** for efficient database resource utilization
-- **Distributed Caching** with Redis clustering
-- **JIT Compilation** with PHP 8.4 OPcache optimization
-
-### Monitoring Capabilities
-
-- **Real-time Metrics** with sub-second granularity
-- **Custom Dashboards** for Laravel-specific performance indicators
-- **Alerting Rules** for proactive performance monitoring
-- **Log Aggregation** for comprehensive error tracking and analysis
+- **Git Branches**: Each branch demonstrates a specific pattern
+- **Working Code**: All examples are functional and tested
+- **Progressive Complexity**: Start simple, add patterns as needed
+- **Real-world Examples**: Practical patterns you'll actually use
 
 ## Quick Reference
 
 ### Essential Commands
 
 ```bash
-# Start traditional stack
-stack up traditional -d
+# Start development environment
+./bin/stack up traditional -d
 
-# Monitor performance  
-stack up performance -d
+# Laravel commands  
+./bin/dev artisan migrate --seed
+./bin/dev composer install
+./bin/dev npm install && npm run build
 
-# Compare all servers
-stack up comparison -d
+# Development workflow
+./bin/dev npm run dev        # Hot reloading
+./bin/dev artisan tinker     # Interactive shell
+./bin/dev artisan test       # Run tests
 
-# Check status
-stack status
-
-# View logs
-stack logs [stack] -f
-
-# Run Laravel commands (after starting a stack)
-dev artisan migrate
-dev composer install
-dev npm run dev
+# Switch learning branches
+git checkout feature/repository-pattern
+./bin/dev artisan migrate:fresh --seed
 ```
 
-### Key URLs (when running)
+### Key URLs
 
-- **Application**: http://localhost (varies by stack)
-- **Grafana**: http://localhost:3000 (admin/admin)
-- **Prometheus**: http://localhost:9090
-- **Kibana**: http://localhost:5601
-- **Jaeger**: http://localhost:16686
+- **Application**: http://localhost
+- **FrankenPHP**: http://localhost:8080
+- **Octane**: http://localhost:8000
 
-### Port Allocation
+### Learning Path
 
-- **80**: Nginx (traditional)
-- **8080**: FrankenPHP
-- **8000**: Laravel Octane
-- **8090**: Load Balancer
-- **3306-3308**: MySQL instances
-- **6379, 7010-7012**: Redis instances
+1. **Start Here**: [Getting Started](getting-started.md)
+2. **Understand Why**: [Architecture Overview](architecture/overview.md)  
+3. **Pick a Pattern**: [Tutorials](tutorials/) or [Branch Guide](branches/branch-guide.md)
+4. **Need Help**: [Commands](reference/commands.md) or [Troubleshooting](reference/troubleshooting.md)
 
-## Documentation Features
+## Using This Documentation
 
-### Comprehensive Coverage
+### Documentation Philosophy
 
-- **Step-by-step instructions** for all procedures
-- **Code examples** for integration and customization
-- **Troubleshooting scenarios** with specific solutions
-- **Performance optimization** guidelines and best practices
+This documentation focuses on **learning and understanding** rather than exhaustive technical details:
 
-### Technical Depth
+- **Why over What**: Explains reasoning behind architectural decisions
+- **Progressive Complexity**: Start simple, add advanced concepts gradually
+- **Practical Examples**: Real-world code you can use immediately
+- **Reference without Duplication**: Links to actual config files instead of copying them
 
-- **Container specifications** including images, ports, and volumes
-- **Configuration file documentation** with all available options
-- **Monitoring setup instructions** for comprehensive observability
-- **Extension mechanisms** for customizing the environment
+### Finding What You Need
 
-### Practical Focus
+- **New to the Project**: Start with [Getting Started](getting-started.md)
+- **Specific Pattern**: Check [Tutorials](tutorials/) for step-by-step guides
+- **Quick Lookup**: Use [Command Reference](reference/commands.md)
+- **Troubleshooting**: See [Troubleshooting Guide](reference/troubleshooting.md)
+- **Understanding Decisions**: Read [Architecture Overview](architecture/overview.md)
 
-- **Real-world examples** based on actual Laravel applications
-- **Performance testing workflows** for systematic optimization
-- **Benchmarking methodologies** for reliable comparisons
-- **Production considerations** for scaling and deployment
+## Contributing
 
-## Contributing to Documentation
+Want to improve the documentation or add new tutorials?
 
-We welcome documentation improvements! When contributing:
-
-1. **Follow the established structure** outlined in each document
-2. **Include practical examples** for all concepts
-3. **Test all procedures** before documenting them
-4. **Update cross-references** when adding new content
-5. **Maintain consistency** in formatting and terminology
-
-### Documentation Standards
-
-- Use clear, concise language suitable for all skill levels
-- Include command examples with expected outputs
-- Provide troubleshooting information for common issues
-- Link to relevant sections in other documents
-- Update the documentation index when adding new content
+1. **Documentation**: Focus on explaining "why" not just "how"
+2. **Tutorials**: Include working code with tests
+3. **Examples**: Use realistic scenarios, not contrived ones
+4. **Updates**: Keep cross-references current
 
 ## Getting Help
 
-If you need assistance:
+If you get stuck:
 
-1. **Check the appropriate documentation section** for your topic
-2. **Review the troubleshooting guide** for common solutions
-3. **Search existing issues** in the GitHub repository
-4. **Create a detailed issue report** with system information and logs
-5. **Join the community discussions** for peer support
+1. Check the [Troubleshooting Guide](reference/troubleshooting.md)
+2. Review the relevant tutorial or branch
+3. Open an issue with:
+   - What you're trying to learn
+   - What step you're stuck on
+   - Error messages or unexpected behavior
 
-The documentation is designed to be self-sufficient, but we're committed to helping users succeed with the Laravel
-Performance Testing Environment.
+This project is designed to help you learn Laravel patterns through working code examples. Each piece of documentation serves that goal!
