@@ -1,29 +1,18 @@
 {
 	# Enable FrankenPHP with enhanced configuration for PHP 8.4
-	frankenphp {
-		# Worker mode for better performance - updated for Laravel 12
-		worker /app/public/index.php
-		# Number of threads (adjust based on your CPU cores)
-		num_threads 4
-		# Max wait time for worker script changes
-		max_wait_time 30s
-	}
+	frankenphp
 }
 
-:80, :443 {
+:80 {
 	# Document root
 	root * /app/public
 
 	# Enable compression with modern algorithms
 	encode zstd gzip
 
-	# Enable HTTP/3 and modern protocols
-	protocols h1 h2 h3
-
-	# Security headers for production readiness
+	# Security headers (without HSTS for HTTP)
 	header {
-		# Enhanced security headers for 2025
-		Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+		# Security headers for HTTP
 		X-Content-Type-Options "nosniff"
 		X-Frame-Options "DENY"
 		X-XSS-Protection "1; mode=block"
@@ -99,11 +88,5 @@
 		}
 		format json
 		level INFO
-	}
-
-	# Automatic HTTPS with modern TLS configuration
-	tls {
-		protocols tls1.2 tls1.3
-		ciphers TLS_AES_128_GCM_SHA256 TLS_AES_256_GCM_SHA384 TLS_CHACHA20_POLY1305_SHA256
 	}
 }
