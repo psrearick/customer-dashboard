@@ -36,9 +36,7 @@ is_container_running() {
 # Function to run a command in the PHP container
 run_in_php_container() {
     local container
-    container=$(detect_php_container)
-    
-    if [ $? -ne 0 ]; then
+    if ! container=$(detect_php_container); then
         printf "%bError: No PHP container is running%b\n" "$RED" "$NC" >&2
         printf "%bStart a stack first with: ./bin/stack up [stack] -d%b\n" "$YELLOW" "$NC" >&2
         printf "%bAvailable stacks: traditional, frankenphp, octane, performance, enterprise, comparison, full%b\n" "$YELLOW" "$NC" >&2
@@ -117,8 +115,7 @@ case "${1:-}" in
     
     shell|bash|sh)
         # Try bash first, fall back to sh if not available
-        container=$(detect_php_container)
-        if [ $? -ne 0 ]; then
+        if ! container=$(detect_php_container); then
             printf "%bError: No PHP container is running%b\n" "$RED" "$NC" >&2
             printf "%bStart a stack first with: ./bin/stack up [stack] -d%b\n" "$YELLOW" "$NC" >&2
             exit 1
