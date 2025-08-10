@@ -21,7 +21,9 @@
         "paths": {
             "@/*": ["./resources/js/*"]
         },
-        "types": ["vite/client"]
+        "types": ["vite/client"],
+        "allowImportingTsExtensions": false,
+        "resolveJsonModule": true
     },
     "include": [
         "resources/js/**/*.ts",

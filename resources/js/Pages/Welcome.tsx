@@ -1,8 +1,8 @@
 import React from 'react';
-import { PageProps } from '@/types';
+import type {PageProps} from '@/types';
 import AppLayout from '@/Layouts/AppLayout';
 import * as Dialog from '@radix-ui/react-dialog';
-import { CrossIcon } from '@radix-ui/react-icons';
+import { Cross1Icon } from '@radix-ui/react-icons';
 
 export default function Welcome({ auth }: PageProps) {
     return (
@@ -59,7 +59,7 @@ export default function Welcome({ auth }: PageProps) {
                                                         className="absolute top-4 right-4 inline-flex h-6 w-6 appearance-none items-center justify-center rounded-full text-gray-500 hover:text-gray-700"
                                                         aria-label="Close"
                                                     >
-                                                        <CrossIcon />
+                                                        <Cross1Icon />
                                                     </button>
                                                 </Dialog.Close>
                                             </Dialog.Content>

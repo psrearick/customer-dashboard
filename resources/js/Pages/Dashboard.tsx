@@ -1,10 +1,9 @@
-import React from 'react';
-import { PageProps } from '@/types';
+import type {PageProps} from '@/types';
 import AppLayout from '@/Layouts/AppLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/Card';
 import { Button } from '@/Components/Button';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
-import { DotsThreeVerticalIcon, PersonIcon, MixIcon, GearIcon } from '@radix-ui/react-icons';
+import {DotsVerticalIcon, PersonIcon, MixIcon, GearIcon } from '@radix-ui/react-icons';
 
 export default function Dashboard({ auth }: PageProps) {
     return (
@@ -85,7 +84,7 @@ export default function Dashboard({ auth }: PageProps) {
                             <DropdownMenu.Root>
                                 <DropdownMenu.Trigger asChild>
                                     <Button variant="ghost" size="sm">
-                                        <DotsThreeVerticalIcon className="h-4 w-4" />
+                                        <DotsVerticalIcon className="h-4 w-4" />
                                     </Button>
                                 </DropdownMenu.Trigger>
                                 <DropdownMenu.Portal>

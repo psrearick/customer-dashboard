@@ -50,6 +50,7 @@ WORKDIR /app
 # Copy configuration files first
 COPY docker/php/conf.d/performance.ini /usr/local/etc/php/conf.d/
 COPY docker/php/conf.d/opcache.ini /usr/local/etc/php/conf.d/
+COPY docker/php/conf.d/docker-php-ext-redis.ini /usr/local/etc/php/conf.d/
 COPY docker/octane/octane.conf /usr/local/etc/php/conf.d/octane.ini
 COPY docker/octane/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
@@ -66,7 +67,7 @@ RUN if [ -f composer.json ]; then \
 
 # Install npm dependencies and build assets if package.json exists
 RUN if [ -f package.json ]; then \
-        npm ci --only=production; \
+        npm ci; \
         npm run build; \
     fi
 
