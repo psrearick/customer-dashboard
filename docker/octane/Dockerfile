@@ -15,6 +15,13 @@ RUN apt-get update && apt-get install -y \
     unzip \
     default-mysql-client \
     supervisor \
+    gnupg \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Node.js 20
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y nodejs \
     && rm -rf /var/lib/apt/lists/*
 
 # Install PHP extensions for Laravel and Octane
@@ -55,6 +62,12 @@ RUN if [ -f composer.json ]; then \
         composer require laravel/octane spiral/roadrunner --no-scripts 2>/dev/null || true; \
         composer run-script post-autoload-dump 2>/dev/null || true; \
         php artisan octane:install --server=swoole --no-interaction 2>/dev/null || true; \
+    fi
+
+# Install npm dependencies and build assets if package.json exists
+RUN if [ -f package.json ]; then \
+        npm ci --only=production; \
+        npm run build; \
     fi
 
 # Set permissions for Laravel directories if they exist

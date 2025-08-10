@@ -1,6 +1,6 @@
 # Getting Started Guide
 
-This guide will walk you through setting up and using the Laravel Performance Testing Environment for the first time.
+This guide will walk you through setting up and using the Customer Dashboard app for the first time.
 
 ## Prerequisites
 
@@ -158,49 +158,56 @@ Access all web servers simultaneously:
 - **FrankenPHP**: http://localhost:8080
 - **Octane**: http://localhost:8000
 
-## Working with Laravel Applications
+## Working with the Laravel Application
 
-### Setting up a Laravel Project
+### Laravel 12 + React 19 Setup
 
-If you want to test with an actual Laravel application:
+This project includes a complete Laravel 12 application with React 19 and Inertia.js:
 
 ```bash
-# Create Laravel project in current directory
-composer create-project laravel/laravel .
+# Start traditional stack (or the stack of your choice) in background mode
+./stack.sh up traditional -d
 
 # Configure database connection
 cp .env.example .env
-
-# Edit .env file with container database settings
-DB_CONNECTION=mysql
-DB_HOST=mysql  # Container name
-DB_PORT=3306
-DB_DATABASE=laravel_perf
-DB_USERNAME=laravel
-DB_PASSWORD=password
-
-REDIS_HOST=redis  # Container name
-REDIS_PASSWORD=null
-REDIS_PORT=6379
 
 # Install dependencies and setup
 composer install
 php artisan key:generate
 php artisan migrate --seed
+
+# Install frontend dependencies and build assets
+npm install
+npm run build
+
+# Or start development server with hot reloading
+npm run dev
 ```
+
+### Application Structure
+
+The application uses modern React 19 with Inertia.js for seamless SPA experience:
+
+- **Frontend**: React 19 with TypeScript in `resources/js/`
+- **Components**: Radix UI components in `resources/js/Components/`
+- **Pages**: Inertia pages in `resources/js/Pages/`
+- **Layouts**: Reusable layouts in `resources/js/Layouts/`
+
+### Available Application Routes
+
+- `/` - Welcome page with technology showcase
+- `/dashboard` - Sample dashboard with Radix UI components  
+- `/health` - Health check endpoint (JSON response)
 
 ### Laravel with Octane
 
-For Laravel Octane setup:
+Laravel Octane is pre-installed and configured:
 
 ```bash
-# Install Octane
-composer require laravel/octane spiral/roadrunner
-
-# Install Octane with Swoole
-php artisan octane:install --server=swoole
-
-# The Octane container will automatically use these settings
+# Octane is already installed with Swoole driver
+# Configuration is handled by Docker
+# Starting the octane container starts octane automatically
+./stack.sh up octane -d
 ```
 
 ## Performance Testing Workflow

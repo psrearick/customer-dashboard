@@ -580,7 +580,7 @@ OCTANE_MAX_REQUESTS=500
 
 ```bash
 # Application
-APP_NAME="Laravel Performance Test"
+APP_NAME="Customer Dashboard"
 APP_ENV=local
 APP_KEY=base64:generated-key
 APP_DEBUG=true
@@ -594,12 +594,13 @@ DB_DATABASE=laravel_perf
 DB_USERNAME=laravel
 DB_PASSWORD=password
 
-# Cache
-CACHE_DRIVER=redis
+# Cache & Sessions
+CACHE_STORE=redis
 SESSION_DRIVER=redis
 QUEUE_CONNECTION=redis
 
 # Redis
+REDIS_CLIENT=phpredis
 REDIS_HOST=redis
 REDIS_PASSWORD=null
 REDIS_PORT=6379
@@ -608,8 +609,94 @@ REDIS_PORT=6379
 TELESCOPE_ENABLED=true
 DEBUGBAR_ENABLED=true
 
-# Octane
+# Frontend Assets
+VITE_APP_NAME="${APP_NAME}"
+
+# Octane (pre-installed)
 OCTANE_SERVER=swoole
+```
+
+### Frontend Configuration (package.json)
+
+```json
+{
+    "scripts": {
+        "build": "vite build",
+        "dev": "vite",
+        "dev:host": "vite --host",
+        "preview": "vite preview",
+        "type-check": "tsc --noEmit",
+        "lint": "echo 'Add linting setup later'"
+    },
+    "dependencies": {
+        "@inertiajs/react": "^2.0.17",
+        "@radix-ui/react-*": "latest versions",
+        "react": "^19.1.1",
+        "react-dom": "^19.1.1",
+        "clsx": "^2.1.1",
+        "tailwind-merge": "^3.3.1"
+    },
+    "devDependencies": {
+        "@vitejs/plugin-react": "^5.0.0",
+        "@types/react": "^19.1.9",
+        "@types/react-dom": "^19.1.7",
+        "typescript": "^5.9.2",
+        "vite": "^7.0.4",
+        "@tailwindcss/vite": "^4.0.0"
+    }
+}
+```
+
+### TypeScript Configuration (tsconfig.json)
+
+```json
+{
+    "compilerOptions": {
+        "allowJs": true,
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "jsx": "react-jsx",
+        "strict": true,
+        "skipLibCheck": true,
+        "target": "ES2022",
+        "lib": ["ES2022", "DOM", "DOM.Iterable"],
+        "baseUrl": ".",
+        "paths": {
+            "@/*": ["./resources/js/*"]
+        },
+        "types": ["vite/client"]
+    },
+    "include": [
+        "resources/js/**/*.ts",
+        "resources/js/**/*.tsx",
+        "resources/js/**/*.d.ts"
+    ]
+}
+```
+
+### Vite Configuration (vite.config.js)
+
+```javascript
+import { defineConfig } from 'vite';
+import laravel from 'laravel-vite-plugin';
+import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
+
+export default defineConfig({
+    plugins: [
+        laravel({
+            input: ['resources/css/app.css', 'resources/js/app.tsx'],
+            refresh: true,
+        }),
+        react(),
+        tailwindcss(),
+    ],
+    resolve: {
+        alias: {
+            '@': '/resources/js',
+        },
+    },
+});
 ```
 
 ## Configuration Relationships
