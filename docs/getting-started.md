@@ -57,17 +57,40 @@ git clone https://github.com/psrearick/customer-dashboard.git
 cd customer-dashboard
 ```
 
-### 2. Make Stack Script Executable
+### 2. Configuration a Shell Aliases (Optional)
+
+The `bin` directory contains two scripts: `dev` and `stack`, which can be invoked using the `bin/dev` and `bin/stack`
+commands, respectively.
 
 ```bash
-chmod +x stack.sh
+./bin/dev help
+./bin/stack help
 ```
+
+To avoid typing `./bin/dev` or `./bin/stack` each time you use one of the command, you may create a shell alias to run
+the command more easily:
+
+```bash
+alias dev='sh $([ -f dev ] && echo dev || echo bin/dev)'
+alias stack='sh $([ -f stack ] && echo stack || echo bin/stack)'
+```
+
+Adding this to your shell configuration file in your home directory, such as `~/.zshrc` or `~/.bashrc`, and then
+restarting your shell makes the commands available, at which point you can execute dev commands by typing `dev` and the
+stack commands by type `stack`.
+
+```bash
+dev help
+stack help
+```
+
+The remainder of this documentation will assume that you have configured these aliases.
 
 ### 3. Verify Configuration Files
 
 ```bash
 # Validate that all configuration files exist for the traditional stack
-./stack.sh validate traditional
+stack validate traditional
 
 # Expected output:
 # ✓ Nginx configuration found
@@ -83,10 +106,10 @@ The traditional stack (Nginx + PHP-FPM) is the most common and stable configurat
 
 ```bash
 # Start traditional stack in background mode
-./stack.sh up traditional -d
+stack up traditional -d
 
 # Check container status
-./stack.sh status
+stack status
 ```
 
 Expected output:
@@ -116,15 +139,15 @@ Once containers are running, access these URLs:
 
 ```bash
 # Try modern FrankenPHP stack
-./stack.sh down traditional
-./stack.sh up frankenphp -d
+stack down traditional
+stack up frankenphp -d
 
 # Access FrankenPHP on port 8080
 open http://localhost:8080
 
 # Try high-performance Octane stack  
-./stack.sh down frankenphp
-./stack.sh up octane -d
+stack down frankenphp
+stack up octane -d
 
 # Access Octane on port 8000
 open http://localhost:8000
@@ -134,8 +157,8 @@ open http://localhost:8000
 
 ```bash
 # Start performance stack (traditional + monitoring tools)
-./stack.sh down octane
-./stack.sh up performance -d
+stack down octane
+stack up performance -d
 ```
 
 Additional services available:
@@ -148,8 +171,8 @@ Additional services available:
 
 ```bash
 # Start comparison stack (all web servers + monitoring)
-./stack.sh down performance
-./stack.sh up comparison -d
+stack down performance
+stack up comparison -d
 ```
 
 Access all web servers simultaneously:
@@ -166,22 +189,25 @@ This project includes a complete Laravel 12 application with React 19 and Inerti
 
 ```bash
 # Start traditional stack (or the stack of your choice) in background mode
-./stack.sh up traditional -d
+stack up traditional -d
 
 # Configure database connection
 cp .env.example .env
 
-# Install dependencies and setup
-composer install
-php artisan key:generate
-php artisan migrate --seed
-
-# Install frontend dependencies and build assets
-npm install
-npm run build
+# Using the dev helper script (recommended):
+dev composer install
+dev artisan key:generate
+dev artisan migrate --seed
+dev npm install
+dev npm run build
 
 # Or start development server with hot reloading
-npm run dev
+dev npm run dev
+
+# Alternative: Direct docker exec commands
+# docker exec laravel-perf-php-fpm composer install
+# docker exec laravel-perf-php-fpm php artisan key:generate
+# docker exec laravel-perf-php-fpm php artisan migrate --seed
 ```
 
 ### Application Structure
@@ -196,7 +222,7 @@ The application uses modern React 19 with Inertia.js for seamless SPA experience
 ### Available Application Routes
 
 - `/` - Welcome page with technology showcase
-- `/dashboard` - Sample dashboard with Radix UI components  
+- `/dashboard` - Sample dashboard with Radix UI components
 - `/health` - Health check endpoint (JSON response)
 
 ### Laravel with Octane
@@ -207,7 +233,7 @@ Laravel Octane is pre-installed and configured:
 # Octane is already installed with Swoole driver
 # Configuration is handled by Docker
 # Starting the octane container starts octane automatically
-./stack.sh up octane -d
+stack up octane -d
 ```
 
 ## Performance Testing Workflow
@@ -216,7 +242,7 @@ Laravel Octane is pre-installed and configured:
 
 ```bash
 # Start performance monitoring stack
-./stack.sh up performance -d
+stack up performance -d
 
 # Wait for all services to be ready
 sleep 30
@@ -239,8 +265,8 @@ Open Grafana dashboard at http://localhost:3000:
 
 ```bash
 # Test FrankenPHP performance
-./stack.sh down performance
-./stack.sh up comparison -d
+stack down performance
+stack up comparison -d
 
 # Run tests against different servers
 docker run --rm --network laravel-perf_laravel-perf \
@@ -307,11 +333,11 @@ docker logs laravel-perf-mysql
 docker logs laravel-perf-nginx
 
 # Restart the problematic stack
-./stack.sh restart traditional
+stack restart traditional
 
 # Clean restart (removes containers and volumes)
-./stack.sh clean
-./stack.sh up traditional -d
+stack clean
+stack up traditional -d
 ```
 
 ## Development Workflow
@@ -320,33 +346,39 @@ docker logs laravel-perf-nginx
 
 ```bash
 # Start your preferred stack for development
-./stack.sh up traditional -d
+stack up traditional -d
 
 # Work on your application...
 
 # Stop when done
-./stack.sh down traditional
+stack down traditional
 ```
 
 ### Performance Testing Session
 
 ```bash
 # Start comprehensive monitoring
-./stack.sh up enterprise -d
+stack up enterprise -d
 
 # Run your tests and optimizations...
 
 # Clean up
-./stack.sh clean
+stack clean
 ```
 
 ### Debugging Issues
 
 ```bash
 # View real-time logs
-./stack.sh logs performance -f
+stack logs performance -f
 
-# Access container shells
+# Access container shells using dev helper (recommended)
+dev shell           # PHP container shell
+dev mysql          # MySQL CLI
+dev redis-cli      # Redis CLI
+
+# Or using direct docker exec
+docker exec -it laravel-perf-php-fpm bash
 docker exec -it laravel-perf-mysql bash
 docker exec -it laravel-perf-nginx sh
 

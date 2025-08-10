@@ -38,8 +38,8 @@ sudo systemctl stop redis
 
 **Prevention:**
 
-- Use the `./stack.sh status` command before starting new stacks
-- Stop previous stacks before starting new ones: `./stack.sh down [stack]`
+- Use the `stack status` command before starting new stacks
+- Stop previous stacks before starting new ones: `stack down [stack]`
 
 ### Memory Issues
 
@@ -103,8 +103,8 @@ docker inspect laravel-perf-mysql
 
 ```bash
 # Remove existing data volumes and restart
-./stack.sh clean
-./stack.sh up traditional -d
+stack clean
+stack up traditional -d
 
 # Check MySQL logs specifically
 docker logs laravel-perf-mysql 2>&1 | grep -i error
@@ -147,9 +147,9 @@ docker exec laravel-perf-nginx ping mysql
 
 ```bash
 # Recreate the network
-./stack.sh down [stack]
+stack down [stack]
 docker network rm laravel-perf_laravel-perf
-./stack.sh up [stack] -d
+stack up [stack] -d
 
 # Verify all containers are on the same network
 docker inspect laravel-perf-nginx | grep NetworkMode
@@ -164,7 +164,7 @@ docker inspect laravel-perf-mysql | grep NetworkMode
 
 ```bash
 # Check if containers are running
-./stack.sh status
+stack status
 
 # Test local connectivity
 curl -I http://localhost
@@ -186,7 +186,7 @@ sudo ufw status
 sudo iptables -L
 
 # Reset containers
-./stack.sh restart [stack]
+stack restart [stack]
 ```
 
 ## Performance Issues
@@ -199,13 +199,13 @@ sudo iptables -L
 
 ```bash
 # Monitor startup progress
-./stack.sh logs [stack] -f
+stack logs [stack] -f
 
 # Check resource utilization during startup
 docker stats
 
 # Time the startup process
-time ./stack.sh up traditional -d
+time stack up traditional -d
 ```
 
 **Solutions:**
@@ -218,7 +218,7 @@ time ./stack.sh up traditional -d
 
 # Disable unnecessary services for development
 # Start with minimal stack and add services as needed
-./stack.sh up minimal -d
+stack up minimal -d
 ```
 
 ### High Resource Usage
@@ -255,7 +255,7 @@ services:
 innodb_buffer_pool_size = 512M  # Reduce from default
 
 # Use lighter stacks for development
-./stack.sh up minimal -d
+stack up minimal -d
 ```
 
 ## Configuration Issues
@@ -302,7 +302,7 @@ ls -la docker/nginx/nginx.conf
 ls -la docker/mysql/conf.d/
 
 # Validate configuration files
-./stack.sh validate traditional
+stack validate traditional
 ```
 
 **Solutions:**
@@ -341,7 +341,7 @@ environment:
   - "MYSQL_ROOT_PASSWORD=complex!password"
 
 # Restart containers after environment changes
-./stack.sh restart [stack]
+stack restart [stack]
 ```
 
 ## Application-Specific Issues
@@ -445,7 +445,7 @@ curl http://localhost:9121/metrics  # Redis exporter
 
 ```bash
 # Restart monitoring stack
-./stack.sh restart performance
+stack restart performance
 
 # Check Prometheus configuration
 docker exec laravel-perf-prometheus cat /etc/prometheus/prometheus.yml
@@ -468,7 +468,7 @@ curl -u admin:admin http://localhost:3000/api/datasources
 ```bash
 # Reset Grafana data
 docker volume rm laravel-perf_grafana_data
-./stack.sh restart performance
+stack restart performance
 
 # Import dashboards manually via UI
 # Go to + → Import → Upload JSON file
@@ -501,7 +501,7 @@ docker exec -it laravel-perf-nginx sh
 docker exec laravel-perf-mysql ps aux
 
 # Monitor container logs in real-time
-./stack.sh logs performance -f
+stack logs performance -f
 
 # Check container filesystem
 docker exec laravel-perf-nginx find /etc/nginx -name "*.conf"
@@ -530,7 +530,7 @@ docker system events  # Watch Docker events
 
 # Profile container startup
 docker events --filter container=laravel-perf-mysql &
-./stack.sh up traditional -d
+stack up traditional -d
 
 # Check disk I/O
 docker exec laravel-perf-mysql iostat -x 1
@@ -543,7 +543,7 @@ docker exec laravel-perf-mysql iostat -x 1
 ```bash
 # Collect all relevant logs
 mkdir -p debug-logs
-./stack.sh logs [stack] > debug-logs/stack-logs.txt
+stack logs [stack] > debug-logs/stack-logs.txt
 docker system info > debug-logs/docker-info.txt
 docker system df > debug-logs/docker-usage.txt
 
@@ -555,7 +555,7 @@ docker --version
 docker-compose --version
 
 echo "=== Container Status ==="
-./stack.sh status
+stack status
 
 echo "=== Resource Usage ==="
 docker stats --no-stream
@@ -592,7 +592,7 @@ Before reporting issues to the project repository:
 2. Try with minimal stack first
 3. Check this troubleshooting guide
 4. Collect diagnostic information
-5. Test with clean environment (`./stack.sh clean`)
+5. Test with clean environment (`stack clean`)
 
 Include in your issue report:
 

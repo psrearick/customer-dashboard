@@ -17,7 +17,7 @@ This guide covers frontend development with React 19, Inertia.js, and Radix UI i
 
 ```bash
 # Start your preferred Docker stack
-./stack.sh up traditional -d
+stack up traditional -d
 
 # Install frontend dependencies (first time)
 npm install
@@ -71,21 +71,21 @@ resources/js/
 ### New Hooks Available
 
 ```tsx
-import { useOptimistic, useFormStatus, use } from 'react';
+import {useOptimistic, useFormStatus, use} from 'react';
 
 // Optimistic updates for better UX
 const [optimisticState, addOptimistic] = useOptimistic(
     state,
     (currentState, optimisticValue) => {
         // Return new state with optimistic update
-        return { ...currentState, ...optimisticValue };
+        return {...currentState, ...optimisticValue};
     }
 );
 
 // Form status for better form handling
 function SubmitButton() {
-    const { pending } = useFormStatus();
-    
+    const {pending} = useFormStatus();
+
     return (
         <button type="submit" disabled={pending}>
             {pending ? 'Submitting...' : 'Submit'}
@@ -94,7 +94,7 @@ function SubmitButton() {
 }
 
 // Use API for reading resources
-function Profile({ userPromise }) {
+function Profile({userPromise}) {
     const user = use(userPromise); // Suspends until resolved
     return <div>Hello {user.name}</div>;
 }
@@ -117,7 +117,7 @@ React 19 includes a built-in compiler that automatically optimizes your componen
 ```tsx
 // resources/js/Pages/NewPage.tsx
 import React from 'react';
-import { PageProps } from '@/types';
+import {PageProps} from '@/types';
 import AppLayout from '@/Layouts/AppLayout';
 
 interface NewPageProps extends PageProps {
@@ -128,12 +128,12 @@ interface NewPageProps extends PageProps {
     };
 }
 
-export default function NewPage({ data }: NewPageProps) {
+export default function NewPage({data}: NewPageProps) {
     return (
         <AppLayout title="New Page">
             <div className="space-y-6">
                 <h1 className="text-2xl font-bold">{data.title}</h1>
-                
+
                 <div className="grid gap-4">
                     {data.items.map(item => (
                         <div key={item.id} className="p-4 bg-white rounded-lg shadow">
@@ -168,17 +168,17 @@ Route::get('/new-page', function () {
 
 ```tsx
 // Using Inertia Link for SPA navigation
-import { Link } from '@inertiajs/react';
+import {Link} from '@inertiajs/react';
 
-<Link 
-    href="/dashboard" 
+<Link
+    href="/dashboard"
     className="text-blue-600 hover:text-blue-800"
 >
     Go to Dashboard
 </Link>
 
 // Programmatic navigation
-import { router } from '@inertiajs/react';
+import {router} from '@inertiajs/react';
 
 const handleClick = () => {
     router.visit('/dashboard', {
@@ -192,10 +192,10 @@ const handleClick = () => {
 ### Form Handling with Inertia
 
 ```tsx
-import { useForm } from '@inertiajs/react';
+import {useForm} from '@inertiajs/react';
 
 function ContactForm() {
-    const { data, setData, post, processing, errors } = useForm({
+    const {data, setData, post, processing, errors} = useForm({
         name: '',
         email: '',
         message: ''
@@ -219,9 +219,9 @@ function ContactForm() {
                 className="w-full p-2 border rounded"
             />
             {errors.name && <p className="text-red-600">{errors.name}</p>}
-            
-            <button 
-                type="submit" 
+
+            <button
+                type="submit"
                 disabled={processing}
                 className="px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-50"
             >
@@ -237,8 +237,8 @@ function ContactForm() {
 ### Using Existing Components
 
 ```tsx
-import { Button } from '@/Components/Button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/Components/Card';
+import {Button} from '@/Components/Button';
+import {Card, CardContent, CardHeader, CardTitle} from '@/Components/Card';
 
 function MyComponent() {
     return (
@@ -266,7 +266,7 @@ function MyComponent() {
 // resources/js/Components/Tooltip.tsx
 import React from 'react';
 import * as RadixTooltip from '@radix-ui/react-tooltip';
-import { cn } from '@/lib/utils';
+import {cn} from '@/lib/utils';
 
 interface TooltipProps {
     content: string;
@@ -274,7 +274,7 @@ interface TooltipProps {
     side?: 'top' | 'right' | 'bottom' | 'left';
 }
 
-export function Tooltip({ content, children, side = 'top' }: TooltipProps) {
+export function Tooltip({content, children, side = 'top'}: TooltipProps) {
     return (
         <RadixTooltip.Provider>
             <RadixTooltip.Root>
@@ -290,7 +290,7 @@ export function Tooltip({ content, children, side = 'top' }: TooltipProps) {
                         )}
                     >
                         {content}
-                        <RadixTooltip.Arrow className="fill-gray-900" />
+                        <RadixTooltip.Arrow className="fill-gray-900"/>
                     </RadixTooltip.Content>
                 </RadixTooltip.Portal>
             </RadixTooltip.Root>
@@ -332,12 +332,12 @@ Add custom CSS variables in `resources/css/app.css`:
 @tailwind utilities;
 
 @layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-  }
+    :root {
+        --background: 0 0% 100%;
+        --foreground: 222.2 84% 4.9%;
+        --primary: 221.2 83.2% 53.3%;
+        --primary-foreground: 210 40% 98%;
+    }
 }
 ```
 
@@ -390,13 +390,13 @@ interface DashboardCardProps {
     onClick?: () => void;
 }
 
-export function DashboardCard({ 
-    title, 
-    value, 
-    change, 
-    icon, 
-    onClick 
-}: DashboardCardProps) {
+export function DashboardCard({
+                                  title,
+                                  value,
+                                  change,
+                                  icon,
+                                  onClick
+                              }: DashboardCardProps) {
     return (
         <Card className={cn('cursor-pointer', onClick && 'hover:shadow-md')} onClick={onClick}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -422,14 +422,14 @@ export function DashboardCard({
 
 ```tsx
 // Lazy load pages for better performance
-import { lazy } from 'react';
+import {lazy} from 'react';
 
 const Dashboard = lazy(() => import('./Pages/Dashboard'));
 const Settings = lazy(() => import('./Pages/Settings'));
 
 // Use with Suspense
 <Suspense fallback={<div>Loading...</div>}>
-    <Dashboard />
+    <Dashboard/>
 </Suspense>
 ```
 
@@ -447,19 +447,20 @@ const Settings = lazy(() => import('./Pages/Settings'));
 // No need for manual memoization in most cases
 
 // Before React 19 (avoid this pattern now)
-const MemoizedComponent = memo(({ data }) => {
-    return <ExpensiveComponent data={data} />;
+const MemoizedComponent = memo(({data}) => {
+    return <ExpensiveComponent data={data}/>;
 });
 
 // React 19 (preferred - let compiler optimize)
-function OptimizedComponent({ data }) {
-    return <ExpensiveComponent data={data} />;
+function OptimizedComponent({data}) {
+    return <ExpensiveComponent data={data}/>;
 }
 ```
 
 ## Testing (Future Enhancement)
 
 When adding tests, consider these tools:
+
 - **Vitest** - Fast testing framework
 - **React Testing Library** - Component testing
 - **Inertia Test Helpers** - Testing Inertia interactions
@@ -469,6 +470,7 @@ When adding tests, consider these tools:
 ### React DevTools
 
 Install React DevTools browser extension for debugging:
+
 - Component tree inspection
 - Props and state viewing
 - Performance profiling
@@ -476,6 +478,7 @@ Install React DevTools browser extension for debugging:
 ### Vite DevTools
 
 During development:
+
 - Hot Module Replacement (HMR)
 - Fast refresh for React components
 - Source maps for debugging
@@ -483,6 +486,7 @@ During development:
 ### Inertia DevTools
 
 Check browser Network tab:
+
 - Inertia requests (XHR with special headers)
 - Partial reloads
 - Form submissions
@@ -492,14 +496,14 @@ Check browser Network tab:
 ### Error Boundaries
 
 ```tsx
-import { ErrorBoundary } from 'react-error-boundary';
+import {ErrorBoundary} from 'react-error-boundary';
 
-function ErrorFallback({ error, resetErrorBoundary }) {
+function ErrorFallback({error, resetErrorBoundary}) {
     return (
         <div className="p-6 bg-red-50 rounded-lg">
             <h2 className="text-lg font-semibold text-red-800">Something went wrong</h2>
             <pre className="mt-2 text-sm text-red-600">{error.message}</pre>
-            <button 
+            <button
                 onClick={resetErrorBoundary}
                 className="mt-4 px-4 py-2 bg-red-600 text-white rounded"
             >
@@ -511,28 +515,28 @@ function ErrorFallback({ error, resetErrorBoundary }) {
 
 // Wrap components with error boundaries
 <ErrorBoundary FallbackComponent={ErrorFallback}>
-    <MyComponent />
+    <MyComponent/>
 </ErrorBoundary>
 ```
 
 ### Loading States
 
 ```tsx
-import { useState, useTransition } from 'react';
+import {useState, useTransition} from 'react';
 
 function MyComponent() {
     const [isPending, startTransition] = useTransition();
-    
+
     const handleAction = () => {
         startTransition(() => {
             // Perform action that might take time
             updateSomething();
         });
     };
-    
+
     return (
-        <button 
-            onClick={handleAction} 
+        <button
+            onClick={handleAction}
             disabled={isPending}
             className="px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-50"
         >
@@ -542,4 +546,6 @@ function MyComponent() {
 }
 ```
 
-This guide provides a comprehensive overview of frontend development in the Customer Dashboard application. The combination of React 19, Inertia.js, and Radix UI provides a powerful, modern, and accessible foundation for building complex user interfaces.
+This guide provides a comprehensive overview of frontend development in the Customer Dashboard application. The
+combination of React 19, Inertia.js, and Radix UI provides a powerful, modern, and accessible foundation for building
+complex user interfaces.

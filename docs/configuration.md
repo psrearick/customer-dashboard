@@ -476,45 +476,45 @@ datadir = "/var/lib/proxysql"
 
 admin_variables =
 {
-admin_credentials="admin:admin"
-mysql_ifaces="0.0.0.0:6032"
-refresh_interval=2000
+admin_credentials = "admin:admin"
+mysql_ifaces = "0.0.0.0:6032"
+refresh_interval = 2000
 }
 
 mysql_variables =
 {
-threads=4
-max_connections=2048
-default_query_delay=0
-default_query_timeout=36000000
-have_compress=true
-poll_timeout=2000
-interfaces="0.0.0.0:6033"
-default_schema="information_schema"
-stacksize=1048576
-server_version="8.0.0"
-connect_timeout_server=3000
-monitor_username="monitor"
-monitor_password="monitor"
-monitor_history=600000
-monitor_connect_interval=60000
-monitor_ping_interval=10000
-ping_interval_server_msec=120000
-ping_timeout_server=500
-commands_stats=true
-sessions_sort=true
+threads = 4
+max_connections = 2048
+default_query_delay = 0
+default_query_timeout = 36000000
+have_compress = true
+poll_timeout = 2000
+interfaces = "0.0.0.0:6033"
+default_schema = "information_schema"
+stacksize = 1048576
+server_version = "8.0.0"
+connect_timeout_server = 3000
+monitor_username = "monitor"
+monitor_password = "monitor"
+monitor_history = 600000
+monitor_connect_interval = 60000
+monitor_ping_interval = 10000
+ping_interval_server_msec = 120000
+ping_timeout_server = 500
+commands_stats = true
+sessions_sort = true
 }
 
 mysql_servers =
 (
 {
-address="mysql"
-port=3306
-hostgroup=0
-status="ONLINE"
-weight=900
-compression=0
-max_replication_lag=10
+address = "mysql"
+port = 3306
+hostgroup = 0
+status = "ONLINE"
+weight = 900
+compression = 0
+max_replication_lag = 10
 }
 )
 
@@ -524,8 +524,8 @@ mysql_users :
 username = "laravel"
 password = "password"
 default_hostgroup = 0
-max_connections=200
-default_schema="laravel_perf"
+max_connections = 200
+default_schema = "laravel_perf"
 active = 1
 }
 )
@@ -533,11 +533,11 @@ active = 1
 mysql_query_rules :
 (
 {
-rule_id=1
-active=1
-match_pattern="^SELECT.*"
-destination_hostgroup=0
-apply=1
+rule_id = 1
+active = 1
+match_pattern = "^SELECT.*"
+destination_hostgroup = 0
+apply = 1
 }
 )
 ```
@@ -620,30 +620,30 @@ OCTANE_SERVER=swoole
 
 ```json
 {
-    "scripts": {
-        "build": "vite build",
-        "dev": "vite",
-        "dev:host": "vite --host",
-        "preview": "vite preview",
-        "type-check": "tsc --noEmit",
-        "lint": "echo 'Add linting setup later'"
-    },
-    "dependencies": {
-        "@inertiajs/react": "^2.0.17",
-        "@radix-ui/react-*": "latest versions",
-        "react": "^19.1.1",
-        "react-dom": "^19.1.1",
-        "clsx": "^2.1.1",
-        "tailwind-merge": "^3.3.1"
-    },
-    "devDependencies": {
-        "@vitejs/plugin-react": "^5.0.0",
-        "@types/react": "^19.1.9",
-        "@types/react-dom": "^19.1.7",
-        "typescript": "^5.9.2",
-        "vite": "^7.0.4",
-        "@tailwindcss/vite": "^4.0.0"
-    }
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite",
+    "dev:host": "vite --host",
+    "preview": "vite preview",
+    "type-check": "tsc --noEmit",
+    "lint": "echo 'Add linting setup later'"
+  },
+  "dependencies": {
+    "@inertiajs/react": "^2.0.17",
+    "@radix-ui/react-*": "latest versions",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "clsx": "^2.1.1",
+    "tailwind-merge": "^3.3.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^5.0.0",
+    "@types/react": "^19.1.9",
+    "@types/react-dom": "^19.1.7",
+    "typescript": "^5.9.2",
+    "vite": "^7.0.4",
+    "@tailwindcss/vite": "^4.0.0"
+  }
 }
 ```
 
@@ -651,33 +651,41 @@ OCTANE_SERVER=swoole
 
 ```json
 {
-    "compilerOptions": {
-        "allowJs": true,
-        "module": "ESNext",
-        "moduleResolution": "bundler",
-        "jsx": "react-jsx",
-        "strict": true,
-        "skipLibCheck": true,
-        "target": "ES2022",
-        "lib": ["ES2022", "DOM", "DOM.Iterable"],
-        "baseUrl": ".",
-        "paths": {
-            "@/*": ["./resources/js/*"]
-        },
-        "types": ["vite/client"]
+  "compilerOptions": {
+    "allowJs": true,
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "skipLibCheck": true,
+    "target": "ES2022",
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "./resources/js/*"
+      ]
     },
-    "include": [
-        "resources/js/**/*.ts",
-        "resources/js/**/*.tsx",
-        "resources/js/**/*.d.ts"
+    "types": [
+      "vite/client"
     ]
+  },
+  "include": [
+    "resources/js/**/*.ts",
+    "resources/js/**/*.tsx",
+    "resources/js/**/*.d.ts"
+  ]
 }
 ```
 
 ### Vite Configuration (vite.config.js)
 
 ```javascript
-import { defineConfig } from 'vite';
+import {defineConfig} from 'vite';
 import laravel from 'laravel-vite-plugin';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
@@ -773,9 +781,9 @@ Before starting any stack, validate your configurations:
 
 ```bash
 # Check all configurations for a specific stack
-./stack.sh validate traditional
-./stack.sh validate performance
-./stack.sh validate enterprise
+stack validate traditional
+stack validate performance
+stack validate enterprise
 
 # Test specific service configurations
 nginx -t -c docker/nginx/nginx.conf

@@ -494,9 +494,9 @@ Use the validation command to check configurations:
 
 ```bash
 # Validate specific stack configurations
-./stack.sh validate traditional
-./stack.sh validate performance
-./stack.sh validate enterprise
+stack validate traditional
+stack validate performance
+stack validate enterprise
 
 # Check specific configuration files
 nginx -t -c docker/nginx/nginx.conf

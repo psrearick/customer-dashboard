@@ -15,10 +15,10 @@ cd customer-dashboard
 chmod +x stack.sh
 
 # Create configuration directory structure
-./stack.sh setup
+stack setup
 
 # Start traditional stack (most common)
-./stack.sh up traditional -d
+stack up traditional -d
 
 # Visit your application
 open http://localhost
@@ -52,19 +52,19 @@ Comprehensive documentation is available in the `/docs` directory:
 
 ```bash
 # Validation
-./stack.sh validate traditional     # Check configuration files
+stack validate traditional     # Check configuration files
 
 # Stack operations  
-./stack.sh up performance -d        # Start with background mode
-./stack.sh down enterprise          # Stop specific stack
-./stack.sh restart frankenphp       # Restart stack
-./stack.sh logs octane              # View logs
+stack up performance -d        # Start with background mode
+stack down enterprise          # Stop specific stack
+stack restart frankenphp       # Restart stack
+stack logs octane              # View logs
 
 # System management
-./stack.sh status                   # Show running containers
-./stack.sh stop-all                 # Stop all project containers
-./stack.sh clean                    # Remove all containers/volumes
-./stack.sh list                     # List available stacks
+stack status                   # Show running containers
+stack stop-all                 # Stop all project containers
+stack clean                    # Remove all containers/volumes
+stack list                     # List available stacks
 ```
 
 ## Monitoring & Tools
@@ -161,7 +161,7 @@ This environment supports systematic performance optimization:
 
 1. Fork the repository
 2. Create feature branch (`git checkout -b feature/amazing-optimization`)
-3. Test changes with `./stack.sh validate [stack]`
+3. Test changes with `stack validate [stack]`
 4. Commit changes (`git commit -am 'Add amazing optimization'`)
 5. Push to branch (`git push origin feature/amazing-optimization`)
 6. Create Pull Request

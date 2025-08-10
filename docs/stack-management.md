@@ -15,7 +15,7 @@ stacks) for various testing scenarios.
 **Ports**: 80 (HTTP), 443 (HTTPS), 3306 (MySQL), 6379 (Redis)
 
 ```bash
-./stack.sh up traditional -d
+stack up traditional -d
 ```
 
 #### frankenphp
@@ -26,7 +26,7 @@ stacks) for various testing scenarios.
 **Ports**: 8080 (HTTP), 8443 (HTTPS/HTTP3), 3306 (MySQL), 6379 (Redis)
 
 ```bash
-./stack.sh up frankenphp -d
+stack up frankenphp -d
 ```
 
 #### octane
@@ -37,7 +37,7 @@ stacks) for various testing scenarios.
 **Ports**: 8000 (HTTP), 3306 (MySQL), 6379 (Redis)
 
 ```bash
-./stack.sh up octane -d
+stack up octane -d
 ```
 
 ### Testing & Analysis Stacks
@@ -50,7 +50,7 @@ stacks) for various testing scenarios.
 **Additional Ports**: 5601 (Kibana), 9200 (Elasticsearch), 16686 (Jaeger)
 
 ```bash
-./stack.sh up performance -d
+stack up performance -d
 ```
 
 #### enterprise
@@ -61,7 +61,7 @@ stacks) for various testing scenarios.
 **Additional Ports**: 3307-3308 (Tenant DBs), 7010-7012 (Redis Cluster), 8090 (Load Balancer)
 
 ```bash
-./stack.sh up enterprise -d
+stack up enterprise -d
 ```
 
 #### comparison
@@ -72,7 +72,7 @@ stacks) for various testing scenarios.
 **Ports**: 80 (Nginx), 8080 (FrankenPHP), 8000 (Octane), plus monitoring
 
 ```bash
-./stack.sh up comparison -d
+stack up comparison -d
 ```
 
 #### full
@@ -83,7 +83,7 @@ stacks) for various testing scenarios.
 **Requirements**: Minimum 8GB RAM, significant CPU resources
 
 ```bash
-./stack.sh up full -d
+stack up full -d
 ```
 
 #### minimal
@@ -93,7 +93,7 @@ stacks) for various testing scenarios.
 **Purpose**: Minimal setup for basic development
 
 ```bash
-./stack.sh up minimal -d
+stack up minimal -d
 ```
 
 ## Stack Management Commands
@@ -102,55 +102,55 @@ stacks) for various testing scenarios.
 
 ```bash
 # Validate configuration files for a stack
-./stack.sh validate traditional
-./stack.sh validate enterprise
+stack validate traditional
+stack validate enterprise
 ```
 
 ### Stack Operations
 
 ```bash
 # Start a stack in background mode
-./stack.sh up [STACK] -d
+stack up [STACK] -d
 
 # Start a stack in foreground (see logs)  
-./stack.sh up [STACK]
+stack up [STACK]
 
 # Stop a specific stack
-./stack.sh down [STACK]
+stack down [STACK]
 
 # Restart a stack
-./stack.sh restart [STACK]
+stack restart [STACK]
 
 # Force rebuild containers
-./stack.sh up [STACK] -d --build
+stack up [STACK] -d --build
 
 # Recreate containers
-./stack.sh up [STACK] -d --recreate
+stack up [STACK] -d --recreate
 
 # View logs for a stack
-./stack.sh logs [STACK]
+stack logs [STACK]
 
 # Follow logs in real-time
-./stack.sh logs [STACK] -f
+stack logs [STACK] -f
 ```
 
 ### System Management
 
 ```bash
 # Show status of all containers
-./stack.sh status
+stack status
 
 # Stop all project containers (any stack)
-./stack.sh stop-all
+stack stop-all
 
 # Remove all containers, networks, and volumes
-./stack.sh clean
+stack clean
 
 # List available stacks
-./stack.sh list
+stack list
 
 # Show help
-./stack.sh help
+stack help
 ```
 
 ## Stack Component Details
@@ -203,19 +203,19 @@ stacks) for various testing scenarios.
 
 ```bash
 # Detached mode (background)
-./stack.sh up traditional -d
+stack up traditional -d
 
 # Force rebuild images
-./stack.sh up traditional -b
+stack up traditional -b
 
 # Recreate containers
-./stack.sh up traditional -r
+stack up traditional -r
 
 # Verbose output  
-./stack.sh up traditional -v
+stack up traditional -v
 
 # Skip dependent services
-./stack.sh up traditional --no-deps
+stack up traditional --no-deps
 ```
 
 ### Environment Variables
@@ -368,7 +368,7 @@ docker logs laravel-perf-mysql
 docker logs laravel-perf-nginx
 
 # Restart failed containers
-./stack.sh restart traditional
+stack restart traditional
 ```
 
 For more troubleshooting information, see the [troubleshooting guide](troubleshooting.md).

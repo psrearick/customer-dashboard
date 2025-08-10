@@ -332,7 +332,7 @@ Before optimization, establish baselines:
 
 ```bash
 # Start performance stack
-./stack.sh up performance -d
+stack up performance -d
 
 # Run baseline load test
 artillery run docker/artillery/load-test-config.yml
@@ -347,17 +347,17 @@ Compare different configurations:
 
 ```bash
 # Test traditional stack
-./stack.sh up traditional -d
+stack up traditional -d
 artillery run docker/artillery/load-test-config.yml > traditional-results.txt
 
 # Test FrankenPHP stack  
-./stack.sh down traditional
-./stack.sh up frankenphp -d
+stack down traditional
+stack up frankenphp -d
 artillery run docker/artillery/load-test-config.yml > frankenphp-results.txt
 
 # Test Octane stack
-./stack.sh down frankenphp
-./stack.sh up octane -d
+stack down frankenphp
+stack up octane -d
 artillery run docker/artillery/load-test-config.yml > octane-results.txt
 ```
 

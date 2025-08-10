@@ -9,6 +9,7 @@ everything you need to understand, set up, and use this powerful Docker-based te
 
 - **[Getting Started Guide](getting-started.md)** - Setup instructions and first steps
 - **[Stack Management](stack-management.md)** - Available stacks and management commands
+- **[Development Helper Commands](dev-commands.md)** - Sail-like shortcuts for PHP, Artisan, Composer, NPM
 
 ### Reference Documentation
 
@@ -103,19 +104,24 @@ The Laravel Performance Testing Environment provides:
 
 ```bash
 # Start traditional stack
-./stack.sh up traditional -d
+stack up traditional -d
 
 # Monitor performance  
-./stack.sh up performance -d
+stack up performance -d
 
 # Compare all servers
-./stack.sh up comparison -d
+stack up comparison -d
 
 # Check status
-./stack.sh status
+stack status
 
 # View logs
-./stack.sh logs [stack] -f
+stack logs [stack] -f
+
+# Run Laravel commands (after starting a stack)
+dev artisan migrate
+dev composer install
+dev npm run dev
 ```
 
 ### Key URLs (when running)
