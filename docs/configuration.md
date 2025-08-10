@@ -178,60 +178,96 @@ server {
 
 ```caddy
 {
-    # FrankenPHP configuration
-    frankenphp {
-        worker /app/public/index.php
-        num_threads 4
-        max_wait_time 30s
-    }
+	# Enable FrankenPHP with enhanced configuration for PHP 8.4
+	frankenphp
 }
 
-:80, :443 {
-    root * /app/public
+:80 {
+	# Document root
+	root * /app/public
 
-    # Compression
-    encode zstd gzip
+	# Enable compression with modern algorithms
+	encode zstd gzip
 
-    # HTTP/3 support
-    protocols h1 h2 h3
+	# Security headers (without HSTS for HTTP)
+	header {
+		# Security headers for HTTP
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		X-XSS-Protection "1; mode=block"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "geolocation=(), microphone=(), camera=()"
+		Content-Security-Policy "default-src 'self'"
 
-    # Security headers
-    header {
-        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
-        X-Content-Type-Options "nosniff"
-        X-Frame-Options "DENY"
-        X-XSS-Protection "1; mode=block"
-        Referrer-Policy "strict-origin-when-cross-origin"
-        Permissions-Policy "geolocation=(), microphone=(), camera=()"
-        Content-Security-Policy "default-src 'self'"
-        -Server
-        -X-Powered-By
-    }
+		# Remove server identification
+		-Server
+		-X-Powered-By
+	}
 
-    # Static file caching
-    @static {
-        file
-        path *.ico *.css *.js *.gif *.jpg *.jpeg *.png *.svg *.woff *.woff2 *.ttf *.eot *.webp *.avif *.map
-    }
-    
-    header @static {
-        Cache-Control "public, max-age=31536000, immutable"
-        Expires "1y"
-    }
+	# Static file handling with aggressive caching
+	@static {
+		file
+		path *.ico *.css *.js *.gif *.jpg *.jpeg *.png *.svg *.woff *.woff2 *.ttf *.eot *.webp *.avif *.map
+	}
 
-    # Laravel routing
-    try_files {path} {path}/ /index.php?{query}
+	header @static {
+		Cache-Control "public, max-age=31536000, immutable"
+		Expires "1y"
+	}
 
-    # Health check
-    handle /health {
-        respond "OK" 200
-    }
+	# API routes with specific headers
+	@api {
+		path /api/*
+	}
 
-    # TLS configuration
-    tls {
-        protocols tls1.2 tls1.3
-        ciphers TLS_AES_128_GCM_SHA256 TLS_AES_256_GCM_SHA384 TLS_CHACHA20_POLY1305_SHA256
-    }
+	header @api {
+		Cache-Control "no-cache, no-store, must-revalidate"
+		Pragma "no-cache"
+		Expires "0"
+	}
+
+	# PHP handling for Laravel 12
+	@php {
+		path *.php
+		file
+	}
+
+	handle @php {
+		# Use FrankenPHP's enhanced PHP handler
+		php_fastcgi {
+			# Enhanced timeout for complex operations
+			dial_timeout 5s
+			read_timeout 60s
+			write_timeout 60s
+		}
+	}
+
+	# Laravel routing with enhanced fallback
+	try_files {path} {path}/ /index.php?{query}
+
+	# Security: Enhanced protection
+	@hidden {
+		path */.*
+		path *.env*
+		path composer.*
+		path package*.json
+	}
+	respond @hidden 404
+
+	# Health check endpoint
+	handle /health {
+		respond "OK" 200
+	}
+
+	# Enhanced logging for performance analysis
+	log {
+		output file /var/log/caddy/access.log {
+			roll_size 100MB
+			roll_keep 5
+		}
+		format json
+		level INFO
+	}
 }
 ```
 

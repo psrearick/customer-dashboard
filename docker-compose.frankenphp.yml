@@ -16,7 +16,6 @@ services:
     environment:
       - DB_HOST=mysql
       - REDIS_HOST=redis
-      - FRANKENPHP_CONFIG=worker /app/public/index.php
     depends_on:
       - mysql
       - redis
