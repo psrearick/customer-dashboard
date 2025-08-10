@@ -48,6 +48,7 @@ WORKDIR /app
 # Configuration files
 COPY docker/php/conf.d/performance.ini /usr/local/etc/php/conf.d/
 COPY docker/php/conf.d/opcache.ini /usr/local/etc/php/conf.d/
+COPY docker/php/conf.d/pdo_mysql.ini /usr/local/etc/php/conf.d/
 COPY docker/php/conf.d/docker-php-ext-redis.ini /usr/local/etc/php/conf.d/
 COPY docker/octane/octane.conf /usr/local/etc/php/conf.d/octane.ini
 COPY docker/octane/supervisord.conf /etc/supervisor/conf.d/supervisord.conf

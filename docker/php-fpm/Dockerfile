@@ -51,6 +51,7 @@ WORKDIR /var/www/html
 COPY docker/php/conf.d/performance.ini /usr/local/etc/php/conf.d/
 COPY docker/php/conf.d/opcache.ini /usr/local/etc/php/conf.d/
 COPY docker/php/conf.d/xdebug.ini /usr/local/etc/php/conf.d/
+COPY docker/php/conf.d/pdo_mysql.ini /usr/local/etc/php/conf.d/
 COPY docker/php/conf.d/docker-php-ext-redis.ini /usr/local/etc/php/conf.d/
 COPY docker/php-fpm/www.conf /usr/local/etc/php-fpm.d/www.conf
 

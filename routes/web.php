@@ -11,7 +11,7 @@ Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->name('dashboard');
 
-Route::get('/health', function () {
+Route::get('/status', function () {
     return response()->json([
         'status' => 'ok',
         'timestamp' => now()->toISOString(),
