@@ -104,9 +104,9 @@ function Profile({userPromise}) {
 
 React 19 includes a built-in compiler that automatically optimizes your components:
 
-- **Automatic Memoization**: No need for manual `useMemo`, `useCallback`
-- **Optimized Re-renders**: Compiler eliminates unnecessary re-renders
-- **Better Performance**: Cleaner code with automatic optimizations
+- **Automatic Memoization:** No need for manual `useMemo`, `useCallback`
+- **Optimized Re-renders:** Compiler eliminates unnecessary re-renders
+- **Better Performance:** Cleaner code with automatic optimizations
 
 ## Inertia.js Integration
 
@@ -147,7 +147,7 @@ export default function NewPage({data}: NewPageProps) {
 }
 ```
 
-2. **Create the Laravel Route**:
+2. **Create the Laravel Route:**
 
 ```php
 // routes/web.php

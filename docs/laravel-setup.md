@@ -126,9 +126,9 @@ RUN if [ -f package.json ]; then \
 
 - Installed Laravel Octane: `composer require laravel/octane@^2.12`
 - All Docker services properly configured:
-    - **MySQL**: Primary database on port 3306
-    - **Redis**: Cache, sessions, queues on port 6379
-    - **Web servers**: Traditional (80), FrankenPHP (8080), Octane (8000)
+    - **MySQL:** Primary database on port 3306
+    - **Redis:** Cache, sessions, queues on port 6379
+    - **Web servers:** Traditional (80), FrankenPHP (8080), Octane (8000)
 
 ### 8. React Application Structure
 
@@ -163,21 +163,21 @@ Added routes in `routes/web.php`:
 
 ### React 19 Features Utilized
 
-- **React Compiler**: Automatic optimization enabled
-- **New createRoot API**: Used in app.tsx
-- **TypeScript Integration**: Full type safety with React 19 types
+- **React Compiler:** Automatic optimization enabled
+- **New createRoot API:** Used in app.tsx
+- **TypeScript Integration:** Full type safety with React 19 types
 
 ### Inertia.js 2 Features
 
-- **Page Component Resolution**: Dynamic page loading
-- **Progress Indicator**: Built-in loading states
-- **TypeScript Support**: Fully typed page props
+- **Page Component Resolution:** Dynamic page loading
+- **Progress Indicator:** Built-in loading states
+- **TypeScript Support:** Fully typed page props
 
 ### Radix UI Integration
 
-- **Accessibility First**: All components are accessible by default
-- **Unstyled Components**: Full styling control with Tailwind CSS
-- **React 19 Compatible**: Using `--legacy-peer-deps` for compatibility
+- **Accessibility First:** All components are accessible by default
+- **Unstyled Components:** Full styling control with Tailwind CSS
+- **React 19 Compatible:** Using `--legacy-peer-deps` for compatibility
 
 ## Docker Stack Compatibility
 
@@ -277,13 +277,13 @@ stack logs traditional -f
 
 ## Next Steps
 
-1. **Authentication**: Add Laravel Breeze or custom auth
-2. **API Routes**: Add API endpoints if needed
-3. **Database Migrations**: Create application-specific tables
-4. **Testing**: Set up Jest/Vitest for frontend testing
-5. **Linting**: Add ESLint and Prettier
-6. **CI/CD**: Configure GitHub Actions or similar
-7. **Monitoring**: Integrate with existing Prometheus/Grafana setup
+1. **Authentication:** Add Laravel Breeze or custom auth
+2. **API Routes:** Add API endpoints if needed
+3. **Database Migrations:** Create application-specific tables
+4. **Testing:** Set up Jest/Vitest for frontend testing
+5. **Linting:** Add ESLint and Prettier
+6. **CI/CD:** Configure GitHub Actions or similar
+7. **Monitoring:** Integrate with existing Prometheus/Grafana setup
 
 ## Troubleshooting
 

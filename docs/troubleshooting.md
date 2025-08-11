@@ -6,7 +6,7 @@ This guide covers common issues and their solutions when working with the Larave
 
 ### Port Conflicts
 
-**Error**: `Bind for 0.0.0.0:80 failed: port is already allocated`
+**Error:** `Bind for 0.0.0.0:80 failed: port is already allocated`
 
 **Diagnosis:**
 
@@ -44,7 +44,7 @@ sudo systemctl stop redis
 
 ### Memory Issues
 
-**Error**: Containers being killed or constantly restarting
+**Error:** Containers being killed or constantly restarting
 
 **Diagnosis:**
 
@@ -81,7 +81,7 @@ sudo swapon /swapfile
 
 ### Container Startup Failures
 
-**Error**: Container exits immediately or fails to start
+**Error:** Container exits immediately or fails to start
 
 **Diagnosis:**
 
@@ -130,7 +130,7 @@ ls -la docker/nginx/conf.d/laravel.conf
 
 ### Service Discovery Problems
 
-**Error**: `could not resolve host: mysql` or similar DNS errors
+**Error:** `could not resolve host: mysql` or similar DNS errors
 
 **Diagnosis:**
 
@@ -160,7 +160,7 @@ docker inspect laravel-perf-mysql | grep NetworkMode
 
 ### Application Not Accessible
 
-**Error**: `Connection refused` or `This site can't be reached`
+**Error:** `Connection refused` or `This site can't be reached`
 
 **Diagnosis:**
 
@@ -195,7 +195,7 @@ stack restart [stack]
 
 ### Slow Container Startup
 
-**Symptoms**: Containers take a long time to start or become ready
+**Symptoms:** Containers take a long time to start or become ready
 
 **Diagnosis:**
 
@@ -225,7 +225,7 @@ stack up minimal -d
 
 ### High Resource Usage
 
-**Symptoms**: System becomes slow, high CPU/memory usage
+**Symptoms:** System becomes slow, high CPU/memory usage
 
 **Diagnosis:**
 
@@ -262,7 +262,7 @@ stack up minimal -d
 
 ### File Permission Problems
 
-**Error**: Permission denied errors, especially on Linux
+**Error:** Permission denied errors, especially on Linux
 
 **Diagnosis:**
 
@@ -292,7 +292,7 @@ sudo chmod -R 775 storage bootstrap/cache
 
 ### Configuration File Not Found
 
-**Error**: `no such file or directory` for config files
+**Error:** `no such file or directory` for config files
 
 **Diagnosis:**
 
@@ -319,7 +319,7 @@ git diff --name-status
 
 ### Environment Variable Issues
 
-**Error**: Variables not being passed to containers
+**Error:** Variables not being passed to containers
 
 **Diagnosis:**
 

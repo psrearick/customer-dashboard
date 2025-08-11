@@ -7,11 +7,11 @@ environment.
 
 Docker provides several benefits for a learning/reference project:
 
-1. **Consistency**: Everyone gets the same environment, regardless of their OS
-2. **No conflicts**: Isolated from other projects on your machine
-3. **Easy switching**: Test different PHP versions, web servers, etc.
-4. **Production-like**: Learn deployment patterns that work in real production
-5. **Clean machine**: No need to install MySQL, Redis, PHP locally
+1. **Consistency:** Everyone gets the same environment, regardless of their OS
+2. **No conflicts:** Isolated from other projects on your machine
+3. **Easy switching:** Test different PHP versions, web servers, etc.
+4. **Production-like:** Learn deployment patterns that work in real production
+5. **Clean machine:** No need to install MySQL, Redis, PHP locally
 
 ## Quick Start
 
@@ -32,33 +32,33 @@ Docker provides several benefits for a learning/reference project:
 
 ### Traditional Stack (Recommended for Learning)
 
-**Command**: `./bin/stack up traditional -d`  
-**Components**: Nginx + PHP-FPM + Node.js + MySQL + Redis  
-**Ports**: 
+**Command:** `./bin/stack up traditional -d`  
+**Components:** Nginx + PHP-FPM + Node.js + MySQL + Redis  
+**Ports:** 
 - Application: http://localhost
 - Vite Dev Server: http://localhost:5173  
-**Why use**: This is what most Laravel apps use in production
+**Why use:** This is what most Laravel apps use in production
 
 ### Development Stack
 
-**Command**: `./bin/stack up development -d`  
-**Components**: Nginx + PHP-FPM + Node.js + MySQL + Redis  
-**Ports**: Same as traditional  
-**Why use**: Optimized for daily development with hot reloading
+**Command:** `./bin/stack up development -d`  
+**Components:** Nginx + PHP-FPM + Node.js + MySQL + Redis  
+**Ports:** Same as traditional  
+**Why use:** Optimized for daily development with hot reloading
 
 ### Modern Stack (FrankenPHP)
 
-**Command**: `./bin/stack up frankenphp -d`  
-**Components**: FrankenPHP + Node.js + MySQL + Redis  
-**Port**: http://localhost:8080  
-**Why use**: Experiment with cutting-edge PHP server technology
+**Command:** `./bin/stack up frankenphp -d`  
+**Components:** FrankenPHP + Node.js + MySQL + Redis  
+**Port:** http://localhost:8080  
+**Why use:** Experiment with cutting-edge PHP server technology
 
 ### High-Performance Stack (Octane)
 
-**Command**: `./bin/stack up octane -d`  
-**Components**: Laravel Octane + Swoole + Node.js + MySQL + Redis  
-**Port**: http://localhost:8000  
-**Why use**: Learn how to maximize Laravel performance
+**Command:** `./bin/stack up octane -d`  
+**Components:** Laravel Octane + Swoole + Node.js + MySQL + Redis  
+**Port:** http://localhost:8000  
+**Why use:** Learn how to maximize Laravel performance
 
 ## Essential Commands
 
@@ -108,17 +108,17 @@ docker-compose.*.yml    # Stack-specific configurations
 
 1. **Base Layer** (`docker-compose.yml`): Defines core services all stacks need
 2. **Stack Layer** (`docker-compose.traditional.yml`): Adds stack-specific services
-3. **Network**: All containers share a network for inter-service communication
-4. **Volumes**: Your code is mounted into containers, changes are instant
+3. **Network:** All containers share a network for inter-service communication
+4. **Volumes:** Your code is mounted into containers, changes are instant
 
 ### Service Connections
 
 Your Laravel app connects to services using these hostnames:
 
-- **MySQL**: `mysql` (port 3306)
-- **Redis**: `redis` (port 6379)
-- **Nginx**: `nginx` (port 80)
-- **Node**: `node` (port 5173 for Vite)
+- **MySQL:** `mysql` (port 3306)
+- **Redis:** `redis` (port 6379)
+- **Nginx:** `nginx` (port 80)
+- **Node:** `node` (port 5173 for Vite)
 
 These are configured in your `.env` file:
 
@@ -278,21 +278,21 @@ The default settings are optimized for development:
 
 ### PHP Configuration
 
-**Files**: `docker/php/conf.d/*.ini`  
-**Purpose**: Control memory limits, timeouts, extensions  
-**When to modify**: Debugging issues, testing limits
+**Files:** `docker/php/conf.d/*.ini`  
+**Purpose:** Control memory limits, timeouts, extensions  
+**When to modify:** Debugging issues, testing limits
 
 ### MySQL Configuration
 
-**Files**: `docker/mysql/conf.d/*.cnf`  
-**Purpose**: Database performance tuning  
-**When to modify**: Testing query optimization
+**Files:** `docker/mysql/conf.d/*.cnf`  
+**Purpose:** Database performance tuning  
+**When to modify:** Testing query optimization
 
 ### Web Server Configuration
 
-**Files**: `docker/nginx/conf.d/*.conf`  
-**Purpose**: Request handling, caching, routing  
-**When to modify**: Testing different server setups
+**Files:** `docker/nginx/conf.d/*.conf`  
+**Purpose:** Request handling, caching, routing  
+**When to modify:** Testing different server setups
 
 ## Advanced Usage
 
@@ -325,21 +325,21 @@ While this Docker setup is for development, the patterns you learn here apply to
 
 Each stack teaches different deployment strategies:
 
-1. **Traditional**: How 90% of Laravel apps are deployed
-2. **Development**: Optimized for daily development with hot reloading
-3. **FrankenPHP**: Next-generation PHP serving
-4. **Octane**: Maximum performance techniques
+1. **Traditional:** How 90% of Laravel apps are deployed
+2. **Development:** Optimized for daily development with hot reloading
+3. **FrankenPHP:** Next-generation PHP serving
+4. **Octane:** Maximum performance techniques
 
 ### Node.js Container Benefits
 
 The separate Node.js container provides:
 
-- **Isolated frontend builds**: Node processes don't compete with PHP
-- **Hot Module Reloading**: Instant updates during development
-- **Resource management**: Frontend and backend resources managed separately
-- **Production-like setup**: Mirrors how frontends are often deployed separately
-- **Clean separation**: Node.js is NOT installed in PHP containers, ensuring true isolation
-- **Smaller images**: PHP containers are lighter without Node.js dependencies
+- **Isolated frontend builds:** Node processes don't compete with PHP
+- **Hot Module Reloading:** Instant updates during development
+- **Resource management:** Frontend and backend resources managed separately
+- **Production-like setup:** Mirrors how frontends are often deployed separately
+- **Clean separation:** Node.js is NOT installed in PHP containers, ensuring true isolation
+- **Smaller images:** PHP containers are lighter without Node.js dependencies
 
 By switching between them, you learn:
 

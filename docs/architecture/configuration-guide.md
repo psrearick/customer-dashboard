@@ -5,28 +5,28 @@ For specific settings, refer to the actual files in the `docker/` directory.
 
 ## Configuration Philosophy
 
-1. **Development First**: Default settings optimized for learning and debugging
-2. **Progressive Complexity**: Start simple, add configuration as needed
-3. **Documentation Over Duplication**: Reference files, don't copy them
-4. **Environment-Specific**: Different settings for development vs. production
+1. **Development First:** Default settings optimized for learning and debugging
+2. **Progressive Complexity:** Start simple, add configuration as needed
+3. **Documentation Over Duplication:** Reference files, don't copy them
+4. **Environment-Specific:** Different settings for development vs. production
 
 ## Key Configuration Files
 
 ### PHP Configuration
 
-**Location**: `docker/php/conf.d/`
+**Location:** `docker/php/conf.d/`
 
 #### Development Settings (`performance.ini`)
 
-**File**: [`docker/php/conf.d/performance.ini`](../../docker/php/conf.d/performance.ini)
+**File:** [`docker/php/conf.d/performance.ini`](../../docker/php/conf.d/performance.ini)
 
-**Key Decisions**:
+**Key Decisions:**
 
 - `memory_limit = 512M`: Generous limit for development debugging
 - `max_execution_time = 300`: Long timeout for debugging sessions
 - `display_errors = On`: See errors immediately during development
 
-**When to Modify**:
+**When to Modify:**
 
 - Processing large datasets → Increase `memory_limit`
 - Long-running operations → Increase `max_execution_time`
@@ -34,15 +34,15 @@ For specific settings, refer to the actual files in the `docker/` directory.
 
 #### OPcache Settings (`opcache.ini`)
 
-**File**: [`docker/php/conf.d/opcache.ini`](../../docker/php/conf.d/opcache.ini)
+**File:** [`docker/php/conf.d/opcache.ini`](../../docker/php/conf.d/opcache.ini)
 
-**Why OPcache Matters**:
+**Why OPcache Matters:**
 
 - Caches compiled PHP code in memory
 - Can improve performance by 2-3x
 - Critical for production performance
 
-**Development vs Production**:
+**Development vs Production:**
 
 ```
 Development: opcache.validate_timestamps = 1  # Check for file changes
@@ -51,30 +51,30 @@ Production:  opcache.validate_timestamps = 0  # Never check (faster)
 
 #### Xdebug Configuration (`xdebug.ini`)
 
-**File**: [`docker/php/conf.d/xdebug.ini`](../../docker/php/conf.d/xdebug.ini)
+**File:** [`docker/php/conf.d/xdebug.ini`](../../docker/php/conf.d/xdebug.ini)
 
-**When Enabled**:
+**When Enabled:**
 
 - Step debugging with IDE
 - Code coverage for tests
 - Profiling for performance analysis
 
-**Performance Impact**: ~2-5x slower - disable in production!
+**Performance Impact:** ~2-5x slower - disable in production!
 
 ### Web Server Configuration
 
 #### Nginx (Traditional Stack)
 
-**File**: [`docker/nginx/conf.d/laravel.conf`](../../docker/nginx/conf.d/laravel.conf)
+**File:** [`docker/nginx/conf.d/laravel.conf`](../../docker/nginx/conf.d/laravel.conf)
 
-**Key Patterns to Understand**:
+**Key Patterns to Understand:**
 
-1. **Try Files Directive**: Routes all requests through `index.php`
-2. **FastCGI Settings**: How Nginx communicates with PHP
-3. **Static File Caching**: Improves performance for assets
-4. **Security Headers**: Protects against common attacks
+1. **Try Files Directive:** Routes all requests through `index.php`
+2. **FastCGI Settings:** How Nginx communicates with PHP
+3. **Static File Caching:** Improves performance for assets
+4. **Security Headers:** Protects against common attacks
 
-**Common Modifications**:
+**Common Modifications:**
 
 - Increase `client_max_body_size` for file uploads
 - Add custom headers for CORS
@@ -82,16 +82,16 @@ Production:  opcache.validate_timestamps = 0  # Never check (faster)
 
 #### FrankenPHP (Modern Stack)
 
-**File**: [`docker/frankenphp/Caddyfile`](../../docker/frankenphp/Caddyfile)
+**File:** [`docker/frankenphp/Caddyfile`](../../docker/frankenphp/Caddyfile)
 
-**Why FrankenPHP**:
+**Why FrankenPHP:**
 
 - Built-in HTTPS (automatic certificates)
 - HTTP/3 support
 - Worker mode (keeps app in memory)
 - Simpler configuration
 
-**When to Use**:
+**When to Use:**
 
 - Experimenting with latest technology
 - Need HTTP/3 support
@@ -101,11 +101,11 @@ Production:  opcache.validate_timestamps = 0  # Never check (faster)
 
 #### MySQL Settings
 
-**File**: [`docker/mysql/conf.d/performance.cnf`](../../docker/mysql/conf.d/performance.cnf)
+**File:** [`docker/mysql/conf.d/performance.cnf`](../../docker/mysql/conf.d/performance.cnf)
 
-**Critical Settings Explained**:
+**Critical Settings Explained:**
 
-**Buffer Pool Size**:
+**Buffer Pool Size:**
 
 ```
 Development:  innodb_buffer_pool_size = 256M  # Conservative
@@ -114,7 +114,7 @@ Production:   innodb_buffer_pool_size = 1G+   # 70% of RAM
 
 This is the #1 MySQL performance setting - it's the cache for your data.
 
-**Connection Limits**:
+**Connection Limits:**
 
 ```
 max_connections = 200
@@ -122,7 +122,7 @@ max_connections = 200
 
 Each connection uses memory. Balance between availability and resources.
 
-**Slow Query Log**:
+**Slow Query Log:**
 
 ```
 slow_query_log = 1
@@ -135,7 +135,7 @@ Essential for finding performance bottlenecks.
 
 #### Environment Variables (`.env`)
 
-**Database Connection**:
+**Database Connection:**
 
 ```env
 DB_HOST=mysql          # Docker service name
@@ -144,7 +144,7 @@ DB_USERNAME=laravel
 DB_PASSWORD=password   # Change in production!
 ```
 
-**Cache & Sessions**:
+**Cache & Sessions:**
 
 ```env
 CACHE_STORE=redis      # Fast in-memory caching
@@ -152,7 +152,7 @@ SESSION_DRIVER=redis   # Scalable session storage
 QUEUE_CONNECTION=redis # Background job processing
 ```
 
-**Why Redis for Everything**:
+**Why Redis for Everything:**
 
 - Single source of truth for temporary data
 - Extremely fast (in-memory)
@@ -163,16 +163,16 @@ QUEUE_CONNECTION=redis # Background job processing
 
 ### Development Configuration
 
-**Goals**: Fast feedback, easy debugging, file watching
+**Goals:** Fast feedback, easy debugging, file watching
 
-**Characteristics**:
+**Characteristics:**
 
 - File change detection enabled
 - Verbose error reporting
 - No aggressive caching
 - Debug tools enabled
 
-**Key Files to Review**:
+**Key Files to Review:**
 
 - `.env` - Set `APP_DEBUG=true`
 - `docker/php/conf.d/xdebug.ini` - Debugging enabled
@@ -180,16 +180,16 @@ QUEUE_CONNECTION=redis # Background job processing
 
 ### Staging Configuration
 
-**Goals**: Test production behavior, catch issues
+**Goals:** Test production behavior, catch issues
 
-**Characteristics**:
+**Characteristics:**
 
 - Production-like settings
 - Debug tools available but not enabled
 - Moderate caching
 - Real data volumes
 
-**Key Changes from Development**:
+**Key Changes from Development:**
 
 - Set `APP_DEBUG=false`
 - Increase cache timeouts
@@ -198,16 +198,16 @@ QUEUE_CONNECTION=redis # Background job processing
 
 ### Production Configuration
 
-**Goals**: Maximum performance, security, stability
+**Goals:** Maximum performance, security, stability
 
-**Characteristics**:
+**Characteristics:**
 
 - No file change detection
 - Minimal logging
 - Aggressive caching
 - Security hardening
 
-**Critical Changes**:
+**Critical Changes:**
 
 - `APP_DEBUG=false` and `APP_ENV=production`
 - OPcache timestamps disabled
@@ -243,11 +243,11 @@ QUEUE_CONNECTION=redis # Background job processing
 
 ### Essential Security Settings
 
-1. **Environment Files**: Never commit `.env` to git
-2. **Debug Mode**: Always `false` in production
-3. **Error Display**: Hide errors from users in production
-4. **HTTPS**: Required for production
-5. **Headers**: Set security headers (CSP, HSTS, etc.)
+1. **Environment Files:** Never commit `.env` to git
+2. **Debug Mode:** Always `false` in production
+3. **Error Display:** Hide errors from users in production
+4. **HTTPS:** Required for production
+5. **Headers:** Set security headers (CSP, HSTS, etc.)
 
 ### Files to Secure
 
@@ -259,17 +259,17 @@ QUEUE_CONNECTION=redis # Background job processing
 
 ### What to Monitor
 
-1. **Application Metrics**:
+1. **Application Metrics:**
     - Response times
     - Error rates
     - Queue lengths
 
-2. **System Metrics**:
+2. **System Metrics:**
     - CPU usage
     - Memory usage
     - Disk I/O
 
-3. **Database Metrics**:
+3. **Database Metrics:**
     - Query performance
     - Connection pool usage
     - Slow queries
@@ -333,11 +333,11 @@ Protect your application from abuse.
 
 ## Best Practices
 
-1. **Version Control**: Track configuration files (not `.env`)
-2. **Documentation**: Document why settings were chosen
-3. **Testing**: Test configuration changes in staging first
-4. **Monitoring**: Watch metrics after configuration changes
-5. **Rollback Plan**: Know how to revert changes quickly
+1. **Version Control:** Track configuration files (not `.env`)
+2. **Documentation:** Document why settings were chosen
+3. **Testing:** Test configuration changes in staging first
+4. **Monitoring:** Watch metrics after configuration changes
+5. **Rollback Plan:** Know how to revert changes quickly
 
 ## Further Learning
 

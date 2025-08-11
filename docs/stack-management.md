@@ -9,10 +9,10 @@ stacks) for various testing scenarios.
 
 #### traditional
 
-**Components**: `base` + `traditional`  
-**Containers**: MySQL, Redis, Prometheus, Grafana, Nginx, PHP-FPM  
-**Purpose**: Most common production setup  
-**Ports**: 80 (HTTP), 443 (HTTPS), 3306 (MySQL), 6379 (Redis)
+**Components:** `base` + `traditional`  
+**Containers:** MySQL, Redis, Prometheus, Grafana, Nginx, PHP-FPM  
+**Purpose:** Most common production setup  
+**Ports:** 80 (HTTP), 443 (HTTPS), 3306 (MySQL), 6379 (Redis)
 
 ```bash
 stack up traditional -d
@@ -20,10 +20,10 @@ stack up traditional -d
 
 #### frankenphp
 
-**Components**: `base` + `frankenphp`  
-**Containers**: MySQL, Redis, Prometheus, Grafana, FrankenPHP  
-**Purpose**: Modern HTTP/3 server with worker mode  
-**Ports**: 8080 (HTTP), 8443 (HTTPS/HTTP3), 3306 (MySQL), 6379 (Redis)
+**Components:** `base` + `frankenphp`  
+**Containers:** MySQL, Redis, Prometheus, Grafana, FrankenPHP  
+**Purpose:** Modern HTTP/3 server with worker mode  
+**Ports:** 8080 (HTTP), 8443 (HTTPS/HTTP3), 3306 (MySQL), 6379 (Redis)
 
 ```bash
 stack up frankenphp -d
@@ -31,10 +31,10 @@ stack up frankenphp -d
 
 #### octane
 
-**Components**: `base` + `octane`  
-**Containers**: MySQL, Redis, Prometheus, Grafana, Laravel Octane  
-**Purpose**: High-performance long-running processes  
-**Ports**: 8000 (HTTP), 3306 (MySQL), 6379 (Redis)
+**Components:** `base` + `octane`  
+**Containers:** MySQL, Redis, Prometheus, Grafana, Laravel Octane  
+**Purpose:** High-performance long-running processes  
+**Ports:** 8000 (HTTP), 3306 (MySQL), 6379 (Redis)
 
 ```bash
 stack up octane -d
@@ -44,10 +44,10 @@ stack up octane -d
 
 #### performance
 
-**Components**: `base` + `traditional` + `monitoring`  
-**Containers**: Traditional stack + ELK, Jaeger, Exporters  
-**Purpose**: Performance testing with comprehensive monitoring  
-**Additional Ports**: 5601 (Kibana), 9200 (Elasticsearch), 16686 (Jaeger)
+**Components:** `base` + `traditional` + `monitoring`  
+**Containers:** Traditional stack + ELK, Jaeger, Exporters  
+**Purpose:** Performance testing with comprehensive monitoring  
+**Additional Ports:** 5601 (Kibana), 9200 (Elasticsearch), 16686 (Jaeger)
 
 ```bash
 stack up performance -d
@@ -55,10 +55,10 @@ stack up performance -d
 
 #### enterprise
 
-**Components**: `base` + `traditional` + `monitoring` + `multitenant` + `database-tools`  
-**Containers**: Full enterprise stack with multi-tenancy and database tools  
-**Purpose**: Enterprise features and comprehensive analysis  
-**Additional Ports**: 3307-3308 (Tenant DBs), 7010-7012 (Redis Cluster), 8090 (Load Balancer)
+**Components:** `base` + `traditional` + `monitoring` + `multitenant` + `database-tools`  
+**Containers:** Full enterprise stack with multi-tenancy and database tools  
+**Purpose:** Enterprise features and comprehensive analysis  
+**Additional Ports:** 3307-3308 (Tenant DBs), 7010-7012 (Redis Cluster), 8090 (Load Balancer)
 
 ```bash
 stack up enterprise -d
@@ -66,10 +66,10 @@ stack up enterprise -d
 
 #### comparison
 
-**Components**: `base` + `traditional` + `frankenphp` + `octane` + `monitoring`  
-**Containers**: All web servers plus monitoring  
-**Purpose**: Benchmarking different server configurations  
-**Ports**: 80 (Nginx), 8080 (FrankenPHP), 8000 (Octane), plus monitoring
+**Components:** `base` + `traditional` + `frankenphp` + `octane` + `monitoring`  
+**Containers:** All web servers plus monitoring  
+**Purpose:** Benchmarking different server configurations  
+**Ports:** 80 (Nginx), 8080 (FrankenPHP), 8000 (Octane), plus monitoring
 
 ```bash
 stack up comparison -d
@@ -77,10 +77,10 @@ stack up comparison -d
 
 #### full
 
-**Components**: All components enabled  
-**Containers**: Everything (25+ containers)  
-**Purpose**: Complete testing environment  
-**Requirements**: Minimum 8GB RAM, significant CPU resources
+**Components:** All components enabled  
+**Containers:** Everything (25+ containers)  
+**Purpose:** Complete testing environment  
+**Requirements:** Minimum 8GB RAM, significant CPU resources
 
 ```bash
 stack up full -d
@@ -88,9 +88,9 @@ stack up full -d
 
 #### minimal
 
-**Components**: `base` + `traditional`  
-**Containers**: Just MySQL, Redis, Nginx, PHP-FPM  
-**Purpose**: Minimal setup for basic development
+**Components:** `base` + `traditional`  
+**Containers:** Just MySQL, Redis, Nginx, PHP-FPM  
+**Purpose:** Minimal setup for basic development
 
 ```bash
 stack up minimal -d
@@ -157,45 +157,45 @@ stack help
 
 ### Base Components (`docker-compose.yml`)
 
-- **mysql**: Primary database server
-- **redis**: Primary cache server
-- **prometheus**: Metrics collection
-- **grafana**: Monitoring dashboards
+- **mysql:** Primary database server
+- **redis:** Primary cache server
+- **prometheus:** Metrics collection
+- **grafana:** Monitoring dashboards
 
 ### Traditional Components (`docker-compose.traditional.yml`)
 
-- **nginx**: Web server
-- **php-fpm**: PHP application server
+- **nginx:** Web server
+- **php-fpm:** PHP application server
 
 ### FrankenPHP Components (`docker-compose.frankenphp.yml`)
 
-- **frankenphp**: Modern PHP server with HTTP/3
+- **frankenphp:** Modern PHP server with HTTP/3
 
 ### Octane Components (`docker-compose.octane.yml`)
 
-- **octane**: Laravel Octane with Swoole
+- **octane:** Laravel Octane with Swoole
 
 ### Monitoring Components (`docker-compose.monitoring.yml`)
 
-- **elasticsearch**: Log aggregation
-- **kibana**: ELK dashboard
-- **statsd**: Custom metrics
-- **mysql-exporter**: Database metrics
-- **redis-exporter**: Cache metrics
-- **jaeger**: Distributed tracing
+- **elasticsearch:** Log aggregation
+- **kibana:** ELK dashboard
+- **statsd:** Custom metrics
+- **mysql-exporter:** Database metrics
+- **redis-exporter:** Cache metrics
+- **jaeger:** Distributed tracing
 
 ### Multi-tenant Components (`docker-compose.multitenant.yml`)
 
-- **mysql-tenant-1/2**: Tenant databases
-- **redis-cluster-1/2/3**: Redis cluster
-- **nginx-lb**: Load balancer
+- **mysql-tenant-1/2:** Tenant databases
+- **redis-cluster-1/2/3:** Redis cluster
+- **nginx-lb:** Load balancer
 
 ### Database Tools (`docker-compose.database-tools.yml`)
 
-- **percona-toolkit**: MySQL analysis
-- **pt-query-digest**: Query analysis
-- **proxysql**: Database proxy
-- **pgbouncer**: Connection pooling
+- **percona-toolkit:** MySQL analysis
+- **pt-query-digest:** Query analysis
+- **proxysql:** Database proxy
+- **pgbouncer:** Connection pooling
 
 ## Advanced Usage
 
@@ -254,61 +254,61 @@ To prevent conflicts, ports are allocated as follows:
 
 ### Web Services
 
-- **80**: Nginx (traditional stack)
-- **8080**: FrankenPHP
-- **8000**: Laravel Octane
-- **8090**: Load balancer
-- **8443**: FrankenPHP HTTPS/HTTP3
+- **80:** Nginx (traditional stack)
+- **8080:** FrankenPHP
+- **8000:** Laravel Octane
+- **8090:** Load balancer
+- **8443:** FrankenPHP HTTPS/HTTP3
 
 ### Databases
 
-- **3306**: Primary MySQL
-- **3307**: Tenant 1 MySQL
-- **3308**: Tenant 2 MySQL
-- **6379**: Primary Redis
-- **7010-7012**: Redis cluster nodes
+- **3306:** Primary MySQL
+- **3307:** Tenant 1 MySQL
+- **3308:** Tenant 2 MySQL
+- **6379:** Primary Redis
+- **7010-7012:** Redis cluster nodes
 
 ### Database Tools
 
-- **6032-6033**: ProxySQL
-- **6432**: PgBouncer
+- **6032-6033:** ProxySQL
+- **6432:** PgBouncer
 
 ### Monitoring
 
-- **3000**: Grafana
-- **9090**: Prometheus
-- **9200**: Elasticsearch
-- **5601**: Kibana
-- **16686**: Jaeger UI
-- **9104**: MySQL exporter
-- **9121**: Redis exporter
-- **9102**: StatsD exporter
+- **3000:** Grafana
+- **9090:** Prometheus
+- **9200:** Elasticsearch
+- **5601:** Kibana
+- **16686:** Jaeger UI
+- **9104:** MySQL exporter
+- **9121:** Redis exporter
+- **9102:** StatsD exporter
 
 ## Resource Requirements
 
 ### Minimal Stack
 
-- **RAM**: 2GB minimum
-- **CPU**: 2 cores
-- **Disk**: 5GB
+- **RAM:** 2GB minimum
+- **CPU:** 2 cores
+- **Disk:** 5GB
 
 ### Traditional/FrankenPHP/Octane Stacks
 
-- **RAM**: 4GB minimum
-- **CPU**: 4 cores
-- **Disk**: 10GB
+- **RAM:** 4GB minimum
+- **CPU:** 4 cores
+- **Disk:** 10GB
 
 ### Performance/Comparison Stacks
 
-- **RAM**: 6GB minimum
-- **CPU**: 6 cores
-- **Disk**: 15GB
+- **RAM:** 6GB minimum
+- **CPU:** 6 cores
+- **Disk:** 15GB
 
 ### Enterprise/Full Stacks
 
-- **RAM**: 8GB minimum (12GB recommended)
-- **CPU**: 8 cores (12 cores recommended)
-- **Disk**: 20GB
+- **RAM:** 8GB minimum (12GB recommended)
+- **CPU:** 8 cores (12 cores recommended)
+- **Disk:** 20GB
 
 ## Health Checks
 

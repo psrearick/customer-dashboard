@@ -12,10 +12,10 @@ monitoring infrastructure.
 
 ### nginx (Traditional Stack)
 
-- **Image**: `nginx:alpine`
-- **Container**: `laravel-perf-nginx`
-- **Ports**: `80:80`, `443:443`
-- **Purpose**: Industry-standard web server for traditional PHP-FPM setups
+- **Image:** `nginx:alpine`
+- **Container:** `laravel-perf-nginx`
+- **Ports:** `80:80`, `443:443`
+- **Purpose:** Industry-standard web server for traditional PHP-FPM setups
 
 **Key Features:**
 
@@ -33,10 +33,10 @@ monitoring infrastructure.
 
 ### frankenphp (Modern Stack)
 
-- **Image**: Custom build (`docker/frankenphp/Dockerfile`)
-- **Container**: `laravel-perf-frankenphp`
-- **Ports**: `8080:80`, `8443:443`, `8443:443/udp`
-- **Purpose**: Modern PHP server with HTTP/2, HTTP/3, and worker mode
+- **Image:** Custom build (`docker/frankenphp/Dockerfile`)
+- **Container:** `laravel-perf-frankenphp`
+- **Ports:** `8080:80`, `8443:443`, `8443:443/udp`
+- **Purpose:** Modern PHP server with HTTP/2, HTTP/3, and worker mode
 
 **Key Features:**
 
@@ -44,7 +44,7 @@ monitoring infrastructure.
 - **Worker Mode** for enhanced performance
 - **PHP 8.4** with latest performance optimizations
 - **Caddy Server** integration with automatic HTTPS
-- **Built-in Extensions**: Redis, Xdebug, APCu, XHProf, OPcache
+- **Built-in Extensions:** Redis, Xdebug, APCu, XHProf, OPcache
 
 **Unique Configurations:**
 
@@ -55,10 +55,10 @@ monitoring infrastructure.
 
 ### octane (High-Performance Stack)
 
-- **Image**: Custom build (`docker/octane/Dockerfile`)
-- **Container**: `laravel-perf-octane`
-- **Ports**: `8000:8000`
-- **Purpose**: Laravel Octane for high-performance, long-running PHP processes
+- **Image:** Custom build (`docker/octane/Dockerfile`)
+- **Container:** `laravel-perf-octane`
+- **Ports:** `8000:8000`
+- **Purpose:** Laravel Octane for high-performance, long-running PHP processes
 
 **Key Features:**
 
@@ -66,7 +66,7 @@ monitoring infrastructure.
 - **Long-running processes** eliminate bootstrap overhead
 - **Task Workers** for background job processing
 - **Memory resident** application state
-- **Built-in Extensions**: Swoole, Redis, APCu, XHProf
+- **Built-in Extensions:** Swoole, Redis, APCu, XHProf
 
 **Performance Configuration:**
 
@@ -77,10 +77,10 @@ monitoring infrastructure.
 
 ### nginx-lb (Load Balancer)
 
-- **Image**: `nginx:alpine`
-- **Container**: `laravel-perf-nginx-lb`
-- **Ports**: `8090:80`
-- **Purpose**: Load balancer for multi-instance performance testing
+- **Image:** `nginx:alpine`
+- **Container:** `laravel-perf-nginx-lb`
+- **Ports:** `8090:80`
+- **Purpose:** Load balancer for multi-instance performance testing
 
 **Load Balancing Features:**
 
@@ -93,17 +93,17 @@ monitoring infrastructure.
 
 ### php-fpm (Traditional Application Server)
 
-- **Image**: Custom build (`docker/php-fpm/Dockerfile`)
-- **Container**: `laravel-perf-php-fpm`
-- **Ports**: `9000:9000`
-- **Purpose**: Traditional PHP-FPM application server
+- **Image:** Custom build (`docker/php-fpm/Dockerfile`)
+- **Container:** `laravel-perf-php-fpm`
+- **Ports:** `9000:9000`
+- **Purpose:** Traditional PHP-FPM application server
 
 **PHP Extensions Installed:**
 
-- **Core**: bcmath, fileinfo, mbstring, pdo_mysql, xml, zip, intl, pcntl, opcache
-- **Performance**: Redis, APCu, OPcache with JIT
-- **Profiling**: Xdebug, XHProf, Blackfire
-- **Base**: PHP 8.4-FPM on Debian Bookworm
+- **Core:** bcmath, fileinfo, mbstring, pdo_mysql, xml, zip, intl, pcntl, opcache
+- **Performance:** Redis, APCu, OPcache with JIT
+- **Profiling:** Xdebug, XHProf, Blackfire
+- **Base:** PHP 8.4-FPM on Debian Bookworm
 
 **Configuration Files:**
 
@@ -115,10 +115,10 @@ monitoring infrastructure.
 
 ### mysql (Primary Database)
 
-- **Image**: `mysql:8.4`
-- **Container**: `laravel-perf-mysql`
-- **Ports**: `3306:3306`
-- **Purpose**: Primary MySQL database server
+- **Image:** `mysql:8.4`
+- **Container:** `laravel-perf-mysql`
+- **Ports:** `3306:3306`
+- **Purpose:** Primary MySQL database server
 
 **MySQL 8.4 Features:**
 
@@ -136,10 +136,10 @@ monitoring infrastructure.
 
 ### mysql-tenant-1 & mysql-tenant-2 (Multi-tenant Databases)
 
-- **Image**: `mysql:8.4`
-- **Containers**: `laravel-perf-mysql-tenant-1`, `laravel-perf-mysql-tenant-2`
-- **Ports**: `3307:3306`, `3308:3306`
-- **Purpose**: Separate databases for multi-tenancy testing
+- **Image:** `mysql:8.4`
+- **Containers:** `laravel-perf-mysql-tenant-1`, `laravel-perf-mysql-tenant-2`
+- **Ports:** `3307:3306`, `3308:3306`
+- **Purpose:** Separate databases for multi-tenancy testing
 
 **Tenant Configuration:**
 
@@ -152,10 +152,10 @@ monitoring infrastructure.
 
 ### redis (Primary Cache)
 
-- **Image**: `redis:8-alpine`
-- **Container**: `laravel-perf-redis`
-- **Ports**: `6379:6379`
-- **Purpose**: Primary Redis cache server
+- **Image:** `redis:8-alpine`
+- **Container:** `laravel-perf-redis`
+- **Ports:** `6379:6379`
+- **Purpose:** Primary Redis cache server
 
 **Redis 8 Features:**
 
@@ -166,10 +166,10 @@ monitoring infrastructure.
 
 ### redis-cluster-1/2/3 (Distributed Cache)
 
-- **Image**: `redis:8-alpine`
-- **Containers**: `laravel-perf-redis-cluster-1/2/3`
-- **Ports**: `7010:7010`, `7011:7011`, `7012:7012`
-- **Purpose**: Three-node Redis cluster for distributed caching
+- **Image:** `redis:8-alpine`
+- **Containers:** `laravel-perf-redis-cluster-1/2/3`
+- **Ports:** `7010:7010`, `7011:7011`, `7012:7012`
+- **Purpose:** Three-node Redis cluster for distributed caching
 
 **Cluster Features:**
 
@@ -182,10 +182,10 @@ monitoring infrastructure.
 
 ### prometheus (Metrics Collection)
 
-- **Image**: `prom/prometheus:v3.5.0`
-- **Container**: `laravel-perf-prometheus`
-- **Ports**: `9090:9090`
-- **Purpose**: Metrics collection and alerting
+- **Image:** `prom/prometheus:v3.5.0`
+- **Container:** `laravel-perf-prometheus`
+- **Ports:** `9090:9090`
+- **Purpose:** Metrics collection and alerting
 
 **Prometheus 3.5 Features:**
 
@@ -202,10 +202,10 @@ monitoring infrastructure.
 
 ### grafana (Visualization)
 
-- **Image**: `grafana/grafana:latest`
-- **Container**: `laravel-perf-grafana`
-- **Ports**: `3000:3000`
-- **Purpose**: Monitoring dashboards and visualization
+- **Image:** `grafana/grafana:latest`
+- **Container:** `laravel-perf-grafana`
+- **Ports:** `3000:3000`
+- **Purpose:** Monitoring dashboards and visualization
 
 **Dashboard Features:**
 
@@ -216,10 +216,10 @@ monitoring infrastructure.
 
 ### elasticsearch (Search & Analytics)
 
-- **Image**: `docker.elastic.co/elasticsearch/elasticsearch:8.15.4`
-- **Container**: `laravel-perf-elasticsearch`
-- **Ports**: `9200:9200`
-- **Purpose**: Log aggregation and full-text search
+- **Image:** `docker.elastic.co/elasticsearch/elasticsearch:8.15.4`
+- **Container:** `laravel-perf-elasticsearch`
+- **Ports:** `9200:9200`
+- **Purpose:** Log aggregation and full-text search
 
 **Elasticsearch 8.15 Configuration:**
 
@@ -230,17 +230,17 @@ monitoring infrastructure.
 
 ### kibana (ELK Dashboard)
 
-- **Image**: `docker.elastic.co/kibana/kibana:8.15.4`
-- **Container**: `laravel-perf-kibana`
-- **Ports**: `5601:5601`
-- **Purpose**: Log visualization and analysis
+- **Image:** `docker.elastic.co/kibana/kibana:8.15.4`
+- **Container:** `laravel-perf-kibana`
+- **Ports:** `5601:5601`
+- **Purpose:** Log visualization and analysis
 
 ### jaeger (Distributed Tracing)
 
-- **Image**: `jaegertracing/all-in-one:latest`
-- **Container**: `laravel-perf-jaeger`
-- **Ports**: `16686:16686` (UI), `14268:14268` (Collector)
-- **Purpose**: Distributed request tracing
+- **Image:** `jaegertracing/all-in-one:latest`
+- **Container:** `laravel-perf-jaeger`
+- **Ports:** `16686:16686` (UI), `14268:14268` (Collector)
+- **Purpose:** Distributed request tracing
 
 **Tracing Features:**
 
@@ -253,10 +253,10 @@ monitoring infrastructure.
 
 ### mysql-exporter (Database Metrics)
 
-- **Image**: `prom/mysqld-exporter:v0.15.1`
-- **Container**: `laravel-perf-mysql-exporter`
-- **Ports**: `9104:9104`
-- **Purpose**: MySQL performance metrics for Prometheus
+- **Image:** `prom/mysqld-exporter:v0.15.1`
+- **Container:** `laravel-perf-mysql-exporter`
+- **Ports:** `9104:9104`
+- **Purpose:** MySQL performance metrics for Prometheus
 
 **Exported Metrics:**
 
@@ -272,10 +272,10 @@ monitoring infrastructure.
 
 ### redis-exporter (Cache Metrics)
 
-- **Image**: `oliver006/redis_exporter`
-- **Container**: `laravel-perf-redis-exporter`
-- **Ports**: `9121:9121`
-- **Purpose**: Redis performance metrics
+- **Image:** `oliver006/redis_exporter`
+- **Container:** `laravel-perf-redis-exporter`
+- **Ports:** `9121:9121`
+- **Purpose:** Redis performance metrics
 
 **Monitored Metrics:**
 
@@ -286,18 +286,18 @@ monitoring infrastructure.
 
 ### statsd (Custom Metrics)
 
-- **Image**: `prom/statsd-exporter`
-- **Container**: `laravel-perf-statsd`
-- **Ports**: `9102:9102`, `9125:9125/udp`
-- **Purpose**: Application-specific metrics collection
+- **Image:** `prom/statsd-exporter`
+- **Container:** `laravel-perf-statsd`
+- **Ports:** `9102:9102`, `9125:9125/udp`
+- **Purpose:** Application-specific metrics collection
 
 ## Database Tools
 
 ### percona-toolkit (MySQL Analysis)
 
-- **Image**: `percona/percona-toolkit`
-- **Container**: `laravel-perf-percona-toolkit`
-- **Purpose**: MySQL performance analysis and optimization
+- **Image:** `percona/percona-toolkit`
+- **Container:** `laravel-perf-percona-toolkit`
+- **Purpose:** MySQL performance analysis and optimization
 
 **Available Tools:**
 
@@ -308,9 +308,9 @@ monitoring infrastructure.
 
 ### pt-query-digest (Query Analysis)
 
-- **Image**: `percona/percona-toolkit`
-- **Container**: `laravel-perf-pt-query-digest`
-- **Purpose**: Automated slow query analysis
+- **Image:** `percona/percona-toolkit`
+- **Container:** `laravel-perf-pt-query-digest`
+- **Purpose:** Automated slow query analysis
 
 **Analysis Features:**
 
@@ -321,10 +321,10 @@ monitoring infrastructure.
 
 ### proxysql (Database Proxy)
 
-- **Image**: `proxysql/proxysql:latest`
-- **Container**: `laravel-perf-proxysql`
-- **Ports**: `6033:6033` (MySQL), `6032:6032` (Admin)
-- **Purpose**: MySQL connection pooling and query routing
+- **Image:** `proxysql/proxysql:latest`
+- **Container:** `laravel-perf-proxysql`
+- **Ports:** `6033:6033` (MySQL), `6032:6032` (Admin)
+- **Purpose:** MySQL connection pooling and query routing
 
 **ProxySQL Features:**
 
@@ -336,10 +336,10 @@ monitoring infrastructure.
 
 ### pgbouncer (Connection Pooling)
 
-- **Image**: `pgbouncer/pgbouncer:latest`
-- **Container**: `laravel-perf-pgbouncer`
-- **Ports**: `6432:5432`
-- **Purpose**: Database connection pooling
+- **Image:** `pgbouncer/pgbouncer:latest`
+- **Container:** `laravel-perf-pgbouncer`
+- **Ports:** `6432:5432`
+- **Purpose:** Database connection pooling
 
 **Pooling Configuration:**
 
@@ -379,23 +379,23 @@ All containers communicate through the `laravel-perf` external network, enabling
 
 ### PHP Optimizations
 
-- **OPcache**: Bytecode caching with JIT compilation
-- **APCu**: User cache for application data
-- **Realpath Cache**: Filesystem path optimization
-- **Memory Limits**: Optimized for performance testing
+- **OPcache:** Bytecode caching with JIT compilation
+- **APCu:** User cache for application data
+- **Realpath Cache:** Filesystem path optimization
+- **Memory Limits:** Optimized for performance testing
 
 ### Database Optimizations
 
-- **InnoDB Buffer Pool**: Sized for available memory
-- **Query Cache**: Disabled (MySQL 8.4 recommendation)
-- **Slow Query Log**: Enabled for analysis
-- **Performance Schema**: Full instrumentation
+- **InnoDB Buffer Pool:** Sized for available memory
+- **Query Cache:** Disabled (MySQL 8.4 recommendation)
+- **Slow Query Log:** Enabled for analysis
+- **Performance Schema:** Full instrumentation
 
 ### Web Server Optimizations
 
-- **Worker Processes**: CPU-optimized
-- **Connection Handling**: Efficient connection reuse
-- **Compression**: Gzip for static assets
-- **HTTP/2 & HTTP/3**: Modern protocol support
+- **Worker Processes:** CPU-optimized
+- **Connection Handling:** Efficient connection reuse
+- **Compression:** Gzip for static assets
+- **HTTP/2 & HTTP/3:** Modern protocol support
 
 This comprehensive container setup provides everything needed for thorough Laravel performance testing and optimization.

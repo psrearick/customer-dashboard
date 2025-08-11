@@ -98,7 +98,7 @@ The script automatically detects which containers are running:
 **Node Container:**
 - **laravel-perf-node** - Handles all frontend tooling and Vite dev server
 
-**Important**: Node.js and npm are ONLY available in the Node container. The PHP containers do not have Node.js installed, ensuring clean separation of concerns.
+**Important:** Node.js and npm are ONLY available in the Node container. The PHP containers do not have Node.js installed, ensuring clean separation of concerns.
 
 You don't need to specify which container to use - the script will find the running one automatically.
 

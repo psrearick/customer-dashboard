@@ -6,9 +6,9 @@ Common issues and their solutions for the Customer Dashboard project.
 
 ### Can't Access the Application
 
-**Symptoms**: Browser shows "Connection refused" or "This site can't be reached"
+**Symptoms:** Browser shows "Connection refused" or "This site can't be reached"
 
-**Solutions**:
+**Solutions:**
 
 ```bash
 # 1. Check if containers are running
@@ -25,9 +25,9 @@ Common issues and their solutions for the Customer Dashboard project.
 
 ### "Port Already in Use" Error
 
-**Symptoms**: Error when starting stack: `bind: address already in use`
+**Symptoms:** Error when starting stack: `bind: address already in use`
 
-**Solutions**:
+**Solutions:**
 
 ```bash
 # 1. Check what's using the port
@@ -44,9 +44,9 @@ brew services stop mysql
 
 ### Database Connection Issues
 
-**Symptoms**: "Connection refused" or "Access denied for user" errors
+**Symptoms:** "Connection refused" or "Access denied for user" errors
 
-**Solutions**:
+**Solutions:**
 
 ```bash
 # 1. Ensure MySQL container is running
@@ -69,9 +69,9 @@ cat .env | grep DB_
 
 ### Frontend Not Loading/Updating
 
-**Symptoms**: Changes to React components not showing, build errors
+**Symptoms:** Changes to React components not showing, build errors
 
-**Solutions**:
+**Solutions:**
 
 ```bash
 # 1. Install dependencies
@@ -89,9 +89,9 @@ cat .env | grep DB_
 
 ### Permission Denied Errors
 
-**Symptoms**: Can't write to storage, cache directories
+**Symptoms:** Can't write to storage, cache directories
 
-**Solutions**:
+**Solutions:**
 
 ```bash
 # Linux/macOS
@@ -106,9 +106,9 @@ chmod +x bin/dev bin/stack
 
 ### Containers Keep Restarting
 
-**Symptoms**: Containers exit and restart repeatedly
+**Symptoms:** Containers exit and restart repeatedly
 
-**Solutions**:
+**Solutions:**
 
 ```bash
 # 1. Check logs for errors
@@ -124,9 +124,9 @@ chmod +x bin/dev bin/stack
 
 ### Out of Disk Space
 
-**Symptoms**: "No space left on device" errors
+**Symptoms:** "No space left on device" errors
 
-**Solutions**:
+**Solutions:**
 
 ```bash
 # 1. Clean Docker system
@@ -141,9 +141,9 @@ docker image prune -f
 
 ### Slow Container Startup
 
-**Symptoms**: Takes forever to start containers
+**Symptoms:** Takes forever to start containers
 
-**Solutions**:
+**Solutions:**
 
 ```bash
 # 1. Use minimal stack for development
@@ -160,21 +160,21 @@ docker image prune -f
 
 ### Laravel Errors
 
-**"Key not set" Error**:
+**"Key not set" Error:**
 
 ```bash
 cp .env.example .env
 ./bin/dev artisan key:generate
 ```
 
-**"Class not found" Errors**:
+**"Class not found" Errors:**
 
 ```bash
 ./bin/dev composer install
 ./bin/dev composer dump-autoload
 ```
 
-**Migration Errors**:
+**Migration Errors:**
 
 ```bash
 # Reset database completely
@@ -185,7 +185,7 @@ cp .env.example .env
 ./bin/dev artisan migrate
 ```
 
-**Routing Issues**:
+**Routing Issues:**
 
 ```bash
 # Clear route cache
@@ -197,7 +197,7 @@ cp .env.example .env
 
 ### React/Frontend Issues
 
-**TypeScript Errors**:
+**TypeScript Errors:**
 
 ```bash
 # Check types
@@ -207,14 +207,14 @@ cp .env.example .env
 ./bin/dev npm install @types/missing-package
 ```
 
-**Component Not Rendering**:
+**Component Not Rendering:**
 
 1. Check browser console for errors
 2. Verify component is exported correctly
 3. Check import paths
 4. Ensure component is registered in Inertia
 
-**Inertia Issues**:
+**Inertia Issues:**
 
 ```bash
 # Clear Inertia cache
@@ -228,9 +228,9 @@ cp .env.example .env
 
 ### Branch Switching Problems
 
-**Symptoms**: Errors after switching git branches
+**Symptoms:** Errors after switching git branches
 
-**Solutions**:
+**Solutions:**
 
 ```bash
 # After switching branches, always run:
@@ -243,9 +243,9 @@ git checkout feature/new-branch
 
 ### Environment Variables Not Working
 
-**Symptoms**: Config values not updating
+**Symptoms:** Config values not updating
 
-**Solutions**:
+**Solutions:**
 
 ```bash
 # Clear config cache
@@ -262,9 +262,9 @@ ls -la .env
 
 ### Slow Application Response
 
-**Symptoms**: Pages load slowly, timeouts
+**Symptoms:** Pages load slowly, timeouts
 
-**Solutions**:
+**Solutions:**
 
 ```bash
 # 1. Enable OPcache (production-like)
@@ -284,9 +284,9 @@ SESSION_DRIVER=redis
 
 ### High Memory Usage
 
-**Symptoms**: System becomes slow, containers killed
+**Symptoms:** System becomes slow, containers killed
 
-**Solutions**:
+**Solutions:**
 
 ```bash
 # 1. Use traditional stack only (minimal)
@@ -304,7 +304,7 @@ docker stats
 
 ### Tests Failing
 
-**Database Issues**:
+**Database Issues:**
 
 ```bash
 # Ensure test database is set up
@@ -315,7 +315,7 @@ cp .env .env.testing
 # Edit DB_DATABASE=testing_database
 ```
 
-**Permission Issues**:
+**Permission Issues:**
 
 ```bash
 # Fix test file permissions
@@ -350,10 +350,10 @@ docker-compose --version
 
 ### Common "It Works on My Machine" Issues
 
-1. **Different PHP versions**: We use PHP 8.4 in Docker
-2. **Missing extensions**: All required extensions are in Docker
-3. **File permissions**: Use the provided scripts
-4. **Port conflicts**: Use different stacks or stop conflicting services
+1. **Different PHP versions:** We use PHP 8.4 in Docker
+2. **Missing extensions:** All required extensions are in Docker
+3. **File permissions:** Use the provided scripts
+4. **Port conflicts:** Use different stacks or stop conflicting services
 
 ## Emergency Reset
 

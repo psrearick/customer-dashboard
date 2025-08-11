@@ -18,16 +18,16 @@ The monitoring infrastructure consists of:
 
 ### Access Information
 
-- **URL**: http://localhost:3000
-- **Username**: `admin`
-- **Password**: `admin`
-- **Default Dashboard**: Laravel Performance Overview
+- **URL:** http://localhost:3000
+- **Username:** `admin`
+- **Password:** `admin`
+- **Default Dashboard:** Laravel Performance Overview
 
 ### Pre-configured Dashboards
 
 #### Laravel Performance Overview
 
-**Location**: `docker/grafana/dashboards/laravel/performance-overview.json`
+**Location:** `docker/grafana/dashboards/laravel/performance-overview.json`
 
 **Key Metrics:**
 
@@ -72,8 +72,8 @@ $counter->incBy(1, ['GET', '/api/users', '200']);
 
 ### Access Information
 
-- **URL**: http://localhost:9090
-- **Config**: `docker/prometheus/prometheus.yml`
+- **URL:** http://localhost:9090
+- **Config:** `docker/prometheus/prometheus.yml`
 
 ### Available Metrics
 
@@ -107,7 +107,7 @@ $counter->incBy(1, ['GET', '/api/users', '200']);
 
 ### Custom Recording Rules
 
-**Location**: `docker/prometheus/recording_rules.yml`
+**Location:** `docker/prometheus/recording_rules.yml`
 
 ```yaml
 groups:
@@ -126,7 +126,7 @@ groups:
 
 ### Alerting Rules
 
-**Location**: `docker/prometheus/alert_rules.yml`
+**Location:** `docker/prometheus/alert_rules.yml`
 
 ```yaml
 groups:
@@ -153,8 +153,8 @@ groups:
 
 ### Access Information
 
-- **Kibana**: http://localhost:5601
-- **Elasticsearch**: http://localhost:9200
+- **Kibana:** http://localhost:5601
+- **Elasticsearch:** http://localhost:9200
 
 ### Log Analysis Features
 
@@ -212,8 +212,8 @@ Configure structured logging in Laravel:
 
 ### Access Information
 
-- **URL**: http://localhost:16686
-- **Protocol**: Zipkin compatible
+- **URL:** http://localhost:16686
+- **Protocol:** Zipkin compatible
 
 ### Tracing Capabilities
 
@@ -260,8 +260,8 @@ public function index()
 
 ### Integration Setup
 
-**Container**: Custom XHProf container with web interface  
-**Access**: http://localhost:8080 (when XHProf stack is running)
+**Container:** Custom XHProf container with web interface  
+**Access:** http://localhost:8080 (when XHProf stack is running)
 
 ### Profiling Configuration
 
@@ -300,10 +300,10 @@ register_shutdown_function(function() {
 
 #### Response Time Metrics
 
-- **P50 (Median)**: 50th percentile response time
-- **P95**: 95th percentile response time
-- **P99**: 99th percentile response time
-- **Average**: Mean response time
+- **P50 (Median):** 50th percentile response time
+- **P95:** 95th percentile response time
+- **P99:** 99th percentile response time
+- **Average:** Mean response time
 
 #### Throughput Metrics
 
@@ -365,7 +365,7 @@ artillery run docker/artillery/load-test-config.yml > octane-results.txt
 
 ### Load Testing with Artillery
 
-**Configuration**: `docker/artillery/load-test-config.yml`
+**Configuration:** `docker/artillery/load-test-config.yml`
 
 ```yaml
 config:
@@ -419,7 +419,7 @@ fi
 
 ### Prometheus Configuration
 
-**File**: `docker/prometheus/prometheus.yml`
+**File:** `docker/prometheus/prometheus.yml`
 
 Key scrape targets:
 
@@ -431,7 +431,7 @@ Key scrape targets:
 
 ### Grafana Data Sources
 
-**File**: `docker/grafana/datasources/datasources.yml`
+**File:** `docker/grafana/datasources/datasources.yml`
 
 ```yaml
 apiVersion: 1
