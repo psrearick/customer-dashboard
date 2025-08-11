@@ -47,7 +47,7 @@ dev composer dump-autoload
 ### NPM/Node
 
 ```bash
-# Run npm commands
+# Run npm commands in the Node container
 dev npm install
 dev npm run dev
 dev npm run build
@@ -56,6 +56,11 @@ dev npm run type-check
 # Run node directly
 dev node --version
 dev node script.js
+
+# Note: With the dedicated Node container, Vite dev server
+# starts automatically when the container launches.
+# You can check its status with:
+docker logs laravel-perf-node
 ```
 
 ### Interactive Shell
@@ -83,11 +88,17 @@ dev redis-cli
 
 ## Container Auto-Detection
 
-The script automatically detects which PHP container is running:
+The script automatically detects which containers are running:
 
+**PHP Containers:**
 - **laravel-perf-php-fpm** - Used by traditional stack
 - **laravel-perf-frankenphp** - Used by frankenphp stack
 - **laravel-perf-octane** - Used by octane stack
+
+**Node Container:**
+- **laravel-perf-node** - Handles all frontend tooling and Vite dev server
+
+**Important**: Node.js and npm are ONLY available in the Node container. The PHP containers do not have Node.js installed, ensuring clean separation of concerns.
 
 You don't need to specify which container to use - the script will find the running one automatically.
 
@@ -106,11 +117,14 @@ dev artisan migrate
 # Create and seed database
 dev artisan migrate:fresh --seed
 
-# Start development server
+# Start development server (if not auto-started)
 dev npm run dev
 
 # Build production assets
 dev npm run build
+
+# Check Node container status
+docker logs laravel-perf-node
 
 # Run tests
 dev artisan test

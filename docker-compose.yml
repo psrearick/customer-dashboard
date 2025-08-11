@@ -6,28 +6,44 @@ services:
     container_name: laravel-perf-mysql
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: laravel_perf
-      MYSQL_USER: laravel
-      MYSQL_PASSWORD: password
+      MYSQL_DATABASE: ${DB_DATABASE:-laravel_perf}
+      MYSQL_USER: ${DB_USERNAME:-laravel}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-password}
     volumes:
       - mysql_data:/var/lib/mysql
       - ./docker/mysql/conf.d:/etc/mysql/conf.d
     ports:
-      - "3306:3306"
+      - "${DB_PORT:-3306}:3306"
     networks:
       - laravel-perf
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: ${MYSQL_BUFFER_POOL_SIZE:-512M}
+        reservations:
+          cpus: '1.0'
+          memory: 256M
 
   redis:
     image: redis:8-alpine
     container_name: laravel-perf-redis
-    command: redis-server /usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf --maxmemory ${REDIS_MAX_MEMORY:-256mb} --maxmemory-policy allkeys-lru
     volumes:
       - redis_data:/data
       - ./docker/redis/redis.conf:/usr/local/etc/redis/redis.conf
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT:-6379}:6379"
     networks:
       - laravel-perf
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: ${REDIS_MAX_MEMORY:-256mb}
+        reservations:
+          cpus: '0.5'
+          memory: 128M
 
   # Monitoring stack (shared across all environments)
   prometheus:
@@ -40,12 +56,20 @@ services:
       - "9090:9090"
     networks:
       - laravel-perf
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
 
   grafana:
     image: grafana/grafana:latest
     container_name: laravel-perf-grafana
     environment:
-      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
       - GF_FEATURE_TOGGLES_ENABLE=publicDashboards
     volumes:
       - grafana_data:/var/lib/grafana
@@ -53,6 +77,14 @@ services:
       - "3000:3000"
     networks:
       - laravel-perf
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
 
 volumes:
   mysql_data:

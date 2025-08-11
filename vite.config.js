@@ -19,4 +19,16 @@ export default defineConfig({
         },
         extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json'],
     },
+    server: {
+        host: '0.0.0.0',
+        port: 5173,
+        strictPort: true,
+        watch: {
+            usePolling: true,
+        },
+        hmr: {
+            host: 'localhost',
+            port: 5173,
+        },
+    },
 });

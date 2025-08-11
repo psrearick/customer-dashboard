@@ -33,21 +33,30 @@ Docker provides several benefits for a learning/reference project:
 ### Traditional Stack (Recommended for Learning)
 
 **Command**: `./bin/stack up traditional -d`  
-**Components**: Nginx + PHP-FPM + MySQL + Redis  
-**Port**: http://localhost  
+**Components**: Nginx + PHP-FPM + Node.js + MySQL + Redis  
+**Ports**: 
+- Application: http://localhost
+- Vite Dev Server: http://localhost:5173  
 **Why use**: This is what most Laravel apps use in production
+
+### Development Stack
+
+**Command**: `./bin/stack up development -d`  
+**Components**: Nginx + PHP-FPM + Node.js + MySQL + Redis  
+**Ports**: Same as traditional  
+**Why use**: Optimized for daily development with hot reloading
 
 ### Modern Stack (FrankenPHP)
 
 **Command**: `./bin/stack up frankenphp -d`  
-**Components**: FrankenPHP + MySQL + Redis  
+**Components**: FrankenPHP + Node.js + MySQL + Redis  
 **Port**: http://localhost:8080  
 **Why use**: Experiment with cutting-edge PHP server technology
 
 ### High-Performance Stack (Octane)
 
 **Command**: `./bin/stack up octane -d`  
-**Components**: Laravel Octane + Swoole + MySQL + Redis  
+**Components**: Laravel Octane + Swoole + Node.js + MySQL + Redis  
 **Port**: http://localhost:8000  
 **Why use**: Learn how to maximize Laravel performance
 
@@ -87,7 +96,12 @@ docker/                 # All Docker configurations
 └── octane/            # Octane setup
 
 docker-compose.yml      # Base services (MySQL, Redis)
+docker-compose.node.yml # Node.js container for frontend
 docker-compose.*.yml    # Stack-specific configurations
+
+.env.example           # Template environment variables
+.env.development       # Development environment settings
+.env.testing          # Testing environment settings
 ```
 
 ### How It Works
@@ -104,13 +118,37 @@ Your Laravel app connects to services using these hostnames:
 - **MySQL**: `mysql` (port 3306)
 - **Redis**: `redis` (port 6379)
 - **Nginx**: `nginx` (port 80)
+- **Node**: `node` (port 5173 for Vite)
 
 These are configured in your `.env` file:
 
 ```env
 DB_HOST=mysql
 REDIS_HOST=redis
+VITE_HOST=0.0.0.0
+VITE_PORT=5173
 ```
+
+### Container Resource Limits
+
+All containers have resource limits for consistent performance:
+
+```yaml
+# Example from docker-compose.yml
+deploy:
+  resources:
+    limits:
+      cpus: '2.0'
+      memory: 512M
+    reservations:
+      cpus: '1.0'
+      memory: 256M
+```
+
+These limits ensure:
+- Consistent performance across different host machines
+- Predictable resource usage
+- Better simulation of production constraints
 
 ## Common Tasks
 
@@ -124,32 +162,34 @@ cd customer-dashboard
 # 2. Start Docker environment
 ./bin/stack up traditional -d
 
-# 3. Install dependencies
-./bin/dev composer install
-./bin/dev npm install
-
-# 4. Set up Laravel
-cp .env.example .env
+# 3. Set up environment
+cp .env.development .env  # Use development settings
 ./bin/dev artisan key:generate
+
+# 4. Install dependencies
+./bin/dev composer install
+# Node dependencies are auto-installed by Node container
+
+# 5. Set up database
 ./bin/dev artisan migrate --seed
 
-# 5. Build frontend
-./bin/dev npm run build
+# Node container automatically starts Vite dev server
 ```
 
 ### Daily Development
 
 ```bash
-# Start your environment
-./bin/stack up traditional -d
+# Start development environment with Node.js
+./bin/stack up development -d
 
-# Start Vite dev server (in separate terminal)
-./bin/dev npm run dev
+# Node container automatically starts Vite dev server
+# Check the logs to confirm it's running
+docker logs laravel-perf-node
 
-# Make changes, they auto-reload!
+# Make changes - they auto-reload at http://localhost:5173!
 
 # When done for the day
-./bin/stack down traditional
+./bin/stack down development
 ```
 
 ### Switching Stacks
@@ -286,8 +326,20 @@ While this Docker setup is for development, the patterns you learn here apply to
 Each stack teaches different deployment strategies:
 
 1. **Traditional**: How 90% of Laravel apps are deployed
-2. **FrankenPHP**: Next-generation PHP serving
-3. **Octane**: Maximum performance techniques
+2. **Development**: Optimized for daily development with hot reloading
+3. **FrankenPHP**: Next-generation PHP serving
+4. **Octane**: Maximum performance techniques
+
+### Node.js Container Benefits
+
+The separate Node.js container provides:
+
+- **Isolated frontend builds**: Node processes don't compete with PHP
+- **Hot Module Reloading**: Instant updates during development
+- **Resource management**: Frontend and backend resources managed separately
+- **Production-like setup**: Mirrors how frontends are often deployed separately
+- **Clean separation**: Node.js is NOT installed in PHP containers, ensuring true isolation
+- **Smaller images**: PHP containers are lighter without Node.js dependencies
 
 By switching between them, you learn:
 

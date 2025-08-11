@@ -22,6 +22,7 @@ get_compose_file() {
         traditional) echo "docker-compose.traditional.yml" ;;
         frankenphp) echo "docker-compose.frankenphp.yml" ;;
         octane) echo "docker-compose.octane.yml" ;;
+        node) echo "docker-compose.node.yml" ;;
         monitoring) echo "docker-compose.monitoring.yml" ;;
         multitenant) echo "docker-compose.multitenant.yml" ;;
         database-tools) echo "docker-compose.database-tools.yml" ;;
@@ -33,14 +34,15 @@ get_compose_file() {
 get_stack_components() {
     local stack=$1
     case $stack in
-        traditional) echo "base traditional" ;;
-        frankenphp) echo "base frankenphp" ;;
-        octane) echo "base octane" ;;
-        performance) echo "base traditional monitoring" ;;
-        enterprise) echo "base traditional monitoring multitenant database-tools" ;;
-        comparison) echo "base traditional frankenphp octane monitoring" ;;
-        full) echo "base traditional frankenphp octane monitoring multitenant database-tools" ;;
+        traditional) echo "base traditional node" ;;
+        frankenphp) echo "base frankenphp node" ;;
+        octane) echo "base octane node" ;;
+        performance) echo "base traditional node monitoring" ;;
+        enterprise) echo "base traditional node monitoring multitenant database-tools" ;;
+        comparison) echo "base traditional frankenphp octane node monitoring" ;;
+        full) echo "base traditional frankenphp octane node monitoring multitenant database-tools" ;;
         minimal) echo "base traditional" ;;
+        development) echo "base traditional node" ;;
         *) echo "" ;;
     esac
 }
@@ -75,14 +77,15 @@ show_usage() {
     echo "  help       Show this help message"
     echo ""
     printf "%bAvailable Stacks:%b\n" "$YELLOW" "$NC"
-    echo "  traditional    - Nginx + PHP-FPM (most common setup)"
-    echo "  frankenphp     - FrankenPHP with worker mode"
-    echo "  octane         - Laravel Octane with Swoole"
-    echo "  performance    - Traditional + monitoring tools"
+    echo "  traditional    - Nginx + PHP-FPM + Node.js (most common setup)"
+    echo "  frankenphp     - FrankenPHP with worker mode + Node.js"
+    echo "  octane         - Laravel Octane with Swoole + Node.js"
+    echo "  performance    - Traditional + Node.js + monitoring tools"
     echo "  enterprise     - Full enterprise stack with multi-tenancy"
-    echo "  comparison     - All web servers + monitoring for benchmarking"
+    echo "  comparison     - All web servers + Node.js + monitoring for benchmarking"
     echo "  full           - Everything (heavy resource usage)"
-    echo "  minimal        - Just basic traditional setup"
+    echo "  minimal        - Just basic traditional setup (no Node.js)"
+    echo "  development    - Traditional + Node.js for development"
     echo ""
     printf "%bOptions:%b\n" "$YELLOW" "$NC"
     echo "  -d, --detach      Run in background (daemon mode)"
@@ -376,14 +379,15 @@ list_stacks() {
     echo ""
 
     printf "%bPredefined Stacks:%b\n" "$YELLOW" "$NC"
-    printf "  %btraditional%b: base traditional\n" "$GREEN" "$NC"
-    printf "  %bfrankenphp%b: base frankenphp\n" "$GREEN" "$NC"
-    printf "  %boctane%b: base octane\n" "$GREEN" "$NC"
-    printf "  %bperformance%b: base traditional monitoring\n" "$GREEN" "$NC"
-    printf "  %benterprise%b: base traditional monitoring multitenant database-tools\n" "$GREEN" "$NC"
-    printf "  %bcomparison%b: base traditional frankenphp octane monitoring\n" "$GREEN" "$NC"
-    printf "  %bfull%b: base traditional frankenphp octane monitoring multitenant database-tools\n" "$GREEN" "$NC"
+    printf "  %btraditional%b: base traditional node\n" "$GREEN" "$NC"
+    printf "  %bfrankenphp%b: base frankenphp node\n" "$GREEN" "$NC"
+    printf "  %boctane%b: base octane node\n" "$GREEN" "$NC"
+    printf "  %bperformance%b: base traditional node monitoring\n" "$GREEN" "$NC"
+    printf "  %benterprise%b: base traditional node monitoring multitenant database-tools\n" "$GREEN" "$NC"
+    printf "  %bcomparison%b: base traditional frankenphp octane node monitoring\n" "$GREEN" "$NC"
+    printf "  %bfull%b: base traditional frankenphp octane node monitoring multitenant database-tools\n" "$GREEN" "$NC"
     printf "  %bminimal%b: base traditional\n" "$GREEN" "$NC"
+    printf "  %bdevelopment%b: base traditional node\n" "$GREEN" "$NC"
 
     echo ""
     printf "%bAvailable Components:%b\n" "$YELLOW" "$NC"
@@ -391,9 +395,10 @@ list_stacks() {
     printf "  %btraditional%b: docker-compose.traditional.yml\n" "$GREEN" "$NC"
     printf "  %bfrankenphp%b: docker-compose.frankenphp.yml\n" "$GREEN" "$NC"
     printf "  %boctane%b: docker-compose.octane.yml\n" "$GREEN" "$NC"
-    printf "  %smonitoring%b: docker-compose.monitoring.yml\n" "$GREEN" "$NC"
-    printf "  %smultitenant%b: docker-compose.multitenant.yml\n" "$GREEN" "$NC"
-    printf "  %sdatabase-tools%b: docker-compose.database-tools.yml\n" "$GREEN" "$NC"
+    printf "  %bnode%b: docker-compose.node.yml\n" "$GREEN" "$NC"
+    printf "  %bmonitoring%b: docker-compose.monitoring.yml\n" "$GREEN" "$NC"
+    printf "  %bmultitenant%b: docker-compose.multitenant.yml\n" "$GREEN" "$NC"
+    printf "  %bdatabase-tools%b: docker-compose.database-tools.yml\n" "$GREEN" "$NC"
 }
 
 

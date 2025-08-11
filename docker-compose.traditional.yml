@@ -15,6 +15,14 @@ services:
       - php-fpm
     networks:
       - laravel-perf
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 256M
+        reservations:
+          cpus: '0.5'
+          memory: 128M
 
   php-fpm:
     build:
@@ -27,11 +35,23 @@ services:
     environment:
       - DB_HOST=mysql
       - REDIS_HOST=redis
+      - PHP_MEMORY_LIMIT=${PHP_MEMORY_LIMIT:-256M}
+      - PHP_MAX_WORKERS=${PHP_MAX_WORKERS:-10}
+      - XDEBUG_MODE=${XDEBUG_MODE:-off}
+      - XDEBUG_CONFIG=${XDEBUG_CONFIG:-}
     depends_on:
       - mysql
       - redis
     networks:
       - laravel-perf
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: ${PHP_MEMORY_LIMIT:-256M}
+        reservations:
+          cpus: '1.0'
+          memory: 128M
 
 networks:
   laravel-perf:

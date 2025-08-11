@@ -15,6 +15,7 @@ This guide covers common issues and their solutions when working with the Larave
 lsof -i :80
 lsof -i :3306
 lsof -i :6379
+lsof -i :5173  # Vite dev server port
 
 # On macOS, check for system services
 brew services list | grep started
@@ -89,6 +90,7 @@ sudo swapon /swapfile
 docker logs laravel-perf-mysql
 docker logs laravel-perf-nginx
 docker logs laravel-perf-redis
+docker logs laravel-perf-node
 
 # Check container status
 docker ps -a --filter "label=com.docker.compose.project=laravel-perf"
@@ -233,6 +235,7 @@ docker stats --no-stream | sort -k 3 -h
 
 # Check container limits
 docker inspect laravel-perf-mysql | grep -i memory
+docker inspect laravel-perf-node | grep -i memory
 
 # Monitor system resources
 top -p $(docker inspect -f '{{.State.Pid}}' laravel-perf-mysql)
@@ -241,14 +244,11 @@ top -p $(docker inspect -f '{{.State.Pid}}' laravel-perf-mysql)
 **Solutions:**
 
 ```bash
-# Limit container resources in docker-compose.yml
-services:
-  mysql:
-    deploy:
-      resources:
-        limits:
-          memory: 1G
-          cpus: '2'
+# Resource limits are now pre-configured in docker-compose files
+# Adjust via environment variables in .env:
+PHP_MEMORY_LIMIT=256M
+MYSQL_BUFFER_POOL_SIZE=512M
+REDIS_MAX_MEMORY=256mb
 
 # Optimize MySQL configuration
 # Edit docker/mysql/conf.d/performance.cnf
@@ -326,9 +326,15 @@ git diff --name-status
 ```bash
 # Check environment variables in running container
 docker exec laravel-perf-mysql env | grep MYSQL
+docker exec laravel-perf-node env | grep NODE
+docker exec laravel-perf-node env | grep VITE
 
 # Verify docker-compose file syntax
 docker-compose -f docker-compose.yml config
+
+# Check which .env file is being used
+ls -la .env*
+cat .env | head -20
 ```
 
 **Solutions:**
@@ -368,13 +374,37 @@ docker exec laravel-perf-php-fpm php -r "
 "
 ```
 
-**Laravel Mix/Asset Issues:**
+**Vite/Asset Issues:**
 
 ```bash
-# Install and build assets inside container
-docker exec laravel-perf-php-fpm composer install
-docker exec laravel-perf-php-fpm npm install
-docker exec laravel-perf-php-fpm npm run prod
+# Node container handles frontend automatically
+# Check if Vite dev server is running
+docker logs laravel-perf-node
+
+# Manually rebuild assets if needed
+docker exec laravel-perf-node npm run build
+
+# Restart Node container to reload Vite
+docker restart laravel-perf-node
+
+# Access Vite dev server
+curl http://localhost:5173
+```
+
+**Node Container Not Starting:**
+
+```bash
+# Check Node container logs
+docker logs laravel-perf-node --tail 50
+
+# Verify package.json exists
+docker exec laravel-perf-node ls -la package.json
+
+# Manually install dependencies
+docker exec laravel-perf-node npm install
+
+# Check Node.js version
+docker exec laravel-perf-node node --version
 ```
 
 ### Octane-Specific Issues
@@ -496,6 +526,7 @@ environment:
 # Access container shell
 docker exec -it laravel-perf-mysql bash
 docker exec -it laravel-perf-nginx sh
+docker exec -it laravel-perf-node sh
 
 # Check running processes
 docker exec laravel-perf-mysql ps aux
@@ -513,6 +544,7 @@ docker exec laravel-perf-nginx find /etc/nginx -name "*.conf"
 # Test inter-container connectivity
 docker exec laravel-perf-nginx ping mysql
 docker exec laravel-perf-php-fpm telnet redis 6379
+docker exec laravel-perf-node ping nginx
 
 # Check DNS resolution
 docker exec laravel-perf-nginx nslookup mysql
@@ -575,6 +607,7 @@ docker system df
 # Container information  
 docker ps -a --filter "label=com.docker.compose.project=laravel-perf"
 docker inspect laravel-perf-mysql
+docker inspect laravel-perf-node
 
 # Network information
 docker network ls

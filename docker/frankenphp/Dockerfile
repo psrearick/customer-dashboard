@@ -13,13 +13,6 @@ RUN apt-get update && apt-get install -y \
     libicu-dev \
     libpq-dev \
     default-mysql-client \
-    gnupg \
-    ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
-
-# Node.js 20
-RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
-    && apt-get install -y nodejs \
     && rm -rf /var/lib/apt/lists/*
 
 # PHP extensions for performance and profiling
@@ -65,11 +58,6 @@ COPY . /app
 RUN if [ -f composer.json ]; then \
         composer install --no-dev --optimize-autoloader --no-scripts; \
         composer run-script post-autoload-dump 2>/dev/null || true; \
-    fi
-
-RUN if [ -f package.json ]; then \
-        npm ci; \
-        npm run build; \
     fi
 
 # Set permissions for Laravel directories

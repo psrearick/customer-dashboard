@@ -27,6 +27,15 @@ detect_php_container() {
     return 1
 }
 
+# Function to detect if Node container is running
+detect_node_container() {
+    if docker ps --format '{{.Names}}' | grep -q "^laravel-perf-node$"; then
+        echo "laravel-perf-node"
+        return 0
+    fi
+    return 1
+}
+
 # Function to check if a container is running
 is_container_running() {
     local container=$1
@@ -51,6 +60,24 @@ run_in_php_container() {
     fi
 }
 
+# Function to run a command in the Node container
+run_in_node_container() {
+    local container
+    if ! container=$(detect_node_container); then
+        printf "%bError: Node container is not running%b\n" "$RED" "$NC" >&2
+        printf "%bStart a stack with Node support first (traditional, development, etc.)%b\n" "$YELLOW" "$NC" >&2
+        printf "%bNote: The minimal stack does not include Node.js%b\n" "$YELLOW" "$NC" >&2
+        exit 1
+    fi
+    
+    # Check if we need TTY allocation (for interactive commands)
+    if [ -t 0 ]; then
+        docker exec -it "$container" "$@"
+    else
+        docker exec "$container" "$@"
+    fi
+}
+
 # Function to show usage
 show_usage() {
     printf "%bLaravel Development Helper%b\n" "$BLUE" "$NC"
@@ -61,9 +88,10 @@ show_usage() {
     echo "  php [args]        Run PHP commands"
     echo "  artisan [args]    Run Laravel Artisan commands"
     echo "  composer [args]   Run Composer commands"
-    echo "  npm [args]        Run NPM commands"
-    echo "  node [args]       Run Node.js commands"
+    echo "  npm [args]        Run NPM commands (in Node container)"
+    echo "  node [args]       Run Node.js commands (in Node container)"
     echo "  shell             Open an interactive shell in the PHP container"
+    echo "  node-shell        Open an interactive shell in the Node container"
     echo "  mysql             Connect to MySQL database"
     echo "  redis-cli         Connect to Redis"
     echo "  help              Show this help message"
@@ -79,10 +107,13 @@ show_usage() {
     echo "  $0 mysql                        # Connect to MySQL CLI"
     echo ""
     printf "%bContainer Detection:%b\n" "$YELLOW" "$NC"
-    echo "This script automatically detects which PHP container is running:"
+    echo "This script automatically detects which containers are running:"
+    echo "PHP Containers:"
     echo "  - laravel-perf-php-fpm (traditional stack)"
     echo "  - laravel-perf-frankenphp (frankenphp stack)"
     echo "  - laravel-perf-octane (octane stack)"
+    echo "Node Container:"
+    echo "  - laravel-perf-node (for npm/node commands)"
     echo ""
 }
 
@@ -105,12 +136,22 @@ case "${1:-}" in
     
     npm)
         shift
-        run_in_php_container npm "$@"
+        run_in_node_container npm "$@"
         ;;
     
     node)
         shift
-        run_in_php_container node "$@"
+        run_in_node_container node "$@"
+        ;;
+    
+    node-shell)
+        # Open shell in Node container
+        if ! container=$(detect_node_container); then
+            printf "%bError: Node container is not running%b\n" "$RED" "$NC" >&2
+            printf "%bStart a stack with Node support first%b\n" "$YELLOW" "$NC" >&2
+            exit 1
+        fi
+        docker exec -it "$container" sh
         ;;
     
     shell|bash|sh)

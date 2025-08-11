@@ -57,7 +57,21 @@ git clone https://github.com/psrearick/customer-dashboard.git
 cd customer-dashboard
 ```
 
-### 2. Configuration a Shell Aliases (Optional)
+### 2. Environment Configuration
+
+```bash
+# Copy the example environment file
+cp .env.example .env
+
+# Or use specific environment configurations
+cp .env.development .env  # For development with debugging enabled
+cp .env.testing .env      # For performance testing
+
+# Generate application key
+./bin/dev artisan key:generate
+```
+
+### 3. Configure Shell Aliases (Optional)
 
 The `bin` directory contains two scripts: `dev` and `stack`, which can be invoked using the `bin/dev` and `bin/stack`
 commands, respectively.
@@ -86,7 +100,7 @@ stack help
 
 The remainder of this documentation will assume that you have configured these aliases.
 
-### 3. Verify Configuration Files
+### 4. Verify Configuration Files
 
 ```bash
 # Validate that all configuration files exist for the traditional stack
@@ -102,7 +116,7 @@ stack validate traditional
 
 ### Start with Traditional Stack
 
-The traditional stack (Nginx + PHP-FPM) is the most common and stable configuration:
+The traditional stack (Nginx + PHP-FPM + Node.js) is the most common and stable configuration:
 
 ```bash
 # Start traditional stack in background mode
@@ -119,6 +133,7 @@ Running containers:
 NAMES                         STATUS                   PORTS
 laravel-perf-nginx            Up 30 seconds           0.0.0.0:80->80/tcp, 0.0.0.0:443->443/tcp
 laravel-perf-php-fpm          Up 31 seconds           9000/tcp
+laravel-perf-node             Up 31 seconds           0.0.0.0:5173->5173/tcp
 laravel-perf-mysql            Up 32 seconds           0.0.0.0:3306->3306/tcp, 33060/tcp
 laravel-perf-redis            Up 32 seconds           0.0.0.0:6379->6379/tcp
 laravel-perf-prometheus       Up 32 seconds           0.0.0.0:9090->9090/tcp
@@ -130,6 +145,7 @@ laravel-perf-grafana          Up 31 seconds           0.0.0.0:3000->3000/tcp
 Once containers are running, access these URLs:
 
 - **Application**: http://localhost
+- **Vite Dev Server** (with HMR): http://localhost:5173
 - **Grafana Dashboard**: http://localhost:3000 (admin/admin)
 - **Prometheus**: http://localhost:9090
 
@@ -191,18 +207,18 @@ This project includes a complete Laravel 12 application with React 19 and Inerti
 # Start traditional stack (or the stack of your choice) in background mode
 stack up traditional -d
 
-# Configure database connection
-cp .env.example .env
-
 # Using the dev helper script (recommended):
 dev composer install
-dev artisan key:generate
 dev artisan migrate --seed
-dev npm install
-dev npm run build
 
-# Or start development server with hot reloading
-dev npm run dev
+# Node.js container handles frontend automatically
+# The Node container will:
+# - Install npm dependencies
+# - Start Vite dev server with hot module reloading
+# - Watch for file changes
+
+# To manually rebuild frontend assets:
+dev npm run build
 
 # Alternative: Direct docker exec commands
 # docker exec laravel-perf-php-fpm composer install
@@ -218,6 +234,7 @@ The application uses modern React 19 with Inertia.js for seamless SPA experience
 - **Components**: Radix UI components in `resources/js/Components/`
 - **Pages**: Inertia pages in `resources/js/Pages/`
 - **Layouts**: Reusable layouts in `resources/js/Layouts/`
+- **Node.js Container**: Handles all frontend tooling and hot module reloading
 
 ### Available Application Routes
 
@@ -345,13 +362,17 @@ stack up traditional -d
 ### Daily Development
 
 ```bash
-# Start your preferred stack for development
-stack up traditional -d
+# Start development stack with Node.js for hot reloading
+stack up development -d
+
+# Check that Vite dev server is running
+docker logs laravel-perf-node
 
 # Work on your application...
+# Frontend changes will auto-reload at http://localhost:5173
 
 # Stop when done
-stack down traditional
+stack down development
 ```
 
 ### Performance Testing Session
@@ -381,6 +402,7 @@ dev redis-cli      # Redis CLI
 docker exec -it laravel-perf-php-fpm bash
 docker exec -it laravel-perf-mysql bash
 docker exec -it laravel-perf-nginx sh
+docker exec -it laravel-perf-node sh
 
 # Check container networking  
 docker network ls
