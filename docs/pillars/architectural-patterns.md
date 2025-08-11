@@ -6,7 +6,7 @@ This pillar focuses on implementing sophisticated software design patterns withi
 traditional MVC structure. It demonstrates enterprise-grade architectural solutions for complex applications requiring
 maintainability, testability, and scalability at the team and codebase level.
 
-**Target Audience:** Senior Laravel developers, technical architects, and team leads working on large, complex
+**Target Audience:** Laravel developers, technical architects, and team leads working on large, complex
 applications with multiple developers and evolving business requirements.
 
 **Technical Focus:** Implementation of enterprise-grade architectural patterns with measurable improvements in code
