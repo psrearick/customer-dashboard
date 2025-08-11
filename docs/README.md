@@ -1,7 +1,7 @@
-# Laravel Blog Demo Application - Documentation
+# Customer Dashboard Demo Application - Documentation
 
-Welcome to the documentation for the Laravel Blog Demo Application. This application serves as a comprehensive
-demonstration platform for advanced Laravel development patterns, supporting a blog focused on enterprise-level
+Welcome to the documentation for the Customer Dashboard Demo Application. This application serves as a comprehensive
+demonstration platform for advanced Laravel development patterns, supporting a [blog](https://philliprearick.com) focused on enterprise-level
 production challenges.
 
 ## Documentation Structure

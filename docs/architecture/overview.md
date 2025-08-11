@@ -1,6 +1,6 @@
 # Demo Application Architecture
 
-This document explains the architectural decisions in the Laravel Blog Demo Application and why they support
+This document explains the architectural decisions in the Customer Dashboard Demo Application and why they support
 advanced content creation for senior Laravel developers. Understanding these decisions helps in creating credible,
 quantified demonstrations of enterprise-level optimization techniques.
 

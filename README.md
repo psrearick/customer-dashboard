@@ -1,4 +1,4 @@
-# Laravel Blog Demo Application
+# Customer Dashboard Demo Application
 
 A comprehensive demonstration platform for advanced Laravel development patterns, supporting enterprise-level content
 creation for senior developers. This application showcases systematic optimization techniques, architectural patterns,

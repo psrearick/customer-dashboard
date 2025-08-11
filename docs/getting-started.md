@@ -1,6 +1,6 @@
-# Laravel Blog Demo Application Setup
+# Customer Dashboard Demo Application Setup
 
-This guide provides environment setup and configuration for the Laravel Blog Demo Application, designed to support
+This guide provides environment setup and configuration for the Customer Dashboard Demo Application, designed to support
 advanced content creation for senior Laravel developers. The application serves as a comprehensive demonstration
 platform for enterprise-level optimization techniques with quantified results.
 
@@ -85,7 +85,7 @@ cp .env.development .env   # For development with full monitoring
 
 ```env
 # Application identification
-APP_NAME="Laravel Blog Demo"
+APP_NAME="Customer Dashboard Demo"
 APP_ENV=performance
 APP_DEBUG=false  # Production-like for accurate performance measurement
 
