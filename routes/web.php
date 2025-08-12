@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\MetricsController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -18,3 +19,5 @@ Route::get('/status', function () {
         'laravel' => app()->version(),
     ]);
 });
+
+Route::get('/metrics', [MetricsController::class, 'metrics']);

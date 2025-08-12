@@ -1,7 +1,6 @@
 {
-  "dashboard": {
-    "id": null,
-    "title": "Laravel Performance Overview",
+  "id": null,
+  "title": "Laravel Performance Overview",
     "tags": [
       "laravel",
       "performance"
@@ -22,7 +21,7 @@
         "type": "stat",
         "targets": [
           {
-            "expr": "sum(rate(http_requests_total[5m]))",
+            "expr": "sum(rate(laravel_http_requests_total[5m]))",
             "refId": "A"
           }
         ],
@@ -63,7 +62,7 @@
         "type": "stat",
         "targets": [
           {
-            "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))",
+            "expr": "histogram_quantile(0.95, sum(rate(laravel_http_request_duration_seconds_bucket[5m])) by (le))",
             "refId": "A"
           }
         ],
@@ -104,7 +103,7 @@
         "type": "stat",
         "targets": [
           {
-            "expr": "sum(rate(http_requests_total{status=~\"5..\"}[5m])) / sum(rate(http_requests_total[5m])) * 100",
+            "expr": "sum(rate(laravel_http_requests_total{status=~\"5..\"}[5m])) / sum(rate(laravel_http_requests_total[5m])) * 100",
             "refId": "A"
           }
         ],
@@ -186,9 +185,9 @@
         "type": "timeseries",
         "targets": [
           {
-            "expr": "sum(rate(http_requests_total[5m])) by (job)",
+            "expr": "sum(rate(laravel_http_requests_total[5m])) by (method)",
             "refId": "A",
-            "legendFormat": "{{job}}"
+            "legendFormat": "{{method}}"
           }
         ],
         "fieldConfig": {
@@ -212,17 +211,17 @@
         "type": "timeseries",
         "targets": [
           {
-            "expr": "histogram_quantile(0.50, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))",
+            "expr": "histogram_quantile(0.50, sum(rate(laravel_http_request_duration_seconds_bucket[5m])) by (le))",
             "refId": "A",
             "legendFormat": "50th percentile"
           },
           {
-            "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))",
+            "expr": "histogram_quantile(0.95, sum(rate(laravel_http_request_duration_seconds_bucket[5m])) by (le))",
             "refId": "B",
             "legendFormat": "95th percentile"
           },
           {
-            "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))",
+            "expr": "histogram_quantile(0.99, sum(rate(laravel_http_request_duration_seconds_bucket[5m])) by (le))",
             "refId": "C",
             "legendFormat": "99th percentile"
           }
@@ -243,5 +242,4 @@
         }
       }
     ]
-  }
 }

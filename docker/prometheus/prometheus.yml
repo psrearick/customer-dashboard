@@ -29,7 +29,7 @@ scrape_configs:
   # Laravel application metrics (if using custom metrics)
   - job_name: 'laravel-app'
     static_configs:
-      - targets: ['frankenphp:80', 'nginx-lb:80']
+      - targets: ['laravel-perf-nginx:80']
     scrape_interval: 30s
     metrics_path: /metrics
     scrape_timeout: 10s
@@ -37,25 +37,19 @@ scrape_configs:
   # MySQL performance metrics
   - job_name: 'mysql'
     static_configs:
-      - targets: ['mysql-exporter:9104']
+      - targets: ['laravel-perf-mysql-exporter:9104']
     scrape_interval: 30s
 
   # Redis performance metrics
   - job_name: 'redis'
     static_configs:
-      - targets: ['redis-exporter:9121']
+      - targets: ['laravel-perf-redis-exporter:9121']
     scrape_interval: 30s
 
-  # Node exporter for system metrics
-  - job_name: 'node-exporter'
+  # StatsD metrics
+  - job_name: 'statsd'
     static_configs:
-      - targets: ['node-exporter:9100']
-    scrape_interval: 30s
-
-  # Nginx metrics (if using nginx-prometheus-exporter)
-  - job_name: 'nginx'
-    static_configs:
-      - targets: ['nginx-exporter:9113']
+      - targets: ['laravel-perf-statsd:9102']
     scrape_interval: 30s
 
 # Storage configuration is handled via command-line args in docker-compose.yml
