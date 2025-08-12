@@ -1,5 +1,5 @@
 groups:
-  - name: laravel-performance-recording
+  - name: customer-dashboard-recording
     interval: 30s
     rules:
       - record: laravel:request_rate_5m

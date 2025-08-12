@@ -3,7 +3,7 @@ version: '3.8'
 services:
   node:
     image: node:20-alpine
-    container_name: laravel-perf-node
+    container_name: customer-dashboard-node
     working_dir: /var/www/html
     volumes:
       - ./:/var/www/html
@@ -19,7 +19,7 @@ services:
     stop_signal: SIGTERM
     stop_grace_period: 10s
     networks:
-      - laravel-perf
+      - customer-dashboard
     deploy:
       resources:
         limits:
@@ -34,5 +34,4 @@ volumes:
     driver: local
 
 networks:
-  laravel-perf:
-    external: true
+  customer-dashboard:

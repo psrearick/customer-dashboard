@@ -4,7 +4,7 @@ services:
   # Separate databases for tenant isolation testing
   mysql-tenant-1:
     image: mysql:8.4
-    container_name: laravel-perf-mysql-tenant-1
+    container_name: customer-dashboard-mysql-tenant-1
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
       MYSQL_DATABASE: tenant_1
@@ -16,11 +16,11 @@ services:
     ports:
       - "3307:3306"
     networks:
-      - laravel-perf
+      - customer-dashboard
 
   mysql-tenant-2:
     image: mysql:8.4
-    container_name: laravel-perf-mysql-tenant-2
+    container_name: customer-dashboard-mysql-tenant-2
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
       MYSQL_DATABASE: tenant_2
@@ -32,46 +32,46 @@ services:
     ports:
       - "3308:3306"
     networks:
-      - laravel-perf
+      - customer-dashboard
 
   # Redis clusters for distributed caching
   redis-cluster-1:
     image: redis:8-alpine
-    container_name: laravel-perf-redis-cluster-1
+    container_name: customer-dashboard-redis-cluster-1
     command: redis-server --port 7010 --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000 --appendonly yes
     ports:
       - "7010:7010"
     volumes:
       - redis_cluster_1_data:/data
     networks:
-      - laravel-perf
+      - customer-dashboard
 
   redis-cluster-2:
     image: redis:8-alpine
-    container_name: laravel-perf-redis-cluster-2
+    container_name: customer-dashboard-redis-cluster-2
     command: redis-server --port 7011 --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000 --appendonly yes
     ports:
       - "7011:7011"
     volumes:
       - redis_cluster_2_data:/data
     networks:
-      - laravel-perf
+      - customer-dashboard
 
   redis-cluster-3:
     image: redis:8-alpine
-    container_name: laravel-perf-redis-cluster-3
+    container_name: customer-dashboard-redis-cluster-3
     command: redis-server --port 7012 --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000 --appendonly yes
     ports:
       - "7012:7012"
     volumes:
       - redis_cluster_3_data:/data
     networks:
-      - laravel-perf
+      - customer-dashboard
 
   # Load balancer for multi-instance testing
   nginx-lb:
     image: nginx:alpine
-    container_name: laravel-perf-nginx-lb
+    container_name: customer-dashboard-nginx-lb
     volumes:
       - ./docker/nginx/load-balancer.conf:/etc/nginx/nginx.conf
     ports:
@@ -79,7 +79,7 @@ services:
     depends_on:
       - php-fpm
     networks:
-      - laravel-perf
+      - customer-dashboard
 
 volumes:
   mysql_tenant_1_data:
@@ -89,5 +89,4 @@ volumes:
   redis_cluster_3_data:
 
 networks:
-  laravel-perf:
-    external: true
+  customer-dashboard:

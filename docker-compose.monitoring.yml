@@ -4,14 +4,14 @@ services:
   # Core monitoring services
   prometheus:
     image: prom/prometheus:v3.5.0
-    container_name: laravel-perf-prometheus
+    container_name: customer-dashboard-prometheus
     volumes:
       - ./docker/prometheus:/etc/prometheus
       - prometheus_data:/prometheus
     ports:
       - "9090:9090"
     networks:
-      - laravel-perf
+      - customer-dashboard
     deploy:
       resources:
         limits:
@@ -23,7 +23,7 @@ services:
 
   grafana:
     image: grafana/grafana:latest
-    container_name: laravel-perf-grafana
+    container_name: customer-dashboard-grafana
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
       - GF_FEATURE_TOGGLES_ENABLE=publicDashboards
@@ -34,7 +34,7 @@ services:
     ports:
       - "3000:3000"
     networks:
-      - laravel-perf
+      - customer-dashboard
     deploy:
       resources:
         limits:
@@ -47,7 +47,7 @@ services:
   # APM and performance monitoring
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.15.4
-    container_name: laravel-perf-elasticsearch
+    container_name: customer-dashboard-elasticsearch
     environment:
       - discovery.type=single-node
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
@@ -58,11 +58,11 @@ services:
     ports:
       - "9200:9200"
     networks:
-      - laravel-perf
+      - customer-dashboard
 
   kibana:
     image: docker.elastic.co/kibana/kibana:8.15.4
-    container_name: laravel-perf-kibana
+    container_name: customer-dashboard-kibana
     environment:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
       - XPACK_SECURITY_ENABLED=false
@@ -71,22 +71,22 @@ services:
     depends_on:
       - elasticsearch
     networks:
-      - laravel-perf
+      - customer-dashboard
 
   # Custom metrics collection
   statsd:
     image: prom/statsd-exporter
-    container_name: laravel-perf-statsd
+    container_name: customer-dashboard-statsd
     ports:
       - "9102:9102"
       - "9125:9125/udp"
     networks:
-      - laravel-perf
+      - customer-dashboard
 
   # Database performance monitoring
   mysql-exporter:
     image: prom/mysqld-exporter:v0.15.1
-    container_name: laravel-perf-mysql-exporter
+    container_name: customer-dashboard-mysql-exporter
     command:
       - '--mysqld.address=mysql:3306'
       - '--mysqld.username=root'
@@ -97,12 +97,12 @@ services:
     depends_on:
       - mysql
     networks:
-      - laravel-perf
+      - customer-dashboard
 
   # Redis monitoring
   redis-exporter:
     image: oliver006/redis_exporter
-    container_name: laravel-perf-redis-exporter
+    container_name: customer-dashboard-redis-exporter
     environment:
       - REDIS_ADDR=redis://redis:6379
     ports:
@@ -110,19 +110,19 @@ services:
     depends_on:
       - redis
     networks:
-      - laravel-perf
+      - customer-dashboard
 
   # Application performance monitoring
   jaeger:
     image: jaegertracing/all-in-one:latest
-    container_name: laravel-perf-jaeger
+    container_name: customer-dashboard-jaeger
     environment:
       - COLLECTOR_ZIPKIN_HOST_PORT=:9411
     ports:
       - "16686:16686"  # Jaeger UI
       - "14268:14268"  # HTTP collector
     networks:
-      - laravel-perf
+      - customer-dashboard
 
 volumes:
   prometheus_data:
@@ -130,5 +130,4 @@ volumes:
   elasticsearch_data:
 
 networks:
-  laravel-perf:
-    external: true
+  customer-dashboard:

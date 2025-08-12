@@ -4,30 +4,30 @@ services:
   # MySQL performance monitoring
   percona-toolkit:
     image: percona/percona-toolkit
-    container_name: laravel-perf-percona-toolkit
+    container_name: customer-dashboard-percona-toolkit
     volumes:
       - ./docker/percona:/scripts
       - mysql_data:/var/lib/mysql
     command: tail -f /dev/null
     networks:
-      - laravel-perf
+      - customer-dashboard
 
   # Query performance analyzer
   pt-query-digest:
     image: percona/percona-toolkit
-    container_name: laravel-perf-pt-query-digest
+    container_name: customer-dashboard-pt-query-digest
     volumes:
       - ./storage/logs/mysql:/logs
       - ./docker/percona/reports:/reports
     working_dir: /reports
     command: tail -f /dev/null
     networks:
-      - laravel-perf
+      - customer-dashboard
 
   # Database connection pooler (for connection pool testing)
   pgbouncer:
     image: pgbouncer/pgbouncer:latest
-    container_name: laravel-perf-pgbouncer
+    container_name: customer-dashboard-pgbouncer
     environment:
       - DATABASES_HOST=mysql
       - DATABASES_PORT=3306
@@ -42,12 +42,12 @@ services:
     depends_on:
       - mysql
     networks:
-      - laravel-perf
+      - customer-dashboard
 
   # MySQL proxy for read/write splitting demonstration
   proxysql:
     image: proxysql/proxysql:latest
-    container_name: laravel-perf-proxysql
+    container_name: customer-dashboard-proxysql
     volumes:
       - ./docker/proxysql/proxysql.cnf:/etc/proxysql.cnf
     ports:
@@ -56,8 +56,7 @@ services:
     depends_on:
       - mysql
     networks:
-      - laravel-perf
+      - customer-dashboard
 
 networks:
-  laravel-perf:
-    external: true
+  customer-dashboard:

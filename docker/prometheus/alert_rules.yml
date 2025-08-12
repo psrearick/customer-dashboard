@@ -1,5 +1,5 @@
 groups:
-  - name: laravel-performance
+  - name: customer-dashboard
     rules:
       - alert: HighResponseTime
         expr: http_request_duration_seconds{quantile="0.95"} > 2

@@ -5,7 +5,7 @@ services:
     build:
       context: .
       dockerfile: docker/octane/Dockerfile
-    container_name: laravel-perf-octane
+    container_name: customer-dashboard-octane
     volumes:
       - ./:/app
       - ./docker/php/conf.d:/usr/local/etc/php/conf.d
@@ -24,7 +24,7 @@ services:
       - mysql
       - redis
     networks:
-      - laravel-perf
+      - customer-dashboard
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
@@ -33,5 +33,4 @@ services:
       start_period: 30s
 
 networks:
-  laravel-perf:
-    external: true
+  customer-dashboard:

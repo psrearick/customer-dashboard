@@ -15,7 +15,7 @@ NC='\033[0m' # No Color
 # Function to detect which PHP container is running
 detect_php_container() {
     # Check for running PHP containers in order of preference
-    local containers=("laravel-perf-php-fpm" "laravel-perf-frankenphp" "laravel-perf-octane")
+    local containers=("customer-dashboard-php-fpm" "customer-dashboard-frankenphp" "customer-dashboard-octane")
     
     for container in "${containers[@]}"; do
         if docker ps --format '{{.Names}}' | grep -q "^${container}$"; then
@@ -29,8 +29,8 @@ detect_php_container() {
 
 # Function to detect if Node container is running
 detect_node_container() {
-    if docker ps --format '{{.Names}}' | grep -q "^laravel-perf-node$"; then
-        echo "laravel-perf-node"
+    if docker ps --format '{{.Names}}' | grep -q "^customer-dashboard-node$"; then
+        echo "customer-dashboard-node"
         return 0
     fi
     return 1
@@ -109,11 +109,11 @@ show_usage() {
     printf "%bContainer Detection:%b\n" "$YELLOW" "$NC"
     echo "This script automatically detects which containers are running:"
     echo "PHP Containers:"
-    echo "  - laravel-perf-php-fpm (traditional stack)"
-    echo "  - laravel-perf-frankenphp (frankenphp stack)"
-    echo "  - laravel-perf-octane (octane stack)"
+    echo "  - customer-dashboard-php-fpm (traditional stack)"
+    echo "  - customer-dashboard-frankenphp (frankenphp stack)"
+    echo "  - customer-dashboard-octane (octane stack)"
     echo "Node Container:"
-    echo "  - laravel-perf-node (for npm/node commands)"
+    echo "  - customer-dashboard-node (for npm/node commands)"
     echo ""
 }
 
@@ -171,7 +171,7 @@ case "${1:-}" in
         ;;
     
     mysql)
-        if ! is_container_running "laravel-perf-mysql"; then
+        if ! is_container_running "customer-dashboard-mysql"; then
             printf "%bError: MySQL container is not running%b\n" "$RED" "$NC" >&2
             printf "%bStart a stack with MySQL support first%b\n" "$YELLOW" "$NC" >&2
             exit 1
@@ -179,11 +179,11 @@ case "${1:-}" in
         
         printf "%bConnecting to MySQL...%b\n" "$BLUE" "$NC"
         printf "%bPassword: password (or rootpassword for root)%b\n" "$YELLOW" "$NC"
-        docker exec -it laravel-perf-mysql mysql -u laravel -p
+        docker exec -it customer-dashboard-mysql mysql -u laravel -p
         ;;
     
     mysql-root)
-        if ! is_container_running "laravel-perf-mysql"; then
+        if ! is_container_running "customer-dashboard-mysql"; then
             printf "%bError: MySQL container is not running%b\n" "$RED" "$NC" >&2
             printf "%bStart a stack with MySQL support first%b\n" "$YELLOW" "$NC" >&2
             exit 1
@@ -191,18 +191,18 @@ case "${1:-}" in
         
         printf "%bConnecting to MySQL as root...%b\n" "$BLUE" "$NC"
         printf "%bPassword: rootpassword%b\n" "$YELLOW" "$NC"
-        docker exec -it laravel-perf-mysql mysql -u root -p
+        docker exec -it customer-dashboard-mysql mysql -u root -p
         ;;
     
     redis-cli|redis)
-        if ! is_container_running "laravel-perf-redis"; then
+        if ! is_container_running "customer-dashboard-redis"; then
             printf "%bError: Redis container is not running%b\n" "$RED" "$NC" >&2
             printf "%bStart a stack with Redis support first%b\n" "$YELLOW" "$NC" >&2
             exit 1
         fi
         
         printf "%bConnecting to Redis...%b\n" "$BLUE" "$NC"
-        docker exec -it laravel-perf-redis redis-cli
+        docker exec -it customer-dashboard-redis redis-cli
         ;;
     
     help|--help|-h|"")

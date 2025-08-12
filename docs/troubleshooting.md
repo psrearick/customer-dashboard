@@ -111,9 +111,9 @@ sudo usermod -aG docker $USER
 
 ```bash
 # Check specific container logs
-docker logs laravel-perf-mysql
-docker logs laravel-perf-nginx
-docker logs laravel-perf-redis
+docker logs customer-dashboard-mysql
+docker logs customer-dashboard-nginx
+docker logs customer-dashboard-redis
 
 # Check container status
 docker ps -a
@@ -127,7 +127,7 @@ docker ps -a
 ./bin/stack up traditional -d
 
 # For MySQL issues specifically
-docker volume rm laravel-perf_mysql_data
+docker volume rm customer-dashboard_mysql_data
 ./bin/stack up traditional -d
 ```
 
@@ -198,7 +198,7 @@ docker ps | grep node
 ./bin/dev npm run dev
 
 # Check Node container logs
-docker logs laravel-perf-node
+docker logs customer-dashboard-node
 ```
 
 ### 500 Errors After Switching Branches
@@ -292,9 +292,9 @@ docker stats
 ./bin/stack logs traditional -f
 
 # Specific container logs
-docker logs laravel-perf-mysql
-docker logs laravel-perf-nginx
-docker logs laravel-perf-node
+docker logs customer-dashboard-mysql
+docker logs customer-dashboard-nginx
+docker logs customer-dashboard-node
 ```
 
 ### Check Port Usage
@@ -307,7 +307,7 @@ lsof -i :6379  # Redis
 lsof -i :5173  # Vite dev server
 
 # Check Docker port mappings
-docker port laravel-perf-nginx
+docker port customer-dashboard-nginx
 ```
 
 ## Nuclear Option

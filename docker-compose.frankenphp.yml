@@ -5,7 +5,7 @@ services:
     build:
       context: .
       dockerfile: docker/frankenphp/Dockerfile
-    container_name: laravel-perf-frankenphp
+    container_name: customer-dashboard-frankenphp
     volumes:
       - ./:/app
       - ./docker/php/conf.d:/usr/local/etc/php/conf.d
@@ -20,8 +20,7 @@ services:
       - mysql
       - redis
     networks:
-      - laravel-perf
+      - customer-dashboard
 
 networks:
-  laravel-perf:
-    external: true
+  customer-dashboard:
