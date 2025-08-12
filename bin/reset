@@ -1,0 +1,7 @@
+#!/bin/bash
+
+./bin/dev artisan migrate:fresh --seed --force
+./bin/dev composer install --no-interaction
+./bin/dev npm install --silent && ./bin/dev npm run build
+
+echo "Application reset complete"

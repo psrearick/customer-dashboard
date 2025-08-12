@@ -1,0 +1,13 @@
+#!/bin/bash
+
+if [ -z "$1" ]; then
+    echo "Usage: ./bin/branch <branch-name>"
+    echo "Example: ./bin/branch demo/performance/query-optimized"
+    exit 1
+fi
+
+git checkout "$1"
+
+./bin/reset
+
+echo "Switched to $1 and reset application"

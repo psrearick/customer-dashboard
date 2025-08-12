@@ -1,639 +1,375 @@
-# Troubleshooting Guide
+# Troubleshooting
 
-This guide covers common issues and their solutions when working with the Laravel Performance Testing Environment.
+This guide covers the most common issues you'll encounter when setting up and running the customer management
+application.
 
-## Common Startup Issues
+## Quick Fixes (Most Common Issues)
 
-### Port Conflicts
+### Can't Access the Application
 
-**Error:** `Bind for 0.0.0.0:80 failed: port is already allocated`
-
-**Diagnosis:**
-
-```bash
-# Check what's using the conflicting port
-lsof -i :80
-lsof -i :3306
-lsof -i :6379
-lsof -i :5173  # Vite dev server port
-
-# On macOS, check for system services
-brew services list | grep started
-```
+**Problem:** Browser shows "Connection refused" or "This site can't be reached"
 
 **Solutions:**
 
 ```bash
+# Check if containers are running
+./bin/stack status
+
+# Restart the stack
+./bin/stack restart traditional
+
+# Verify you're using the correct URL:
+# Traditional: http://localhost
+# FrankenPHP: http://localhost:8080
+# Octane: http://localhost:8000
+```
+
+### Port Already in Use
+
+**Problem:** Error like `bind: address already in use` when starting containers
+
+**Solutions:**
+
+```bash
+# Check what's using the port
+lsof -i :80
+lsof -i :3306
+
 # Stop conflicting services (macOS)
 brew services stop nginx
-brew services stop mysql  
-brew services stop redis
+brew services stop mysql
 
 # Stop conflicting services (Linux)
 sudo systemctl stop nginx
 sudo systemctl stop mysql
-sudo systemctl stop redis
 
-# Alternative: Use different ports by modifying docker-compose.yml
+# Alternative: Use a different stack
+./bin/stack up frankenphp -d    # Uses port 8080 instead of 80
 ```
 
-**Prevention:**
+### Containers Won't Start or Keep Restarting
 
-- Use the `stack status` command before starting new stacks
-- Stop previous stacks before starting new ones: `stack down [stack]`
-
-### Memory Issues
-
-**Error:** Containers being killed or constantly restarting
-
-**Diagnosis:**
-
-```bash
-# Check Docker memory allocation
-docker system info | grep -i memory
-
-# Monitor container resource usage
-docker stats
-
-# Check system memory
-free -h  # Linux
-vm_stat  # macOS
-```
+**Problem:** Containers exit immediately or restart repeatedly
 
 **Solutions:**
 
-**Docker Desktop (macOS/Windows):**
-
-1. Open Docker Desktop → Settings → Resources → Advanced
-2. Increase Memory to at least 8GB (12GB recommended for full stack)
-3. Increase CPU cores to 4+ (8+ recommended)
-4. Apply & Restart
-
-**Linux:**
-
 ```bash
-# Add swap space if needed
-sudo fallocate -l 4G /swapfile
-sudo chmod 600 /swapfile
-sudo mkswap /swapfile
-sudo swapon /swapfile
+# Check container logs for errors
+./bin/stack logs traditional
+
+# Increase Docker memory allocation
+# Docker Desktop → Settings → Resources → Memory → 6GB+
+
+# Clean start
+./bin/stack clean
+./bin/stack up traditional -d
 ```
 
-### Container Startup Failures
+### Permission Denied Errors
 
-**Error:** Container exits immediately or fails to start
+**Problem:** Can't write to files or execute scripts
+
+**Solutions:**
+
+```bash
+# Make scripts executable
+chmod +x bin/dev bin/stack
+
+# Fix Laravel storage permissions (Linux/macOS)
+sudo chmod -R 775 storage bootstrap/cache
+sudo chown -R $USER:www-data storage bootstrap/cache
+
+# Add user to docker group (Linux)
+sudo usermod -aG docker $USER
+# Log out and back in after this command
+```
+
+## Docker Issues
+
+### Out of Memory Errors
+
+**Problem:** Containers being killed or system becomes slow
+
+**Solutions:**
+
+1. **Docker Desktop (macOS/Windows):**
+    - Open Docker Desktop → Settings → Resources
+    - Increase Memory to at least 6GB (8GB+ for performance stack)
+    - Increase CPU cores to 4+
+    - Apply & Restart
+
+2. **Use minimal stack:**
+   ```bash
+   ./bin/stack up traditional -d  # Instead of performance stack
+   ```
+
+### Containers Exiting Immediately
+
+**Problem:** Container starts then exits with error codes
 
 **Diagnosis:**
 
 ```bash
-# Check container logs
+# Check specific container logs
 docker logs laravel-perf-mysql
 docker logs laravel-perf-nginx
 docker logs laravel-perf-redis
-docker logs laravel-perf-node
 
 # Check container status
-docker ps -a --filter "label=com.docker.compose.project=laravel-perf"
-
-# Inspect specific container
-docker inspect laravel-perf-mysql
-```
-
-**Common Solutions:**
-
-**MySQL Container Issues:**
-
-```bash
-# Remove existing data volumes and restart
-stack clean
-stack up traditional -d
-
-# Check MySQL logs specifically
-docker logs laravel-perf-mysql 2>&1 | grep -i error
-
-# Access MySQL container for debugging
-docker exec -it laravel-perf-mysql mysql -u root -p
-```
-
-**Nginx Container Issues:**
-
-```bash
-# Test nginx configuration
-docker exec laravel-perf-nginx nginx -t
-
-# Check if required config files exist
-ls -la docker/nginx/nginx.conf
-ls -la docker/nginx/conf.d/laravel.conf
-```
-
-## Network and Connectivity Issues
-
-### Service Discovery Problems
-
-**Error:** `could not resolve host: mysql` or similar DNS errors
-
-**Diagnosis:**
-
-```bash
-# Check network exists
-docker network ls | grep laravel-perf
-
-# Inspect network configuration  
-docker network inspect laravel-perf_laravel-perf
-
-# Test connectivity between containers
-docker exec laravel-perf-nginx ping mysql
+docker ps -a
 ```
 
 **Solutions:**
 
 ```bash
-# Recreate the network
-stack down [stack]
-docker network rm laravel-perf_laravel-perf
-stack up [stack] -d
+# Remove problematic volumes and restart
+./bin/stack clean
+./bin/stack up traditional -d
 
-# Verify all containers are on the same network
-docker inspect laravel-perf-nginx | grep NetworkMode
-docker inspect laravel-perf-mysql | grep NetworkMode
+# For MySQL issues specifically
+docker volume rm laravel-perf_mysql_data
+./bin/stack up traditional -d
 ```
 
-### Application Not Accessible
+### Slow Startup Times
 
-**Error:** `Connection refused` or `This site can't be reached`
-
-**Diagnosis:**
-
-```bash
-# Check if containers are running
-stack status
-
-# Test local connectivity
-curl -I http://localhost
-curl -I http://localhost:8080  # FrankenPHP
-curl -I http://localhost:8000  # Octane
-
-# Check container port mappings
-docker port laravel-perf-nginx
-```
+**Problem:** Takes a long time for containers to become ready
 
 **Solutions:**
-
-```bash
-# Verify port mappings in docker-compose files
-cat docker-compose.traditional.yml | grep -A 2 ports
-
-# Check firewall (Linux)
-sudo ufw status
-sudo iptables -L
-
-# Reset containers
-stack restart [stack]
-```
-
-## Performance Issues
-
-### Slow Container Startup
-
-**Symptoms:** Containers take a long time to start or become ready
-
-**Diagnosis:**
 
 ```bash
 # Monitor startup progress
-stack logs [stack] -f
+./bin/stack logs traditional -f
 
-# Check resource utilization during startup
-docker stats
+# Use traditional stack (lightest option)
+./bin/stack up traditional -d
 
-# Time the startup process
-time stack up traditional -d
+# Increase Docker resources (see memory section above)
 ```
+
+## Application Issues
+
+### Database Connection Failures
+
+**Problem:** Laravel shows database connection errors
 
 **Solutions:**
 
 ```bash
-# Increase Docker resources (see Memory Issues above)
+# Verify MySQL container is running
+docker ps | grep mysql
 
-# Use pre-built images instead of building
-# Comment out 'build:' sections in docker-compose files
-
-# Disable unnecessary services for development
-# Start with minimal stack and add services as needed
-stack up minimal -d
-```
-
-### High Resource Usage
-
-**Symptoms:** System becomes slow, high CPU/memory usage
-
-**Diagnosis:**
-
-```bash
-# Identify resource-hungry containers
-docker stats --no-stream | sort -k 3 -h
-
-# Check container limits
-docker inspect laravel-perf-mysql | grep -i memory
-docker inspect laravel-perf-node | grep -i memory
-
-# Monitor system resources
-top -p $(docker inspect -f '{{.State.Pid}}' laravel-perf-mysql)
-```
-
-**Solutions:**
-
-```bash
-# Resource limits are now pre-configured in docker-compose files
-# Adjust via environment variables in .env:
-PHP_MEMORY_LIMIT=256M
-MYSQL_BUFFER_POOL_SIZE=512M
-REDIS_MAX_MEMORY=256mb
-
-# Optimize MySQL configuration
-# Edit docker/mysql/conf.d/performance.cnf
-innodb_buffer_pool_size = 512M  # Reduce from default
-
-# Use lighter stacks for development
-stack up minimal -d
-```
-
-## Configuration Issues
-
-### File Permission Problems
-
-**Error:** Permission denied errors, especially on Linux
-
-**Diagnosis:**
-
-```bash
-# Check file ownership
-ls -la docker/
-ls -la storage/  # If using Laravel
-
-# Check Docker daemon permissions
-groups $USER | grep docker
-```
-
-**Solutions:**
-
-```bash
-# Add user to docker group (Linux)
-sudo usermod -aG docker $USER
-# Log out and back in for changes to take effect
-
-# Fix file permissions for Laravel
-sudo chown -R $USER:www-data storage bootstrap/cache
-sudo chmod -R 775 storage bootstrap/cache
-
-# Use Docker Desktop's file sharing (macOS/Windows)
-# Docker Desktop → Settings → File Sharing → Add project directory
-```
-
-### Configuration File Not Found
-
-**Error:** `no such file or directory` for config files
-
-**Diagnosis:**
-
-```bash
-# Check if configuration files exist
-ls -la docker/nginx/nginx.conf
-ls -la docker/mysql/conf.d/
-
-# Validate configuration files
-stack validate traditional
-```
-
-**Solutions:**
-
-```bash
-# If configuration files are missing, they should be present in a proper clone
-# Check that you cloned the complete repository
-git status
-git pull origin main
-
-# Check if files were accidentally deleted
-git diff --name-status
-```
-
-### Environment Variable Issues
-
-**Error:** Variables not being passed to containers
-
-**Diagnosis:**
-
-```bash
-# Check environment variables in running container
-docker exec laravel-perf-mysql env | grep MYSQL
-docker exec laravel-perf-node env | grep NODE
-docker exec laravel-perf-node env | grep VITE
-
-# Verify docker-compose file syntax
-docker-compose -f docker-compose.yml config
-
-# Check which .env file is being used
-ls -la .env*
-cat .env | head -20
-```
-
-**Solutions:**
-
-```bash
-# Ensure proper YAML indentation in docker-compose files
-# Use quotes around values with special characters
-
-environment:
-  - "MYSQL_ROOT_PASSWORD=complex!password"
-
-# Restart containers after environment changes
-stack restart [stack]
-```
-
-## Application-Specific Issues
-
-### Laravel Application Problems
-
-**Database Connection Errors:**
-
-```bash
-# Verify database container is running
-docker exec laravel-perf-mysql mysql -u root -p -e "SHOW DATABASES;"
-
-# Check Laravel .env configuration
+# Check database credentials in .env file
 cat .env | grep DB_
 
-# Test connection from PHP container
-docker exec laravel-perf-php-fpm php -r "
-  try {
-    new PDO('mysql:host=mysql;dbname=laravel_perf', 'laravel', 'password');
-    echo 'Connection successful';
-  } catch(Exception \$e) {
-    echo 'Connection failed: ' . \$e->getMessage();
-  }
-"
+# Test database connection
+./bin/dev mysql
+# Password: password
+
+# Reset database completely
+./bin/dev artisan migrate:fresh --seed
 ```
 
-**Vite/Asset Issues:**
+### Laravel Key Not Set Errors
+
+**Problem:** "No application encryption key has been specified"
+
+**Solution:**
 
 ```bash
-# Node container handles frontend automatically
-# Check if Vite dev server is running
-docker logs laravel-perf-node
-
-# Manually rebuild assets if needed
-docker exec laravel-perf-node npm run build
-
-# Restart Node container to reload Vite
-docker restart laravel-perf-node
-
-# Access Vite dev server
-curl http://localhost:5173
+./bin/dev artisan key:generate
 ```
 
-**Node Container Not Starting:**
+### Frontend Assets Not Loading
+
+**Problem:** CSS/JavaScript not working, or build errors
+
+**Solutions:**
 
 ```bash
+# Check if Node container is running
+docker ps | grep node
+
+# Rebuild assets
+./bin/dev npm install
+./bin/dev npm run build
+
+# For development with auto-reload
+./bin/dev npm run dev
+
 # Check Node container logs
-docker logs laravel-perf-node --tail 50
-
-# Verify package.json exists
-docker exec laravel-perf-node ls -la package.json
-
-# Manually install dependencies
-docker exec laravel-perf-node npm install
-
-# Check Node.js version
-docker exec laravel-perf-node node --version
+docker logs laravel-perf-node
 ```
 
-### Octane-Specific Issues
+### 500 Errors After Switching Branches
 
-**Octane Won't Start:**
-
-```bash
-# Check if artisan file exists
-docker exec laravel-perf-octane ls -la /app/artisan
-
-# Verify Octane installation
-docker exec laravel-perf-octane php artisan octane:status
-
-# Check Swoole extension
-docker exec laravel-perf-octane php -m | grep swoole
-```
-
-**Memory Leaks in Octane:**
-
-```bash
-# Monitor memory usage over time
-docker stats laravel-perf-octane
-
-# Reduce max requests per worker
-# Edit docker-compose.octane.yml
-environment:
-  - OCTANE_MAX_REQUESTS=100
-```
-
-### FrankenPHP Issues
-
-**Caddyfile Configuration Errors:**
-
-```bash
-# Validate Caddyfile syntax
-docker exec laravel-perf-frankenphp caddy validate --config /etc/caddy/Caddyfile
-
-# Check FrankenPHP logs
-docker logs laravel-perf-frankenphp
-```
-
-**Worker Mode Problems:**
-
-```bash
-# Check worker status
-docker exec laravel-perf-frankenphp ps aux | grep frankenphp
-
-# Disable worker mode temporarily
-# Edit docker/frankenphp/Caddyfile - comment out worker line
-```
-
-## Monitoring and Logging Issues
-
-### Prometheus Not Collecting Metrics
-
-**Diagnosis:**
-
-```bash
-# Check Prometheus targets
-curl http://localhost:9090/api/v1/targets
-
-# Verify exporters are running
-curl http://localhost:9104/metrics  # MySQL exporter
-curl http://localhost:9121/metrics  # Redis exporter
-```
+**Problem:** Application breaks after git checkout
 
 **Solutions:**
 
 ```bash
-# Restart monitoring stack
-stack restart performance
+# Always run after switching branches:
+./bin/dev composer install
+./bin/dev artisan migrate:fresh --seed
+./bin/dev npm install
+./bin/dev npm run build
 
-# Check Prometheus configuration
-docker exec laravel-perf-prometheus cat /etc/prometheus/prometheus.yml
+# Clear Laravel caches
+./bin/dev artisan cache:clear
+./bin/dev artisan config:clear
+./bin/dev artisan view:clear
 ```
 
-### Grafana Dashboard Issues
+## When Switching Branches
 
-**Diagnosis:**
+### Database Migration Issues
+
+**Problem:** Migration errors or missing tables
+
+**Solution:**
 
 ```bash
-# Check Grafana logs
-docker logs laravel-perf-grafana
-
-# Verify data source configuration
-curl -u admin:admin http://localhost:3000/api/datasources
+# Fresh start with new branch
+./bin/dev artisan migrate:fresh --seed
 ```
+
+### Dependency Conflicts
+
+**Problem:** Composer or npm errors after branch switch
 
 **Solutions:**
 
 ```bash
-# Reset Grafana data
-docker volume rm laravel-perf_grafana_data
-stack restart performance
+# Update PHP dependencies
+./bin/dev composer install
 
-# Import dashboards manually via UI
-# Go to + → Import → Upload JSON file
+# Update Node dependencies
+./bin/dev npm install
+
+# If still having issues, clear caches
+./bin/dev composer dump-autoload
 ```
 
-### ELK Stack Problems
+### Cache Problems
 
-**Elasticsearch Issues:**
+**Problem:** Old data or configuration persisting
+
+**Solution:**
 
 ```bash
-# Check Elasticsearch cluster health
-curl http://localhost:9200/_cluster/health
+# Clear all Laravel caches
+./bin/dev artisan optimize:clear
 
-# Increase Java heap size if needed
-# Edit docker-compose.monitoring.yml
-environment:
-  - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+# Or individually:
+./bin/dev artisan cache:clear
+./bin/dev artisan config:clear
+./bin/dev artisan route:clear
+./bin/dev artisan view:clear
 ```
 
-## Advanced Debugging
+## Getting More Information
 
-### Container Introspection
+### Check Container Status
 
 ```bash
-# Access container shell
-docker exec -it laravel-perf-mysql bash
-docker exec -it laravel-perf-nginx sh
-docker exec -it laravel-perf-node sh
+# See what's running
+./bin/stack status
 
-# Check running processes
-docker exec laravel-perf-mysql ps aux
+# More detailed container info
+docker ps -a
 
-# Monitor container logs in real-time
-stack logs performance -f
-
-# Check container filesystem
-docker exec laravel-perf-nginx find /etc/nginx -name "*.conf"
+# Check resource usage
+docker stats
 ```
 
-### Network Debugging
+### View Logs
 
 ```bash
-# Test inter-container connectivity
-docker exec laravel-perf-nginx ping mysql
-docker exec laravel-perf-php-fpm telnet redis 6379
-docker exec laravel-perf-node ping nginx
+# All logs for a stack
+./bin/stack logs traditional
 
-# Check DNS resolution
-docker exec laravel-perf-nginx nslookup mysql
+# Follow logs in real-time
+./bin/stack logs traditional -f
 
-# Inspect network traffic
-docker exec laravel-perf-nginx netstat -tulpn
+# Specific container logs
+docker logs laravel-perf-mysql
+docker logs laravel-perf-nginx
+docker logs laravel-perf-node
 ```
 
-### Performance Debugging
+### Check Port Usage
 
 ```bash
-# Monitor system resources
-htop  # If available
-docker system events  # Watch Docker events
+# See what's using common ports
+lsof -i :80    # Web server
+lsof -i :3306  # MySQL
+lsof -i :6379  # Redis
+lsof -i :5173  # Vite dev server
 
-# Profile container startup
-docker events --filter container=laravel-perf-mysql &
-stack up traditional -d
-
-# Check disk I/O
-docker exec laravel-perf-mysql iostat -x 1
+# Check Docker port mappings
+docker port laravel-perf-nginx
 ```
 
-## Getting Additional Help
+## Nuclear Option
 
-### Log Collection for Support
+When everything is broken and you want to start completely fresh:
 
 ```bash
-# Collect all relevant logs
-mkdir -p debug-logs
-stack logs [stack] > debug-logs/stack-logs.txt
-docker system info > debug-logs/docker-info.txt
-docker system df > debug-logs/docker-usage.txt
+# WARNING: This removes all containers, volumes, and data
+./bin/stack clean
 
-# Create diagnostic script
-#!/bin/bash
-echo "=== System Info ==="
-uname -a
-docker --version
-docker-compose --version
+# Clean Docker system (removes unused data)
+docker system prune -f
 
-echo "=== Container Status ==="
-stack status
-
-echo "=== Resource Usage ==="
-docker stats --no-stream
-
-echo "=== Network Info ==="
-docker network ls
-docker network inspect laravel-perf_laravel-perf
+# Start over
+git checkout main
+cp .env.example .env
+./bin/stack up traditional -d
+./bin/dev artisan key:generate
+./bin/dev composer install
+./bin/dev artisan migrate:fresh --seed
+./bin/dev npm install
+./bin/dev npm run build
 ```
 
-### Useful Commands for Support
+**This will delete:**
+
+- All project containers
+- All project data volumes (database data, etc.)
+- Any uncommitted changes in containers
+
+## Still Having Problems?
+
+### Before Asking for Help
+
+1. Try the nuclear option above
+2. Verify your system meets the prerequisites
+3. Check that Docker Desktop is running and has sufficient resources
+
+### Collect Diagnostic Information
 
 ```bash
 # System information
-docker system info
-docker system df
+docker --version
+docker-compose --version
+./bin/stack status
 
-# Container information  
-docker ps -a --filter "label=com.docker.compose.project=laravel-perf"
-docker inspect laravel-perf-mysql
-docker inspect laravel-perf-node
-
-# Network information
-docker network ls
-docker port laravel-perf-nginx
-
-# Resource usage
-docker stats --no-stream
+# Save logs for troubleshooting
+./bin/stack logs traditional > debug-logs.txt
 ```
 
-### When to Report Issues
+### Common "It Works on My Machine" Issues
 
-Before reporting issues to the project repository:
+- **Different operating systems:** Use Docker exactly as documented
+- **Insufficient resources:** Increase Docker memory/CPU allocation
+- **Port conflicts:** Stop other services or use different stacks
+- **File permissions:** Follow the permission fix commands above
 
-1. Verify system requirements are met
-2. Try with minimal stack first
-3. Check this troubleshooting guide
-4. Collect diagnostic information
-5. Test with clean environment (`stack clean`)
+### Getting Help
 
-Include in your issue report:
+- **Check logs first:** Most issues show clear error messages in logs
+- **Try different stack:** If traditional doesn't work, try frankenphp
+- **Reset everything:** The nuclear option fixes 90% of persistent issues
 
-- Operating system and Docker versions
-- Stack configuration being used
-- Complete error messages and logs
-- Steps to reproduce the issue
-- System resource information
-
-Most issues are related to insufficient system resources or port conflicts, which can be resolved by following the
-solutions in this guide.
+Most problems are resolved by ensuring Docker has enough resources and using the reset commands when switching between
+branches or after making changes.

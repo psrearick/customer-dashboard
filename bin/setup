@@ -1,0 +1,34 @@
+#!/bin/bash
+
+set -e
+
+echo "Setting up Customer Dashboard..."
+
+if [ ! -f .env ]; then
+    cp .env.example .env
+    echo "Environment file created"
+fi
+
+echo "Starting Docker containers..."
+./bin/stack up traditional -d
+
+echo "Waiting for services to start..."
+sleep 10
+
+echo "Setting up Laravel application..."
+./bin/dev artisan key:generate --force
+./bin/dev composer install --no-interaction
+./bin/dev artisan migrate:fresh --seed --force
+./bin/dev npm install --silent
+./bin/dev npm run build
+
+echo ""
+echo "Setup complete!"
+echo ""
+echo "Access your application:"
+echo "   → http://localhost"
+echo ""
+echo "Next steps:"
+echo "   → Check docs/getting-started.md for more details"
+echo "   → Run './bin/stack logs traditional' if you have issues"
+echo ""

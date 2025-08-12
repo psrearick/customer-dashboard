@@ -2,31 +2,33 @@
 
 ## Introduction
 
-This is a demonstration platform for Laravel patterns and techniques, supporting
-the content of [Phillip Rearick's blog](https://philliprearick.com). The blog
-discusses optimization techniques, architectural patterns, and production-ready
-enterprise solutions.
+This is a multi-tenant customer management SaaS application that serves as a demonstration platform for Laravel
+optimization techniques and architectural patterns. It supports the content
+of [Phillip Rearick's blog](https://philliprearick.com), providing working code examples for the concepts discussed.
 
-While code snippets and conceptual explanations are helpful, sometimes you only
-understand something after seeing it in practice, manipulating it, and using it
-yourself. That's what this project is about. It goes beyond basic examples
-and demonstrates the topics discussed in the blog in the context of a complete
-multi-tenant SaaS platform built with Laravel, React, and Inertia.js.
+While code snippets and explanations are helpful, sometimes you only understand something after seeing it in practice.
+This project goes beyond basic examples by demonstrating techniques in the context of a complete application with
+realistic complexity, with features such as managing customers, orders, products, and activity tracking across multiple tenants.
 
-## Post Source Code
+## What You'll Find Here
 
-Many blog posts contain a link to the source code used in the article. Maybe
-that's how you got here. Most of these links go to specific branches associated
-with the source articles, while others may link to the `main` branch. If the branch
-you are on has an associated blog post, it will have its own README file,
-[README.blog.md](README.blog.md), which provides instructions for the specific
-article.
+### The Application
 
-If the post does not have a README, or the README does not provide specific
-instructions on how to get started, follow along with the [quick start](#quick-start)
-section below or head over to the [getting started](docs/getting-started.md) guide
-for more details.
+A customer management platform with:
 
+- Multi-tenant architecture with data isolation
+- Customer profiles and order management
+- Product catalog and inventory tracking
+- Activity monitoring and notifications
+- Real-world complexity suitable for optimization demonstrations
+
+### Blog Post Demonstrations
+
+Different branches showcase specific techniques:
+
+- **Performance optimizations** - Query improvements, caching strategies, memory management
+- **Architectural patterns** - Domain-driven design, event sourcing, hexagonal architecture
+- **Modern integrations** - AI features, real-time capabilities, advanced Laravel patterns
 
 ## Quick Start
 
@@ -35,30 +37,60 @@ for more details.
 git clone https://github.com/psrearick/customer-dashboard.git
 cd customer-dashboard
 
-# Start traditional environment
-./bin/stack up traditional -d
-
-# Set up application with comprehensive monitoring
-./bin/dev artisan key:generate
-./bin/dev artisan migrate --seed
-./bin/dev composer install
-./bin/dev npm install && ./bin/dev npm run build
+# Complete setup in one command
+./bin/setup
 
 # Access the application
-open http://localhost              # Main application
+open http://localhost
+```
+
+## Following Blog Posts
+
+If you're here from a specific blog post, you can jump directly to the relevant code:
+
+```bash
+# Switch to a blog post branch (example)
+./bin/branch demo/performance/query-optimized
+```
+
+Many blog posts link to specific branches that demonstrate the techniques being discussed. If the branch you're on has
+an associated blog post, look for [README.blog.md](README.blog.md) for post-specific instructions.
+
+## Exploring Different Server Technologies
+
+The project includes multiple Docker configurations to compare different deployment strategies:
+
+```bash
+# Traditional Nginx + PHP-FPM (default)
+./bin/stack up traditional -d
+
+# Modern FrankenPHP with HTTP/3
+./bin/stack up frankenphp -d
+
+# High-performance Laravel Octane  
+./bin/stack up octane -d
+
+# Performance monitoring stack
+./bin/stack up performance -d
 ```
 
 ## Documentation
 
-You'll find the documentation [here](docs/README.md).
+- **[Getting Started](docs/getting-started.md)** - Detailed setup and usage guide
+- **[Docker Stacks](docs/docker-stacks.md)** - Understanding the different server configurations
+- **[Troubleshooting](docs/troubleshooting.md)** - Common issues and solutions
 
+## Getting Help
 
-If you have found a bug, are stuck using the project, or have a question,
-[create an issue on GitHub](https://github.com/psrearick/customer-dashboard/issues).
+If you have questions or run into issues:
+
+- Check the [troubleshooting guide](docs/troubleshooting.md) for common problems
+- [Create an issue on GitHub](https://github.com/psrearick/customer-dashboard/issues) for bugs or questions
+- Review the documentation in the `docs/` directory
 
 ## Contributing
 
-Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
+Please see [CONTRIBUTING](CONTRIBUTING.md) for details on how to contribute to this project.
 
 ## License
 
