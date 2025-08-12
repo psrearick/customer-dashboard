@@ -1,6 +1,49 @@
 version: '3.8'
 
 services:
+  # Core monitoring services
+  prometheus:
+    image: prom/prometheus:v3.5.0
+    container_name: laravel-perf-prometheus
+    volumes:
+      - ./docker/prometheus:/etc/prometheus
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - laravel-perf
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: laravel-perf-grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
+      - GF_FEATURE_TOGGLES_ENABLE=publicDashboards
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./docker/grafana/datasources:/etc/grafana/provisioning/datasources
+      - ./docker/grafana/dashboards:/etc/grafana/provisioning/dashboards
+    ports:
+      - "3000:3000"
+    networks:
+      - laravel-perf
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+
   # APM and performance monitoring
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.15.4
@@ -82,6 +125,8 @@ services:
       - laravel-perf
 
 volumes:
+  prometheus_data:
+  grafana_data:
   elasticsearch_data:
 
 networks:
