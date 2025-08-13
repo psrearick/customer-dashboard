@@ -132,7 +132,40 @@ show_status() {
         printf "%bRunning containers:%b\n" "$GREEN" "$NC"
         echo "$running_containers"
         echo ""
-        printf "%bApplication access:%b http://localhost\n" "$GREEN" "$NC"
+    fi
+
+    local networks
+      networks=$(docker network ls --filter "name=${PROJECT_NAME}" --format "table {{.Name}}\t{{.Driver}}\t{{.Scope}}" 2>/dev/null || echo "")
+
+    if [ -z "$networks" ]; then
+        printf "%bNo active networks%b\n" "$YELLOW" "$NC"
+    else
+        local networks_line_count
+        networks_line_count=$(echo "$networks" | wc -l | tr -d ' ')
+        if [ "$networks_line_count" -eq 1 ]; then
+            printf "%bNo active networks%b\n" "$YELLOW" "$NC"
+        else
+            printf "%bActive networks:%b\n" "$GREEN" "$NC"
+            echo "$networks"
+        fi
+    fi
+
+    echo ""
+
+    local volumes
+    volumes=$(docker volume ls --filter "name=${PROJECT_NAME}" --format "table {{.Name}}\t{{.Driver}}" 2>/dev/null || echo "")
+
+    if [ -z "$volumes" ]; then
+        printf "%bNo created volumes%b\n" "$YELLOW" "$NC"
+    else
+        local volumes_line_count
+        volumes_line_count=$(echo "$volumes" | wc -l | tr -d ' ')
+        if [ "$volumes_line_count" -eq 1 ]; then
+            printf "%bNo created volumes%b\n" "$YELLOW" "$NC"
+        else
+            printf "%bCreated Volumes:%b\n" "$GREEN" "$NC"
+            echo "$volumes"
+        fi
     fi
 }
 
@@ -252,7 +285,6 @@ case ${COMMAND:-} in
         if [ "$ATTACH" = "false" ]; then
             echo ""
             printf "%bApplication started!%b\n" "$GREEN" "$NC"
-            printf "%bAccess: %bhttp://localhost\n" "$BLUE" "$NC"
         fi
         ;;
     down)

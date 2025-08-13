@@ -42,6 +42,8 @@ WORKDIR /app
 COPY docker/config/php/conf.d/performance.ini /usr/local/etc/php/conf.d/
 COPY docker/config/php/conf.d/opcache.ini /usr/local/etc/php/conf.d/
 COPY docker/config/php/conf.d/pdo_mysql.ini /usr/local/etc/php/conf.d/
+COPY docker/config/php/conf.d/pcntl.ini /usr/local/etc/php/conf.d/
+COPY docker/config/php/conf.d/swoole.ini /usr/local/etc/php/conf.d/
 COPY docker/config/php/conf.d/docker-php-ext-redis.ini /usr/local/etc/php/conf.d/
 COPY docker/config/octane/octane.conf /usr/local/etc/php/conf.d/octane.ini
 COPY docker/config/octane/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
@@ -79,6 +81,6 @@ exec php artisan octane:start --server=swoole --host=0.0.0.0 --port=8000 --worke
 EXPOSE 8000
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
-  CMD curl -f http://localhost:8000/health || exit 1
+  CMD curl -f http://localhost:8000/status || exit 1
 
 CMD ["/app/start-octane.sh"]
