@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # Separate databases for tenant isolation testing
   mysql-tenant-1:
@@ -12,7 +10,7 @@ services:
       MYSQL_PASSWORD: tenant_password
     volumes:
       - mysql_tenant_1_data:/var/lib/mysql
-      - ./docker/mysql/conf.d:/etc/mysql/conf.d
+      - ../config/mysql/conf.d:/etc/mysql/conf.d
     ports:
       - "3307:3306"
     networks:
@@ -28,7 +26,7 @@ services:
       MYSQL_PASSWORD: tenant_password
     volumes:
       - mysql_tenant_2_data:/var/lib/mysql
-      - ./docker/mysql/conf.d:/etc/mysql/conf.d
+      - ../config/mysql/conf.d:/etc/mysql/conf.d
     ports:
       - "3308:3306"
     networks:

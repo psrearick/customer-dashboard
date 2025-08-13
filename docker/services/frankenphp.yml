@@ -1,14 +1,16 @@
-version: '3.8'
+include:
+  - ./mysql.yml
+  - ./redis.yml
 
 services:
   frankenphp:
     build:
       context: .
-      dockerfile: docker/frankenphp/Dockerfile
+      dockerfile: ../config/frankenphp/Dockerfile
     container_name: customer-dashboard-frankenphp
     volumes:
-      - ./:/app
-      - ./docker/php/conf.d:/usr/local/etc/php/conf.d
+      - ../../:/app
+      - ../config/php/conf.d:/usr/local/etc/php/conf.d
     ports:
       - "8080:80"
       - "8443:443"

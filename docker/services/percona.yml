@@ -1,0 +1,26 @@
+services:
+  # MySQL performance monitoring
+  percona-toolkit:
+    image: percona/percona-toolkit
+    container_name: customer-dashboard-percona-toolkit
+    volumes:
+      - ../config/percona:/scripts
+      - mysql_data:/var/lib/mysql
+    command: tail -f /dev/null
+    networks:
+      - customer-dashboard
+
+  # Query performance analyzer
+  pt-query-digest:
+    image: percona/percona-toolkit
+    container_name: customer-dashboard-pt-query-digest
+    volumes:
+      - ./storage/logs/mysql:/logs
+      - ../config/percona/reports:/reports
+    working_dir: /reports
+    command: tail -f /dev/null
+    networks:
+      - customer-dashboard
+
+networks:
+  customer-dashboard:

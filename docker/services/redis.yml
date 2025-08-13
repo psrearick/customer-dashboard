@@ -1,0 +1,27 @@
+services:
+  redis:
+    image: redis:8-alpine
+    container_name: customer-dashboard-redis
+    command: redis-server /usr/local/etc/redis/redis.conf --maxmemory ${REDIS_MAX_MEMORY:-256mb} --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+      - ../config/redis/redis.conf:/usr/local/etc/redis/redis.conf
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    networks:
+      - customer-dashboard
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: ${REDIS_MAX_MEMORY:-256mb}
+        reservations:
+          cpus: '0.5'
+          memory: 128M
+
+
+volumes:
+  redis_data:
+
+networks:
+  customer-dashboard:

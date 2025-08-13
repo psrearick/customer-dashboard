@@ -1,0 +1,29 @@
+services:
+  grafana:
+    image: grafana/grafana:latest
+    container_name: customer-dashboard-grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
+      - GF_FEATURE_TOGGLES_ENABLE=publicDashboards
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ../config/grafana/datasources:/etc/grafana/provisioning/datasources
+      - ../config/grafana/dashboards:/etc/grafana/provisioning/dashboards
+    ports:
+      - "3000:3000"
+    networks:
+      - customer-dashboard
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+
+volumes:
+  grafana_data:
+
+networks:
+  customer-dashboard:

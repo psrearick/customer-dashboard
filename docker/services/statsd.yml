@@ -1,0 +1,12 @@
+services:
+  statsd:
+    image: prom/statsd-exporter
+    container_name: customer-dashboard-statsd
+    ports:
+      - "9102:9102"
+      - "9125:9125/udp"
+    networks:
+      - customer-dashboard
+      -
+networks:
+  customer-dashboard:

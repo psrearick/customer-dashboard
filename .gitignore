@@ -39,8 +39,8 @@ docker-compose.override.yml
 /storage/framework/views/*
 
 # Monitoring Data
-/docker/prometheus/data/
-/docker/grafana/data/
+/docker/config/prometheus/data/
+/docker/config/grafana/data/
 
 # IDE
 /.idea

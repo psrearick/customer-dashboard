@@ -1,12 +1,10 @@
-version: '3.8'
-
 services:
   node:
     image: node:20-alpine
     container_name: customer-dashboard-node
     working_dir: /var/www/html
     volumes:
-      - ./:/var/www/html
+      - ../../:/var/www/html
       - node_modules:/var/www/html/node_modules
     environment:
       - NODE_ENV=${NODE_ENV:-development}
@@ -14,7 +12,7 @@ services:
       - VITE_PORT=5173
     ports:
       - "5173:5173"
-      - "3001:3001"  # Alternative port for additional dev servers
+      - "3001:3001"
     command: sh -c "npm install && exec npm run dev"
     stop_signal: SIGTERM
     stop_grace_period: 10s
@@ -23,10 +21,10 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1.0'
+          cpus: '2.0'
           memory: 512M
         reservations:
-          cpus: '0.5'
+          cpus: '1.0'
           memory: 256M
 
 volumes:

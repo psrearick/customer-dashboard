@@ -1,14 +1,12 @@
-version: '3.8'
-
 services:
   octane:
     build:
       context: .
-      dockerfile: docker/octane/Dockerfile
+      dockerfile: ../config/octane/Dockerfile
     container_name: customer-dashboard-octane
     volumes:
-      - ./:/app
-      - ./docker/php/conf.d:/usr/local/etc/php/conf.d
+      - ../../:/app
+      - ../config/php/conf.d:/usr/local/etc/php/conf.d
     ports:
       - "8000:8000"
     environment:

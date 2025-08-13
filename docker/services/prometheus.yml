@@ -1,0 +1,25 @@
+services:
+  prometheus:
+    image: prom/prometheus:v3.5.0
+    container_name: customer-dashboard-prometheus
+    volumes:
+      - ../config/prometheus:/etc/prometheus
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - customer-dashboard
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+
+volumes:
+  prometheus_data:
+
+networks:
+  customer-dashboard:
