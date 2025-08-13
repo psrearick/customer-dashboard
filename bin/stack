@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# Customer Dashboard Environment Manager
-# Simplifies running different Docker stack combinations for performance testing
-
 set -e
 
 RED='\033[0;31m'
@@ -11,497 +8,177 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
-# Script configuration
 PROJECT_NAME="customer-dashboard"
+STACKS_DIR="docker/stacks"
+DEFAULT_STACK="default"
+COMPOSE_ARGS=""
 
-# Function to get compose file for a component
-get_compose_file() {
-    local component=$1
-    case $component in
-        base) echo "docker-compose.yml" ;;
-        traditional) echo "docker-compose.traditional.yml" ;;
-        frankenphp) echo "docker-compose.frankenphp.yml" ;;
-        octane) echo "docker-compose.octane.yml" ;;
-        node) echo "docker-compose.node.yml" ;;
-        monitoring) echo "docker-compose.monitoring.yml" ;;
-        multitenant) echo "docker-compose.multitenant.yml" ;;
-        database-tools) echo "docker-compose.database-tools.yml" ;;
-        *) echo "" ;;
-    esac
-}
+parse_stack_services() {
+    local stack_name=$1
+    local stack_file="${STACKS_DIR}/${stack_name}.txt"
 
-# Function to get stack components
-get_stack_components() {
-    local stack=$1
-    case $stack in
-        traditional) echo "base traditional node" ;;
-        frankenphp) echo "base frankenphp node" ;;
-        octane) echo "base octane node" ;;
-        performance) echo "base traditional node monitoring" ;;
-        enterprise) echo "base traditional node monitoring multitenant database-tools" ;;
-        comparison) echo "base traditional frankenphp octane node monitoring" ;;
-        full) echo "base traditional frankenphp octane node monitoring multitenant database-tools" ;;
-        minimal) echo "base traditional" ;;
-        development) echo "base traditional node" ;;
-        *) echo "" ;;
-    esac
-}
-
-# Function to check if stack exists
-stack_exists() {
-    local stack=$1
-    local components
-    components=$(get_stack_components "$stack")
-    if [ -z "$components" ]; then
-        return 1
-    fi
-    return 0
-}
-
-# Function to display usage information
-show_usage() {
-    printf "%bCustomer Dashboard Environment Manager%b\n" "$BLUE" "$NC"
-    echo ""
-    echo "Usage: $0 [COMMAND] [STACK] [OPTIONS]"
-    echo ""
-    printf "%bCommands:%b\n" "$YELLOW" "$NC"
-    echo "  up         Start the specified stack"
-    echo "  down       Stop the specified stack"
-    echo "  restart    Restart the specified stack"
-    echo "  logs       Show logs for the specified stack"
-    echo "  status     Show status of running containers"
-    echo "  stop-all   Stop all project containers (any stack)"
-    echo "  clean      Remove all containers, networks, and volumes"
-    echo "  list       List available stacks and components"
-    echo "  validate   Validate configuration files for a stack"
-    echo "  help       Show this help message"
-    echo ""
-    printf "%bAvailable Stacks:%b\n" "$YELLOW" "$NC"
-    echo "  traditional    - Nginx + PHP-FPM + Node.js (most common setup)"
-    echo "  frankenphp     - FrankenPHP with worker mode + Node.js"
-    echo "  octane         - Laravel Octane with Swoole + Node.js"
-    echo "  performance    - Traditional + Node.js + monitoring tools"
-    echo "  enterprise     - Full enterprise stack with multi-tenancy"
-    echo "  comparison     - All web servers + Node.js + monitoring for benchmarking"
-    echo "  full           - Everything (heavy resource usage)"
-    echo "  minimal        - Just basic traditional setup (no Node.js)"
-    echo "  development    - Traditional + Node.js for development"
-    echo ""
-    printf "%bOptions:%b\n" "$YELLOW" "$NC"
-    echo "  -d, --detach      Run in background (daemon mode)"
-    echo "  -b, --build       Force rebuild of images"
-    echo "  -r, --recreate    Build with new images"
-    echo "  -v, --verbose     Show verbose output"
-    echo "  --no-deps         Don't start dependent services"
-    echo ""
-    printf "%bExamples:%b\n" "$YELLOW" "$NC"
-    echo "  $0 validate traditional         # Validate configs for traditional stack"
-    echo "  $0 up traditional               # Start traditional Nginx + PHP-FPM stack"
-    echo "  $0 up performance -d            # Start performance testing stack in background"
-    echo "  $0 restart frankenphp           # Restart FrankenPHP stack"
-    echo "  $0 logs enterprise              # Show logs for enterprise stack"
-    echo "  $0 down full                    # Stop the full stack"
-    echo ""
-}
-
-# Function to validate stack name
-validate_stack() {
-    local stack=$1
-    if ! stack_exists "$stack"; then
-        printf "%bError: Unknown stack '%s'%b\n" "$RED" "$stack" "$NC" >&2
-        printf "%bAvailable stacks:%b traditional frankenphp octane performance enterprise comparison full minimal\n" "$YELLOW" "$NC" >&2
+    if [ ! -f "$stack_file" ]; then
+        printf "%bError: Stack '%s' not found in %s%b\n" "$RED" "$stack_name" "$STACKS_DIR" "$NC" >&2
+        echo "Available stacks:"
+        list_available_stacks
         exit 1
     fi
+
+    grep -v '^#' "$stack_file" | grep -v '^[[:space:]]*$' | tr '\n' ' '
 }
 
-# Function to build compose file arguments
+get_stack_description() {
+    local stack_name=$1
+    local stack_file="${STACKS_DIR}/${stack_name}.txt"
+
+    if [ -f "$stack_file" ]; then
+        # Get first comment line and remove the '# ' prefix
+        head -n 1 "$stack_file" | grep '^#' | sed 's/^# *//' || echo "No description available"
+    else
+        echo "Stack not found"
+    fi
+}
+
+list_available_stacks() {
+    printf "%bAvailable stacks:%b\n" "$YELLOW" "$NC"
+    for stack_file in "$STACKS_DIR"/*.txt; do
+        if [ -f "$stack_file" ]; then
+            local stack_name
+            stack_name=$(basename "$stack_file" .txt)
+            local description
+            description=$(get_stack_description "$stack_name")
+            printf "  %b%-12s%b %s\n" "$GREEN" "$stack_name" "$NC" "$description"
+        fi
+    done
+}
+
 build_compose_args() {
-    local stack=$1
-    local components
-    components=$(get_stack_components "$stack")
+    local stack_name=${1:-$DEFAULT_STACK}
     local args=""
 
-    for component in $components; do
-        local file
-        file=$(get_compose_file "$component")
-        if [ -n "$file" ]; then
-            args="$args -f $file"
+    local services
+    services=$(parse_stack_services "$stack_name")
+
+    printf "%bUsing stack '%s':%b %s\n" "$BLUE" "$stack_name" "$NC" "$(get_stack_description "$stack_name")"
+    printf "%bServices:%b %s\n" "$YELLOW" "$NC" "$services"
+
+    for service in $services; do
+        if [ -f "docker/services/${service}.yml" ]; then
+            args="$args -f docker/services/${service}.yml"
         else
-            printf "%bError: Unknown component '%s' in stack '%s'%b\n" "$RED" "$component" "$stack" "$NC" >&2
+            printf "%bError: Service file 'docker/services/${service}.yml' not found%b\n" "$RED" "$NC" >&2
             exit 1
         fi
     done
 
-    echo "$args"
+    COMPOSE_ARGS="$args"
 }
 
-# Function to check if required files exist
-check_files() {
-    local stack=$1
-    local components
-    components=$(get_stack_components "$stack")
-    local missing_files=""
-
-    for component in $components; do
-        local file
-        file=$(get_compose_file "$component")
-        if [ ! -f "$file" ]; then
-            if [ -z "$missing_files" ]; then
-                missing_files="$file"
-            else
-                missing_files="$missing_files $file"
-            fi
-        fi
-    done
-
-    # Check for required configuration files
-    case $stack in
-        *monitoring*|enterprise|full)
-            local required_configs="docker/prometheus/prometheus.yml docker/grafana/datasources/datasources.yml"
-            for config in $required_configs; do
-                if [ ! -f "$config" ]; then
-                    if [ -z "$missing_files" ]; then
-                        missing_files="$config"
-                    else
-                        missing_files="$missing_files $config"
-                    fi
-                fi
-            done
-            ;;
-    esac
-
-    case $stack in
-        traditional|enterprise|full)
-            local nginx_configs="docker/nginx/nginx.conf docker/nginx/conf.d/laravel.conf"
-            for config in $nginx_configs; do
-                if [ ! -f "$config" ]; then
-                    if [ -z "$missing_files" ]; then
-                        missing_files="$config"
-                    else
-                        missing_files="$missing_files $config"
-                    fi
-                fi
-            done
-            ;;
-    esac
-
-    case $stack in
-        frankenphp|enterprise|full)
-            local frankenphp_configs="docker/frankenphp/Caddyfile"
-            for config in $frankenphp_configs; do
-                if [ ! -f "$config" ]; then
-                    if [ -z "$missing_files" ]; then
-                        missing_files="$config"
-                    else
-                        missing_files="$missing_files $config"
-                    fi
-                fi
-            done
-            ;;
-    esac
-
-    if [ -n "$missing_files" ]; then
-        printf "%bError: Missing required configuration files:%b\n" "$RED" "$NC" >&2
-        for file in $missing_files; do
-            echo "  $file" >&2
-        done
-        printf "%bThe configuration files should be included with the project.%b\n" "$YELLOW" "$NC" >&2
-        printf "%bIf files are missing, check that you have the complete repository:%b\n" "$YELLOW" "$NC" >&2
-        echo "  git status" >&2
-        echo "  git pull origin main" >&2
-        printf "%bFor configuration help, see: docs/configuration-reference.md%b\n" "$YELLOW" "$NC" >&2
-        exit 1
-    fi
-}
-
-# Function to display stack information
-show_stack_info() {
-    local stack=$1
-    local components
-    components=$(get_stack_components "$stack")
-
-    printf "%bStack: %s%b\n" "$BLUE" "$stack" "$NC"
-    printf "%bComponents:%b %s\n" "$YELLOW" "$NC" "$components"
-    printf "%bCompose files:%b\n" "$YELLOW" "$NC"
-    for component in $components; do
-        local file
-        file=$(get_compose_file "$component")
-        echo "  - $file"
-    done
+show_usage() {
+    printf "%bCustomer Dashboard Environment Manager%b\n" "$BLUE" "$NC"
+    echo ""
+    echo "Usage: $0 [COMMAND] [OPTIONS] [STACK]"
+    echo ""
+    printf "%bCommands:%b\n" "$YELLOW" "$NC"
+    echo "  up         Start the application"
+    echo "  down       Stop the application"
+    echo "  restart    Restart the application"
+    echo "  logs       Show application logs"
+    echo "  status     Show status of running containers"
+    echo "  stacks     List all available stacks"
+    echo "  clean      Remove all containers, networks, and volumes"
+    echo "  help       Show this help message"
+    echo ""
+    printf "%bOptions:%b\n" "$YELLOW" "$NC"
+    echo "  -a, --attach      Run in foreground"
+    echo "  -b, --build       Force rebuild of images"
+    echo "  -f, --follow      Follow logs in real-time"
+    echo "  -s, --stack NAME  Use specific stack (default: $DEFAULT_STACK)"
+    echo ""
+    printf "%bExamples:%b\n" "$YELLOW" "$NC"
+    echo "  $0 up                     # Start default stack in background"
+    echo "  $0 up -s minimal          # Start minimal stack"
+    echo "  $0 up -a -s full          # Start full stack in foreground"
+    echo "  $0 stacks                 # List all available stacks"
+    echo "  $0 logs -f -s api-only    # Follow logs for api-only stack"
     echo ""
 }
 
-# Function to run docker-compose command
 run_compose() {
     local command=$1
-    local stack=$2
+    local stack_name=$2
     shift 2
     local additional_args="$*"
 
-    validate_stack "$stack"
-    check_files "$stack"
+    build_compose_args "$stack_name"
 
-    local compose_args
-    compose_args=$(build_compose_args "$stack")
-    local full_command="docker-compose -p $PROJECT_NAME $compose_args $command $additional_args"
-
-    if [ "$VERBOSE" = "true" ]; then
-        printf "%bExecuting:%b %s\n" "$BLUE" "$NC" "$full_command"
-        echo ""
-    fi
+    local full_command="docker-compose -p ${PROJECT_NAME} $COMPOSE_ARGS $command $additional_args"
 
     eval "$full_command"
 }
 
-# Function to show status of all containers
 show_status() {
-    printf "%bCustomer Dashboard Environment Status%b\n" "$BLUE" "$NC"
+    printf "%bCustomer Dashboard Status%b\n" "$BLUE" "$NC"
     echo ""
 
-    # Check if any containers are running
     local running_containers
-    running_containers=$(docker ps --filter "label=com.docker.compose.project=$PROJECT_NAME" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" 2>/dev/null || echo "")
+    running_containers=$(docker ps --filter "name=${PROJECT_NAME}" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" 2>/dev/null || echo "")
 
-    if [ -z "$running_containers" ]; then
+    if [ -z "$running_containers" ] || [ "$(echo "$running_containers" | wc -l | tr -d ' ')" -eq 1 ]; then
         printf "%bNo containers currently running%b\n" "$YELLOW" "$NC"
+        echo ""
+        echo "Start the application with: $0 up"
     else
-        local containers_line_count
-        containers_line_count=$(echo "$running_containers" | wc -l | tr -d ' ')
-        if [ "$containers_line_count" -eq 1 ]; then
-            printf "%bNo containers currently running%b\n" "$YELLOW" "$NC"
-        else
-            printf "%bRunning containers:%b\n" "$GREEN" "$NC"
-            echo "$running_containers"
-        fi
-    fi
-
-    echo ""
-
-    # Show network information
-    local networks
-    networks=$(docker network ls --filter "name=${PROJECT_NAME}" --format "table {{.Name}}\t{{.Driver}}\t{{.Scope}}" 2>/dev/null || echo "")
-
-    if [ -z "$networks" ]; then
-        printf "%bNo active networks%b\n" "$YELLOW" "$NC"
-    else
-        local networks_line_count
-        networks_line_count=$(echo "$networks" | wc -l | tr -d ' ')
-        if [ "$networks_line_count" -eq 1 ]; then
-            printf "%bNo active networks%b\n" "$YELLOW" "$NC"
-        else
-            printf "%bActive networks:%b\n" "$GREEN" "$NC"
-            echo "$networks"
-        fi
-    fi
-
-    echo ""
-
-    # Show volume information
-    local volumes
-    volumes=$(docker volume ls --filter "name=${PROJECT_NAME}" --format "table {{.Name}}\t{{.Driver}}" 2>/dev/null || echo "")
-
-    if [ -z "$volumes" ]; then
-        printf "%bNo created volumes%b\n" "$YELLOW" "$NC"
-    else
-        local volumes_line_count
-        volumes_line_count=$(echo "$volumes" | wc -l | tr -d ' ')
-        if [ "$volumes_line_count" -eq 1 ]; then
-            printf "%bNo created volumes%b\n" "$YELLOW" "$NC"
-        else
-            printf "%bCreated Volumes:%b\n" "$GREEN" "$NC"
-            echo "$volumes"
-        fi
+        printf "%bRunning containers:%b\n" "$GREEN" "$NC"
+        echo "$running_containers"
+        echo ""
+        printf "%bApplication access:%b http://localhost\n" "$GREEN" "$NC"
     fi
 }
 
-# Function to clean up everything
 clean_all() {
-    printf "%bThis will remove all containers, networks, and volumes for this project.%b\n" "$YELLOW" "$NC"
+    printf "%bThis will remove all containers, networks, and volumes for all stacks.%b\n" "$YELLOW" "$NC"
     printf "%bThis action cannot be undone!%b\n" "$RED" "$NC"
     echo ""
-    printf "Are you sure you want to continue? (y/N): "
+    printf "Are you sure? (y/N): "
     read -r REPLY
 
     case "$REPLY" in
         [Yy]|[Yy][Ee][Ss])
+            printf "%bCleaning up all stacks...%b\n" "$BLUE" "$NC"
+
+            # Clean up containers for all possible stacks
+            for stack_file in "$STACKS_DIR"/*.txt; do
+                if [ -f "$stack_file" ]; then
+                    local stack_name
+                    stack_name=$(basename "$stack_file" .txt)
+                    printf "Cleaning stack: %s\n" "$stack_name"
+                    run_compose "down" "$stack_name" "--remove-orphans --volumes" 2>/dev/null || true
+                fi
+            done
+
+            # Additional cleanup
+            docker container prune --filter "name=${PROJECT_NAME}" -f 2>/dev/null || true
+            docker network prune --filter "name=${PROJECT_NAME}" -f 2>/dev/null || true
+            docker volume prune --filter "name=${PROJECT_NAME}" -f 2>/dev/null || true
+            printf "%bCleanup complete!%b\n" "$GREEN" "$NC"
             ;;
         *)
             echo "Cancelled."
-            exit 0
             ;;
     esac
-
-    printf "%bCleaning up...%b\n" "$BLUE" "$NC"
-
-    # Stop and remove containers
-    docker-compose -p $PROJECT_NAME down --remove-orphans 2>/dev/null || true
-
-    # Remove project-specific containers, networks, and volumes
-    docker container prune --filter "label=com.docker.compose.project=$PROJECT_NAME" -f 2>/dev/null || true
-    docker network prune --filter "name=${PROJECT_NAME}" -f 2>/dev/null || true
-    docker volume prune --filter "name=${PROJECT_NAME}" -f 2>/dev/null || true
-
-    printf "%bCleanup complete!%b\n" "$GREEN" "$NC"
 }
 
-# Function to stop all containers for this project
-stop_all() {
-    printf "%bStopping all %s containers...%b\n" "$BLUE" "$PROJECT_NAME" "$NC"
-    
-    # Get all running containers for this project
-    local running_containers
-    running_containers=$(docker ps --filter "label=com.docker.compose.project=$PROJECT_NAME" --format "{{.Names}}" 2>/dev/null || echo "")
-    
-    if [ -z "$running_containers" ]; then
-        printf "%bNo %s containers are currently running%b\n" "$YELLOW" "$PROJECT_NAME" "$NC"
-        exit 0
-    fi
-    
-    # Count containers
-    local container_count
-    container_count=$(echo "$running_containers" | wc -l | tr -d ' ')
-    printf "%bFound %s running container(s)%b\n" "$YELLOW" "$container_count" "$NC"
-    
-    # Stop all containers
-    echo "$running_containers" | while read -r container; do
-        if [ -n "$container" ]; then
-            echo "Stopping $container..."
-            docker stop "$container" 2>/dev/null || true
-        fi
-    done
-    
-    printf "%bAll %s containers have been stopped%b\n" "$GREEN" "$PROJECT_NAME" "$NC"
-}
+if [ ! -d "$STACKS_DIR" ]; then
+    printf "%bError: Stacks directory '%s' not found%b\n" "$RED" "$STACKS_DIR" "$NC" >&2
+    exit 1
+fi
 
-# Function to list available stacks
-list_stacks() {
-    printf "%bAvailable Stacks and Components%b\n" "$BLUE" "$NC"
-    echo ""
-
-    printf "%bPredefined Stacks:%b\n" "$YELLOW" "$NC"
-    printf "  %btraditional%b: base traditional node\n" "$GREEN" "$NC"
-    printf "  %bfrankenphp%b: base frankenphp node\n" "$GREEN" "$NC"
-    printf "  %boctane%b: base octane node\n" "$GREEN" "$NC"
-    printf "  %bperformance%b: base traditional node monitoring\n" "$GREEN" "$NC"
-    printf "  %benterprise%b: base traditional node monitoring multitenant database-tools\n" "$GREEN" "$NC"
-    printf "  %bcomparison%b: base traditional frankenphp octane node monitoring\n" "$GREEN" "$NC"
-    printf "  %bfull%b: base traditional frankenphp octane node monitoring multitenant database-tools\n" "$GREEN" "$NC"
-    printf "  %bminimal%b: base traditional\n" "$GREEN" "$NC"
-    printf "  %bdevelopment%b: base traditional node\n" "$GREEN" "$NC"
-
-    echo ""
-    printf "%bAvailable Components:%b\n" "$YELLOW" "$NC"
-    printf "  %bbase%b: docker-compose.yml\n" "$GREEN" "$NC"
-    printf "  %btraditional%b: docker-compose.traditional.yml\n" "$GREEN" "$NC"
-    printf "  %bfrankenphp%b: docker-compose.frankenphp.yml\n" "$GREEN" "$NC"
-    printf "  %boctane%b: docker-compose.octane.yml\n" "$GREEN" "$NC"
-    printf "  %bnode%b: docker-compose.node.yml\n" "$GREEN" "$NC"
-    printf "  %bmonitoring%b: docker-compose.monitoring.yml\n" "$GREEN" "$NC"
-    printf "  %bmultitenant%b: docker-compose.multitenant.yml\n" "$GREEN" "$NC"
-    printf "  %bdatabase-tools%b: docker-compose.database-tools.yml\n" "$GREEN" "$NC"
-}
-
-
-# Function to validate configuration files
-validate_configs() {
-    local stack=$1
-    printf "%bValidating configuration files for stack: %s%b\n" "$BLUE" "$stack" "$NC"
-    echo ""
-
-    local validation_passed=true
-
-    # Validate Prometheus config if monitoring is included
-    case $stack in
-        *monitoring*|enterprise|full|comparison)
-            if [ -f "docker/prometheus/prometheus.yml" ]; then
-                echo "✓ Prometheus configuration found"
-            else
-                printf "%b✗ Prometheus configuration missing%b\n" "$RED" "$NC"
-                validation_passed=false
-            fi
-            if [ -f "docker/grafana/datasources/datasources.yml" ]; then
-                echo "✓ Grafana data sources configured"
-            else
-                printf "%b✗ Grafana datasources configuration missing%b\n" "$RED" "$NC"
-                validation_passed=false
-            fi
-            ;;
-    esac
-
-    # Validate Nginx config if traditional stack
-    case $stack in
-        traditional|enterprise|full|comparison|performance)
-            if [ -f "docker/nginx/nginx.conf" ]; then
-                echo "✓ Nginx main configuration found"
-            else
-                printf "%b✗ Nginx main configuration missing%b\n" "$RED" "$NC"
-                validation_passed=false
-            fi
-            if [ -f "docker/nginx/conf.d/laravel.conf" ]; then
-                echo "✓ Nginx Laravel virtual host configured"
-            else
-                printf "%b✗ Nginx Laravel virtual host missing%b\n" "$RED" "$NC"
-                validation_passed=false
-            fi
-            ;;
-    esac
-
-    # Validate FrankenPHP config
-    case $stack in
-        frankenphp|enterprise|full|comparison)
-            if [ -f "docker/frankenphp/Caddyfile" ]; then
-                echo "✓ FrankenPHP Caddyfile found"
-            else
-                printf "%b✗ FrankenPHP Caddyfile missing%b\n" "$RED" "$NC"
-                validation_passed=false
-            fi
-            ;;
-    esac
-
-    # Validate PHP configurations
-    if [ -f "docker/php/conf.d/opcache.ini" ]; then
-        echo "✓ PHP OPcache configuration found"
-    else
-        printf "%b⚠ PHP OPcache configuration missing (performance will be impacted)%b\n" "$YELLOW" "$NC"
-    fi
-
-    if [ -f "docker/php/conf.d/performance.ini" ]; then
-        echo "✓ PHP performance configuration found"
-    else
-        printf "%b⚠ PHP performance configuration missing%b\n" "$YELLOW" "$NC"
-    fi
-
-    # Validate database configurations
-    if [ -f "docker/mysql/conf.d/performance.cnf" ]; then
-        echo "✓ MySQL performance configuration found"
-    else
-        printf "%b⚠ MySQL performance configuration missing%b\n" "$YELLOW" "$NC"
-    fi
-
-    if [ -f "docker/redis/redis.conf" ]; then
-        echo "✓ Redis configuration found"
-    else
-        printf "%b⚠ Redis configuration missing%b\n" "$YELLOW" "$NC"
-    fi
-
-    echo ""
-    if [ "$validation_passed" = true ]; then
-        printf "%b✓ All required configurations found for stack: %s%b\n" "$GREEN" "$stack" "$NC"
-        printf "%bFor configuration details, see: docs/configuration-reference.md%b\n" "$BLUE" "$NC"
-    else
-        printf "%b✗ Configuration validation failed%b\n" "$RED" "$NC"
-        printf "%bSome required configuration files are missing.%b\n" "$YELLOW" "$NC"
-        printf "%bCheck that you have the complete repository and all files are present.%b\n" "$YELLOW" "$NC"
-        exit 1
-    fi
-}
-
-# Parse command line arguments
-VERBOSE=false
-DETACH=false
+ATTACH=false
 BUILD=false
-NO_DEPS=false
-RECREATE=false
+FOLLOW=false
+STACK_NAME="$DEFAULT_STACK"
+COMMAND=""
 
 while [ $# -gt 0 ]; do
     case $1 in
@@ -509,34 +186,31 @@ while [ $# -gt 0 ]; do
             COMMAND=$1
             shift
             ;;
-        status|stop-all|clean|list|help)
+        status|stacks|clean|help)
             COMMAND=$1
             shift
             break
             ;;
-        validate)
-            COMMAND=$1
-            shift
-            ;;
-        -d|--detach)
-            DETACH=true
-            shift
-            ;;
-        -r|--recreate)
-            RECREATE=true
+        -a|--attach)
+            ATTACH=true
             shift
             ;;
         -b|--build)
             BUILD=true
             shift
             ;;
-        -v|--verbose)
-            VERBOSE=true
+        -f|--follow)
+            FOLLOW=true
             shift
             ;;
-        --no-deps)
-            NO_DEPS=true
-            shift
+        -s|--stack)
+            if [ -n "$2" ]; then
+                STACK_NAME="$2"
+                shift 2
+            else
+                printf "%bError: --stack requires a stack name%b\n" "$RED" "$NC" >&2
+                exit 1
+            fi
             ;;
         -*)
             printf "%bError: Unknown option %s%b\n" "$RED" "$1" "$NC" >&2
@@ -544,116 +218,63 @@ while [ $# -gt 0 ]; do
             exit 1
             ;;
         *)
-            STACK=$1
-            shift
+            if [ -z "$COMMAND" ]; then
+                printf "%bError: Unknown command '%s'%b\n" "$RED" "$1" "$NC" >&2
+                show_usage
+                exit 1
+            fi
             ;;
     esac
 done
 
-# Handle commands that don't require a stack
+# Execute commands
 case ${COMMAND:-} in
+    stacks)
+        list_available_stacks
+        ;;
     status)
         show_status
-        exit 0
-        ;;
-    stop-all)
-        stop_all
-        exit 0
         ;;
     clean)
         clean_all
-        exit 0
-        ;;
-    list)
-        list_stacks
-        exit 0
         ;;
     help|"")
         show_usage
-        exit 0
         ;;
-esac
-
-# Handle commands that require a stack
-case ${COMMAND:-} in
-    validate)
-        if [ -z "${STACK:-}" ]; then
-            printf "%bError: Stack name is required for 'validate' command%b\n" "$RED" "$NC" >&2
-            show_usage
-            exit 1
-        fi
-        validate_stack "$STACK"
-        validate_configs "$STACK"
-        exit 0
-        ;;
-esac
-
-# Validate that we have both command and stack for commands that need them
-if [ -z "${COMMAND:-}" ]; then
-    printf "%bError: Command is required%b\n" "$RED" "$NC" >&2
-    show_usage
-    exit 1
-fi
-
-# Commands that require a stack
-case $COMMAND in
-    up|down|restart|logs|build|pull)
-        if [ -z "${STACK:-}" ]; then
-            printf "%bError: Stack name is required for '%s' command%b\n" "$RED" "$COMMAND" "$NC" >&2
-            show_usage
-            exit 1
-        fi
-        ;;
-esac
-
-# Build additional arguments
-ADDITIONAL_ARGS=""
-
-if [ "$DETACH" = "true" ]; then
-    ADDITIONAL_ARGS="$ADDITIONAL_ARGS -d"
-fi
-
-if [ "$BUILD" = "true" ]; then
-    ADDITIONAL_ARGS="$ADDITIONAL_ARGS --build"
-fi
-
-if [ "$RECREATE" = "true" ]; then
-    ADDITIONAL_ARGS="$ADDITIONAL_ARGS --force-recreate"
-fi
-
-if [ "$NO_DEPS" = "true" ]; then
-    ADDITIONAL_ARGS="$ADDITIONAL_ARGS --no-deps"
-fi
-
-# Show stack information in verbose mode
-if [ "$VERBOSE" = "true" ]; then
-    show_stack_info "$STACK"
-fi
-
-# Execute the command
-case $COMMAND in
     up)
-        printf "%bStarting %s stack...%b\n" "$GREEN" "$STACK" "$NC"
-        run_compose "up" "$STACK" "$ADDITIONAL_ARGS"
+        ADDITIONAL_ARGS=""
+        [ "$ATTACH" = "false" ] && ADDITIONAL_ARGS="$ADDITIONAL_ARGS -d"
+        [ "$BUILD" = "true" ] && ADDITIONAL_ARGS="$ADDITIONAL_ARGS --build"
+
+        printf "%bStarting application...%b\n" "$GREEN" "$NC"
+        run_compose "up" "$STACK_NAME" "$ADDITIONAL_ARGS"
+
+        if [ "$ATTACH" = "false" ]; then
+            echo ""
+            printf "%bApplication started!%b\n" "$GREEN" "$NC"
+            printf "%bAccess: %bhttp://localhost\n" "$BLUE" "$NC"
+        fi
         ;;
     down)
-        printf "%bStopping %s stack...%b\n" "$YELLOW" "$STACK" "$NC"
-        run_compose "down" "$STACK" "$ADDITIONAL_ARGS"
+        printf "%bStopping application...%b\n" "$YELLOW" "$NC"
+        run_compose "down" "$STACK_NAME"
         ;;
     restart)
-        printf "%bRestarting %s stack...%b\n" "$YELLOW" "$STACK" "$NC"
-        run_compose "restart" "$STACK" "$ADDITIONAL_ARGS"
+        printf "%bRestarting application...%b\n" "$YELLOW" "$NC"
+        run_compose "restart" "$STACK_NAME"
         ;;
     logs)
-        run_compose "logs" "$STACK" "$ADDITIONAL_ARGS"
+        ADDITIONAL_ARGS=""
+        [ "$FOLLOW" = "true" ] && ADDITIONAL_ARGS="$ADDITIONAL_ARGS -f"
+        run_compose "logs" "$STACK_NAME" "$ADDITIONAL_ARGS"
         ;;
     build)
-        printf "%bBuilding %s stack...%b\n" "$BLUE" "$STACK" "$NC"
-        run_compose "build" "$STACK" "$ADDITIONAL_ARGS"
+        printf "%bBuilding application...%b\n" "$BLUE" "$NC"
+        run_compose "build" "$STACK_NAME"
         ;;
     pull)
-        printf "%bPulling images for %s stack...%b\n" "$BLUE" "$STACK" "$NC"
-        run_compose "pull" "$STACK" "$ADDITIONAL_ARGS"
+        printf "%bPulling images...%b\n" "$BLUE" "$NC"
+        run_compose "pull" "$STACK_NAME"
         ;;
     *)
         printf "%bError: Unknown command '%s'%b\n" "$RED" "$COMMAND" "$NC" >&2

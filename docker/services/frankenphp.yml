@@ -5,8 +5,8 @@ include:
 services:
   frankenphp:
     build:
-      context: .
-      dockerfile: ../config/frankenphp/Dockerfile
+      context: ../..
+      dockerfile: docker/config/frankenphp/Dockerfile
     container_name: customer-dashboard-frankenphp
     volumes:
       - ../../:/app

@@ -1,8 +1,8 @@
 services:
   php-fpm:
     build:
-      context: .
-      dockerfile: ../config/php-fpm/Dockerfile
+      context: ../..
+      dockerfile: docker/config/php-fpm/Dockerfile
     container_name: customer-dashboard-php-fpm
     volumes:
       - ../../:/var/www/html

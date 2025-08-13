@@ -71,7 +71,7 @@ services:
     image: nginx:alpine
     container_name: customer-dashboard-nginx-lb
     volumes:
-      - ./docker/nginx/load-balancer.conf:/etc/nginx/nginx.conf
+      - ./docker/config/nginx/load-balancer.conf:/etc/nginx/nginx.conf
     ports:
       - "8090:80"
     depends_on:

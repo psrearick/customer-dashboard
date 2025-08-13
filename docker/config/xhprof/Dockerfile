@@ -10,7 +10,7 @@ RUN pecl install xhprof && docker-php-ext-enable xhprof
 RUN a2enmod rewrite
 
 # XHProf interface
-COPY docker/xhprof/index.php /var/www/html/index.php
+COPY docker/config/xhprof/index.php /var/www/html/index.php
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html

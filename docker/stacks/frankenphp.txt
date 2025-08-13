@@ -1,0 +1,5 @@
+# Modern development environment with core services, using FrankenPHP
+frankenphp
+mysql
+redis
+node

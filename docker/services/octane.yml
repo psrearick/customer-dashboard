@@ -1,8 +1,8 @@
 services:
   octane:
     build:
-      context: .
-      dockerfile: ../config/octane/Dockerfile
+      context: ../..
+      dockerfile: docker/config/octane/Dockerfile
     container_name: customer-dashboard-octane
     volumes:
       - ../../:/app
