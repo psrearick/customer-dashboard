@@ -13,13 +13,13 @@ application.
 
 ```bash
 # Check if containers are running
-./bin/stack status
+./bin/app status
 
 # Restart the stack
-./bin/stack restart traditional
+./bin/app restart -s frankenphp
 
 # Verify you're using the correct URL:
-# Traditional: http://localhost
+# Default: http://localhost
 # FrankenPHP: http://localhost:8080
 # Octane: http://localhost:8000
 ```
@@ -44,7 +44,7 @@ sudo systemctl stop nginx
 sudo systemctl stop mysql
 
 # Alternative: Use a different stack
-./bin/stack up frankenphp -d    # Uses port 8080 instead of 80
+./bin/app up -s frankenphp    # Uses port 8080 instead of 80
 ```
 
 ### Containers Won't Start or Keep Restarting
@@ -55,14 +55,14 @@ sudo systemctl stop mysql
 
 ```bash
 # Check container logs for errors
-./bin/stack logs traditional
+./bin/app logs -s frankenphp
 
 # Increase Docker memory allocation
 # Docker Desktop → Settings → Resources → Memory → 6GB+
 
 # Clean start
-./bin/stack clean
-./bin/stack up traditional -d
+./bin/app clean
+./bin/app up -s frankenphp
 ```
 
 ### Permission Denied Errors
@@ -73,7 +73,7 @@ sudo systemctl stop mysql
 
 ```bash
 # Make scripts executable
-chmod +x bin/dev bin/stack
+chmod +x bin/dev bin/app
 
 # Fix Laravel storage permissions (Linux/macOS)
 sudo chmod -R 775 storage bootstrap/cache
@@ -100,7 +100,7 @@ sudo usermod -aG docker $USER
 
 2. **Use minimal stack:**
    ```bash
-   ./bin/stack up traditional -d  # Instead of performance stack
+   ./bin/app up
    ```
 
 ### Containers Exiting Immediately
@@ -123,12 +123,12 @@ docker ps -a
 
 ```bash
 # Remove problematic volumes and restart
-./bin/stack clean
-./bin/stack up traditional -d
+./bin/app clean
+./bin/app up
 
 # For MySQL issues specifically
 docker volume rm customer-dashboard_mysql_data
-./bin/stack up traditional -d
+./bin/app up
 ```
 
 ### Slow Startup Times
@@ -139,10 +139,10 @@ docker volume rm customer-dashboard_mysql_data
 
 ```bash
 # Monitor startup progress
-./bin/stack logs traditional -f
+./bin/app logs
 
-# Use traditional stack (lightest option)
-./bin/stack up traditional -d
+# Use default stack (lightest option)
+./bin/app up
 
 # Increase Docker resources (see memory section above)
 ```
@@ -273,7 +273,7 @@ docker logs customer-dashboard-node
 
 ```bash
 # See what's running
-./bin/stack status
+./bin/app status
 
 # More detailed container info
 docker ps -a
@@ -286,10 +286,10 @@ docker stats
 
 ```bash
 # All logs for a stack
-./bin/stack logs traditional
+./bin/app logs
 
 # Follow logs in real-time
-./bin/stack logs traditional -f
+./bin/app logs -f
 
 # Specific container logs
 docker logs customer-dashboard-mysql
@@ -316,7 +316,7 @@ When everything is broken and you want to start completely fresh:
 
 ```bash
 # WARNING: This removes all containers, volumes, and data
-./bin/stack clean
+./bin/app clean
 
 # Clean Docker system (removes unused data)
 docker system prune -f
@@ -324,7 +324,7 @@ docker system prune -f
 # Start over
 git checkout main
 cp .env.example .env
-./bin/stack up traditional -d
+./bin/app up
 ./bin/dev artisan key:generate
 ./bin/dev composer install
 ./bin/dev artisan migrate:fresh --seed
@@ -352,10 +352,10 @@ cp .env.example .env
 # System information
 docker --version
 docker-compose --version
-./bin/stack status
+./bin/app status
 
 # Save logs for troubleshooting
-./bin/stack logs traditional > debug-logs.txt
+./bin/app logs > debug-logs.txt
 ```
 
 ### Common "It Works on My Machine" Issues
@@ -368,7 +368,7 @@ docker-compose --version
 ### Getting Help
 
 - **Check logs first:** Most issues show clear error messages in logs
-- **Try different stack:** If traditional doesn't work, try frankenphp
+- **Try different stack:** If default doesn't work, try frankenphp
 - **Reset everything:** The nuclear option fixes 90% of persistent issues
 
 Most problems are resolved by ensuring Docker has enough resources and using the reset commands when switching between

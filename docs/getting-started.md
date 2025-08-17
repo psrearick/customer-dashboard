@@ -39,8 +39,8 @@ cp .env.example .env
 ### 3. Start the Application
 
 ```bash
-# Start the traditional Docker stack (most common)
-./bin/stack up traditional -d
+# Start the default Docker stack (most common)
+./bin/app up
 
 # Generate application key
 ./bin/dev artisan key:generate
@@ -102,26 +102,24 @@ environment for testing and comparison.
 
 ### Available Stacks
 
-- **Traditional** (`./bin/stack up traditional -d`) - Standard Nginx + PHP-FPM setup
-- **FrankenPHP** (`./bin/stack up frankenphp -d`) - Modern HTTP/3 server, accessible at http://localhost:8080
-- **Octane** (`./bin/stack up octane -d`) - High-performance Laravel Octane, accessible at http://localhost:8000
-- **Performance** (`./bin/stack up performance -d`) - Traditional stack + monitoring tools
+- **Default** (`./bin/app up`) - Standard Nginx + PHP-FPM setup
+- **FrankenPHP** (`./bin/app up -s frankenphp`) - Modern HTTP/3 server, accessible at http://localhost:8080
+- **Octane** (`./bin/app up -s octane`) - High-performance Laravel Octane, accessible at http://localhost:8000
 
 ### Which Stack to Use
 
-- **First time visitors:** Start with `traditional`
+- **First time visitors:** Start with `default`
 - **Following a blog post:** Use the stack mentioned in the post
-- **Performance comparison:** Use `performance` for monitoring tools
 - **Exploring modern PHP:** Try `frankenphp` or `octane`
 
 ### Switching Stacks
 
 ```bash
 # Stop current stack
-./bin/stack down traditional
+./bin/app down -s default
 
 # Start different stack
-./bin/stack up octane -d
+./bin/app up -s octane
 ```
 
 ## Working with Blog Post Branches
@@ -154,9 +152,9 @@ To reset everything to a clean state:
 
 ```bash
 # Complete reset
-./bin/stack clean
+./bin/app clean
 git checkout main
-./bin/stack up traditional -d
+./bin/app up
 # Run setup steps again
 ```
 
@@ -164,7 +162,7 @@ git checkout main
 
 ### Application Access
 
-- **Main Application:** http://localhost (traditional stack)
+- **Main Application:** http://localhost (default stack)
 - **FrankenPHP:** http://localhost:8080
 - **Octane:** http://localhost:8000
 
@@ -253,6 +251,6 @@ application as a reference while reading to see the concepts in action.
 
 - **Common Issues:** See [troubleshooting.md](troubleshooting.md)
 - **Docker Problems:** See [docker-stacks.md](docker-stacks.md)
-- **Application Issues:** Check container logs with `./bin/stack logs traditional`
+- **Application Issues:** Check container logs with `./bin/app logs`
 
 The application should now be running and ready for you to explore the concepts discussed in the blog posts.

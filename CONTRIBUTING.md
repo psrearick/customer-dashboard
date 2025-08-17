@@ -53,16 +53,16 @@ Before submitting a pull request:
 
 1. **Test the setup process:**
    ```bash
-   ./bin/stack clean
+   ./bin/app clean
    ./bin/setup
    # Verify everything works from scratch
    ```
 
 2. **Test stack switching:**
    ```bash
-   ./bin/stack up frankenphp -d
-   ./bin/stack up octane -d
-   ./bin/stack up traditional -d
+   ./bin/app up -s frankenphp
+   ./bin/app up -s octane
+   ./bin/app up -s default
    # Ensure all stacks work with your changes
    ```
 
@@ -175,9 +175,9 @@ Before submitting:
 
 The project requires significant system resources for the full monitoring stack. When developing:
 
-- Use `./bin/stack up traditional -d` for most development work
+- Use `./bin/app up` for most development work
 - Only use the performance stack when testing monitoring features
-- Clean up regularly with `./bin/stack clean` to free resources
+- Clean up regularly with `./bin/app clean` to free resources
 
 ### Common Development Tasks
 
@@ -188,12 +188,12 @@ The project requires significant system resources for the full monitoring stack.
 ./bin/dev composer require package-name
 
 # Testing Docker changes
-./bin/stack clean
-./bin/stack up traditional -d
-./bin/stack validate traditional
+./bin/app clean
+./bin/app up
+./bin/app validate
 
 # Checking logs
-./bin/stack logs traditional -f
+./bin/app logs -s default -f
 ./bin/dev artisan log:clear
 ```
 

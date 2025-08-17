@@ -10,7 +10,7 @@ if [ ! -f .env ]; then
 fi
 
 echo "Starting Docker containers..."
-./bin/stack up traditional -d
+./bin/app up
 
 echo "Waiting for services to start..."
 sleep 10
@@ -30,5 +30,5 @@ echo "   → http://localhost"
 echo ""
 echo "Next steps:"
 echo "   → Check docs/getting-started.md for more details"
-echo "   → Run './bin/stack logs traditional' if you have issues"
+echo "   → Run './bin/app logs' if you have issues"
 echo ""

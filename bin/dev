@@ -47,8 +47,8 @@ run_in_php_container() {
     local container
     if ! container=$(detect_php_container); then
         printf "%bError: No PHP container is running%b\n" "$RED" "$NC" >&2
-        printf "%bStart a stack first with: ./bin/stack up [stack] -d%b\n" "$YELLOW" "$NC" >&2
-        printf "%bAvailable stacks: traditional, frankenphp, octane, performance, enterprise, comparison, full%b\n" "$YELLOW" "$NC" >&2
+        printf "%bStart a stack first with: ./bin/app up -s [stack]%b\n" "$YELLOW" "$NC" >&2
+        printf "%bView available stacks: .bin/app stacks%b\n" "$YELLOW" "$NC" >&2
         exit 1
     fi
     
@@ -65,8 +65,7 @@ run_in_node_container() {
     local container
     if ! container=$(detect_node_container); then
         printf "%bError: Node container is not running%b\n" "$RED" "$NC" >&2
-        printf "%bStart a stack with Node support first (traditional, development, etc.)%b\n" "$YELLOW" "$NC" >&2
-        printf "%bNote: The minimal stack does not include Node.js%b\n" "$YELLOW" "$NC" >&2
+        printf "%bStart a stack with Node support first%b\n" "$YELLOW" "$NC" >&2
         exit 1
     fi
     
@@ -109,7 +108,7 @@ show_usage() {
     printf "%bContainer Detection:%b\n" "$YELLOW" "$NC"
     echo "This script automatically detects which containers are running:"
     echo "PHP Containers:"
-    echo "  - customer-dashboard-php-fpm (traditional stack)"
+    echo "  - customer-dashboard-php-fpm (default stack)"
     echo "  - customer-dashboard-frankenphp (frankenphp stack)"
     echo "  - customer-dashboard-octane (octane stack)"
     echo "Node Container:"
@@ -158,7 +157,7 @@ case "${1:-}" in
         # Try bash first, fall back to sh if not available
         if ! container=$(detect_php_container); then
             printf "%bError: No PHP container is running%b\n" "$RED" "$NC" >&2
-            printf "%bStart a stack first with: ./bin/stack up [stack] -d%b\n" "$YELLOW" "$NC" >&2
+            printf "%bStart a stack first with: ./bin/app up -s [stack]%b\n" "$YELLOW" "$NC" >&2
             exit 1
         fi
         

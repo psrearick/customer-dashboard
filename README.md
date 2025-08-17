@@ -61,17 +61,14 @@ an associated blog post, look for [README.blog.md](README.blog.md) for post-spec
 The project includes multiple Docker configurations to compare different deployment strategies:
 
 ```bash
-# Traditional Nginx + PHP-FPM (default)
-./bin/stack up traditional -d
+# Default: Nginx + PHP-FPM (default)
+./bin/app up -s default
 
-# Modern FrankenPHP with HTTP/3
-./bin/stack up frankenphp -d
+# Modern: FrankenPHP with HTTP/3
+./bin/app up -s frankenphp
 
-# High-performance Laravel Octane  
-./bin/stack up octane -d
-
-# Performance monitoring stack
-./bin/stack up performance -d
+# High-performance: Laravel Octane  
+./bin/app up -s octane
 ```
 
 ## Documentation
