@@ -88,6 +88,50 @@ def stop(stack, verbose):
 
     click.secho("Application Stopped", fg="green")
 
+@stack_group.command(name="build")
+@click.option('--stack', '-s', type=str, default="default", show_default=True, help="Stack of containers to build")
+@click.option('--no-cache', is_flag=True, default=False, help="Build without using cache")
+@click.option('--pull', is_flag=True, default=False, help="Always pull latest base images")
+@click.option('--verbose', '-V', is_flag=True, default=False, show_default=True, help="Display more detailed output")
+def build(stack, no_cache, pull, verbose):
+    """Build or rebuild services for the specified stack"""
+    services = get_services_for_stack(stack)
+
+    options = []
+    
+    if no_cache:
+        options.append('--no-cache')
+    
+    if pull:
+        options.append('--pull')
+
+    command = build_compose_command(services, 'build', [], options)
+
+    if verbose:
+        stream_compose_command(command)
+        return
+
+    run_compose_command(command)
+
+    click.secho(f"Stack '{stack}' built successfully", fg="green")
+
+@stack_group.command(name="pull")
+@click.option('--stack', '-s', type=str, default="default", show_default=True, help="Stack of containers to pull images for")
+@click.option('--verbose', '-V', is_flag=True, default=False, show_default=True, help="Display more detailed output")
+def pull(stack, verbose):
+    """Pull service images for the specified stack"""
+    services = get_services_for_stack(stack)
+
+    command = build_compose_command(services, 'pull')
+
+    if verbose:
+        stream_compose_command(command)
+        return
+
+    run_compose_command(command)
+
+    click.secho(f"Images for stack '{stack}' pulled successfully", fg="green")
+
 @stack_group.command(name="logs")
 @click.option('--follow', '-f', is_flag=True, default=False, show_default=True, help="Follow log output. Press Ctrl+C to stop following.")
 @click.option('--tail', '-n', default="all", show_default=True, help="Number of lines to show from the end of the logs for each container")
