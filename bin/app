@@ -32,7 +32,7 @@ if [[ -z "$(docker images -q "${IMAGE_NAME}")" ]]; then
     build_image
 fi
 
-docker run --rm \
+docker run --rm -t \
     -v "${TOOL_ROOT}":/code \
     -v "${PROJECT_ROOT}":"${PROJECT_ROOT}" \
     -v /var/run/docker.sock:/var/run/docker.sock \

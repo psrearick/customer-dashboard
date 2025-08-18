@@ -50,6 +50,8 @@ def down(stack, verbose):
 
     run_compose_command(command)
 
+    click.secho("Application Stopped", fg="green")
+
 @stack_group.command(name="restart")
 @click.option('--stack', '-s', type=str, default="default", show_default=True, help="Stack of containers to restart")
 @click.option('--verbose', '-v', is_flag=True, default=False, show_default=True, help="Display more detailed output")
@@ -64,6 +66,8 @@ def restart(stack, verbose):
         return
 
     run_compose_command(command)
+
+    click.secho("Application Restarted", fg="green")
 
 @stack_group.command(name="logs")
 @click.option('--follow', '-f', is_flag=True, default=False, show_default=True, help="Follow log output. Press Ctrl+C to stop following.")
