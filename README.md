@@ -62,13 +62,13 @@ The project includes multiple Docker configurations to compare different deploym
 
 ```bash
 # Default: Nginx + PHP-FPM (default)
-./bin/app up -s default
+./bin/app stack up
 
 # Modern: FrankenPHP with HTTP/3
-./bin/app up -s frankenphp
+./bin/app stack up -s frankenphp
 
 # High-performance: Laravel Octane  
-./bin/app up -s octane
+./bin/app stack up -s octane
 ```
 
 ## Documentation

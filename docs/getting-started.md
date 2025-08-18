@@ -40,7 +40,7 @@ cp .env.example .env
 
 ```bash
 # Start the default Docker stack (most common)
-./bin/app up
+./bin/app stack up
 
 # Generate application key
 ./bin/dev artisan key:generate
@@ -102,9 +102,9 @@ environment for testing and comparison.
 
 ### Available Stacks
 
-- **Default** (`./bin/app up`) - Standard Nginx + PHP-FPM setup
-- **FrankenPHP** (`./bin/app up -s frankenphp`) - Modern HTTP/3 server, accessible at http://localhost:8080
-- **Octane** (`./bin/app up -s octane`) - High-performance Laravel Octane, accessible at http://localhost:8000
+- **Default** (`./bin/app stack up`) - Standard Nginx + PHP-FPM setup
+- **FrankenPHP** (`./bin/app stack up -s frankenphp`) - Modern HTTP/3 server, accessible at http://localhost:8080
+- **Octane** (`./bin/app stack up -s octane`) - High-performance Laravel Octane, accessible at http://localhost:8000
 
 ### Which Stack to Use
 
@@ -116,10 +116,10 @@ environment for testing and comparison.
 
 ```bash
 # Stop current stack
-./bin/app down -s default
+./bin/app stack down
 
 # Start different stack
-./bin/app up -s octane
+./bin/app stack up -s octane
 ```
 
 ## Working with Blog Post Branches
@@ -152,9 +152,9 @@ To reset everything to a clean state:
 
 ```bash
 # Complete reset
-./bin/app clean
+./bin/app stack clean
 git checkout main
-./bin/app up
+./bin/app stack up
 # Run setup steps again
 ```
 
@@ -251,6 +251,6 @@ application as a reference while reading to see the concepts in action.
 
 - **Common Issues:** See [troubleshooting.md](troubleshooting.md)
 - **Docker Problems:** See [docker-stacks.md](docker-stacks.md)
-- **Application Issues:** Check container logs with `./bin/app logs`
+- **Application Issues:** Check container logs with `./bin/app stack logs`
 
 The application should now be running and ready for you to explore the concepts discussed in the blog posts.

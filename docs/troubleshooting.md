@@ -13,10 +13,10 @@ application.
 
 ```bash
 # Check if containers are running
-./bin/app status
+./bin/app stack status
 
 # Restart the stack
-./bin/app restart -s frankenphp
+./bin/app stack restart -s frankenphp
 
 # Verify you're using the correct URL:
 # Default: http://localhost
@@ -44,7 +44,7 @@ sudo systemctl stop nginx
 sudo systemctl stop mysql
 
 # Alternative: Use a different stack
-./bin/app up -s frankenphp    # Uses port 8080 instead of 80
+./bin/app stack up -s frankenphp    # Uses port 8080 instead of 80
 ```
 
 ### Containers Won't Start or Keep Restarting
@@ -55,14 +55,14 @@ sudo systemctl stop mysql
 
 ```bash
 # Check container logs for errors
-./bin/app logs -s frankenphp
+./bin/app stack logs -s frankenphp
 
 # Increase Docker memory allocation
 # Docker Desktop → Settings → Resources → Memory → 6GB+
 
 # Clean start
-./bin/app clean
-./bin/app up -s frankenphp
+./bin/app stack clean -s frankenphp
+./bin/app stack up -s frankenphp
 ```
 
 ### Permission Denied Errors
@@ -100,7 +100,7 @@ sudo usermod -aG docker $USER
 
 2. **Use minimal stack:**
    ```bash
-   ./bin/app up
+   ./bin/app stack up
    ```
 
 ### Containers Exiting Immediately
@@ -123,12 +123,12 @@ docker ps -a
 
 ```bash
 # Remove problematic volumes and restart
-./bin/app clean
-./bin/app up
+./bin/app stack clean
+./bin/app stack up
 
 # For MySQL issues specifically
 docker volume rm customer-dashboard_mysql_data
-./bin/app up
+./bin/app stack up
 ```
 
 ### Slow Startup Times
@@ -139,10 +139,10 @@ docker volume rm customer-dashboard_mysql_data
 
 ```bash
 # Monitor startup progress
-./bin/app logs
+./bin/app stack logs
 
 # Use default stack (lightest option)
-./bin/app up
+./bin/app stack up
 
 # Increase Docker resources (see memory section above)
 ```
@@ -273,7 +273,7 @@ docker logs customer-dashboard-node
 
 ```bash
 # See what's running
-./bin/app status
+./bin/app stack status
 
 # More detailed container info
 docker ps -a
@@ -286,10 +286,10 @@ docker stats
 
 ```bash
 # All logs for a stack
-./bin/app logs
+./bin/app stack logs
 
 # Follow logs in real-time
-./bin/app logs -f
+./bin/app stack logs -f
 
 # Specific container logs
 docker logs customer-dashboard-mysql
@@ -316,7 +316,7 @@ When everything is broken and you want to start completely fresh:
 
 ```bash
 # WARNING: This removes all containers, volumes, and data
-./bin/app clean
+./bin/app stack clean
 
 # Clean Docker system (removes unused data)
 docker system prune -f
@@ -324,7 +324,7 @@ docker system prune -f
 # Start over
 git checkout main
 cp .env.example .env
-./bin/app up
+./bin/app stack up
 ./bin/dev artisan key:generate
 ./bin/dev composer install
 ./bin/dev artisan migrate:fresh --seed
@@ -352,10 +352,10 @@ cp .env.example .env
 # System information
 docker --version
 docker-compose --version
-./bin/app status
+./bin/app stack status
 
 # Save logs for troubleshooting
-./bin/app logs > debug-logs.txt
+./bin/app stack logs > debug-logs.txt
 ```
 
 ### Common "It Works on My Machine" Issues

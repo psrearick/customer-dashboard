@@ -20,10 +20,10 @@ Different blog posts explore different server technologies:
 
 ## Available Stacks
 
-### Traditional Stack
+### Default Stack
 
 ```bash
-./bin/stack up traditional -d
+./bin/app stack up -d
 ```
 
 **What it includes:** Nginx + PHP-FPM + MySQL + Redis  
@@ -36,7 +36,7 @@ handling PHP processing.
 ### FrankenPHP Stack
 
 ```bash
-./bin/stack up frankenphp -d
+./bin/app stack up -s frankenphp -d
 ```
 
 **What it includes:** FrankenPHP + MySQL + Redis  
@@ -49,7 +49,7 @@ It's built on top of the Caddy web server.
 ### Octane Stack
 
 ```bash
-./bin/stack up octane -d
+./bin/app stack up -s octane -d
 ```
 
 **What it includes:** Laravel Octane + Swoole + MySQL + Redis  
@@ -59,23 +59,21 @@ It's built on top of the Caddy web server.
 Laravel Octane keeps your application loaded in memory between requests, eliminating the bootstrap overhead. Uses Swoole
 for async processing and improved performance.
 
-### Performance Stack
+### Performance Stack (Coming Soon)
 
-```bash
-./bin/stack up performance -d
-```
+**Note:** The performance stack with monitoring tools is planned for a future release.
 
-**What it includes:** Traditional stack + monitoring tools  
+**What it will include:** Default stack + monitoring tools  
 **Access:** http://localhost (app), http://localhost:3000 (monitoring)  
 **Best for:** Performance testing, optimization blog posts, detailed metrics
 
-Adds comprehensive monitoring with Grafana dashboards, Prometheus metrics, and other performance analysis tools.
+Will add comprehensive monitoring with Grafana dashboards, Prometheus metrics, and other performance analysis tools.
 
 ## Which Stack Should I Use?
 
 ### First Time Visitors
 
-Start with **traditional** - it's the most straightforward and widely used setup.
+Start with **default** - it's the most straightforward and widely used setup.
 
 ### Following a Specific Blog Post
 
@@ -92,7 +90,7 @@ Try **frankenphp** for HTTP/3 and modern server features, or **octane** for high
 
 ### Just Exploring the Application
 
-**Traditional** stack is fine for browsing the application and understanding the codebase.
+**Default** stack is fine for browsing the application and understanding the codebase.
 
 ## Switching Between Stacks
 
@@ -100,10 +98,10 @@ You can only run one stack at a time. To switch:
 
 ```bash
 # Stop current stack
-./bin/stack down traditional
+./bin/app stack down
 
 # Start different stack
-./bin/stack up octane -d
+./bin/app stack up -s octane -d
 ```
 
 ### What Changes Between Stacks
@@ -119,7 +117,7 @@ The Laravel application code remains the same - only the server environment chan
 
 ### When Available
 
-Monitoring tools are included with the **performance** stack and provide access to:
+Monitoring tools will be included with the **performance** stack (coming soon) and provide access to:
 
 - **Grafana Dashboards:** http://localhost:3000 (login: admin/admin)
 - **Prometheus Metrics:** http://localhost:9090
@@ -144,41 +142,41 @@ in real-time graphs and metrics.
 
 ```bash
 # Start a stack in background
-./bin/stack up [stack-name] -d
+./bin/app stack up -s [stack-name] -d
 
 # Stop a specific stack
-./bin/stack down [stack-name]
+./bin/app stack down -s [stack-name]
 
 # Restart a stack
-./bin/stack restart [stack-name]
+./bin/app stack restart -s [stack-name]
 ```
 
 ### Checking Status
 
 ```bash
 # See what's currently running
-./bin/stack status
+./bin/app stack status
 
 # View logs for troubleshooting
-./bin/stack logs [stack-name]
+./bin/app stack logs -s [stack-name]
 
 # Follow logs in real-time
-./bin/stack logs [stack-name] -f
+./bin/app stack logs -s [stack-name] -f
 ```
 
 ### Maintenance
 
 ```bash
-# Stop everything
-./bin/stack stop-all
+# Stop all containers in current stack
+./bin/app stack down
 
 # Complete cleanup (removes all data)
-./bin/stack clean
+./bin/app stack clean
 ```
 
 ## Resource Requirements
 
-### Traditional/FrankenPHP/Octane
+### Default/FrankenPHP/Octane
 
 - **RAM:** 4GB minimum
 - **CPU:** 2+ cores
@@ -192,10 +190,9 @@ in real-time graphs and metrics.
 
 ### Tips for Resource Management
 
-- Use **traditional** stack for daily development
-- Only use **performance** stack when you need monitoring
-- Stop stacks when not in use: `./bin/stack down [stack-name]`
-- If your system is slow, try reducing Docker's resource allocation and using only the traditional stack
+- Use **default** stack for daily development
+- Stop stacks when not in use: `./bin/app stack down -s [stack-name]`
+- If your system is slow, try reducing Docker's resource allocation and using only the default stack
 
 ## Troubleshooting Stack Issues
 
@@ -203,7 +200,7 @@ in real-time graphs and metrics.
 
 - Check if ports are already in use (see [troubleshooting.md](troubleshooting.md))
 - Ensure Docker has sufficient memory allocated
-- Try stopping all stacks first: `./bin/stack stop-all`
+- Try stopping current stack first: `./bin/app stack down`
 
 ### Different Behavior Between Stacks
 
@@ -214,9 +211,9 @@ behavior, that's often the point of the demonstration.
 
 Double-check the port for each stack:
 
-- Traditional: port 80 (http://localhost)
+- Default: port 80 (http://localhost)
 - FrankenPHP: port 8080 (http://localhost:8080)
 - Octane: port 8000 (http://localhost:8000)
 
-The choice of stack depends on what you're trying to learn or demonstrate. Most of the time, the traditional stack is
+The choice of stack depends on what you're trying to learn or demonstrate. Most of the time, the default stack is
 the right choice for getting started.
