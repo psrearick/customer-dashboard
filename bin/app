@@ -32,7 +32,6 @@ if [[ -z "$(docker images -q "${IMAGE_NAME}")" ]]; then
     build_image
 fi
 
-echo "${BLUE}Running '${TOOL_NAME}' command...${NC}"
 docker run --rm \
     -v "${TOOL_ROOT}":/code \
     -v "${PROJECT_ROOT}":"${PROJECT_ROOT}" \
@@ -40,5 +39,3 @@ docker run --rm \
     -e PROJECT_ROOT="${PROJECT_ROOT}" \
     --network="host" \
     "${IMAGE_NAME}" "$@"
-
-echo "${GREEN}Run Complete.${NC}"

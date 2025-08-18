@@ -16,8 +16,7 @@ cli.add_command(container_group)
 
 
 @cli.command()
-@click.option('--services', '-s', is_flag=True, default=False, show_default=True, help="Display each stack's services")
-def stacks(services):
+def stacks():
     """List all available stacks."""
     data = []
     for file_path in get_stack_files():
