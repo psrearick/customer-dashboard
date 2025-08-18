@@ -12,7 +12,7 @@ def container_group():
 @click.option('--build', '-b', is_flag=True, default=False, show_default=True, help="build image before starting container")
 def up(name, attach, build):
     """Start a single container by name."""
-    get_stack_files()
+    pass
 
 @container_group.command(name="down")
 @click.argument('name')
@@ -24,6 +24,12 @@ def down(name):
 @click.argument('name')
 def restart(name):
     """Restart a single container by name."""
+    pass
+
+@container_group.command(name="down")
+@click.argument('name')
+def stop(name):
+    """Stop a single container by name."""
     pass
 
 @container_group.command(name="remove")

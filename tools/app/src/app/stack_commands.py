@@ -112,62 +112,90 @@ def logs(follow, tail, stack):
 @stack_group.command(name="status")
 @click.option('--stack', '-s', type=str, default="all", show_default=True, help="Stack of containers to view the status of")
 def status(stack):
-    """Show status of running containers"""
-    click.secho("Customer Dashboard Status", fg="blue", bold=True)
+    """Show status of all containers"""
+    if stack == "all":
+        click.secho("Customer Dashboard Status - All Stacks", fg="blue", bold=True)
+    else:
+        click.secho(f"Customer Dashboard Status - {stack.title()} Stack", fg="blue", bold=True)
     click.echo("")
     
-    filter_services = []
+    expected_services = []
     if stack != "all":
         try:
             services = get_services_for_stack(stack)
-            filter_services = [s['service'] for s in services]
+            expected_services = [s['service'] for s in services]
         except Exception as e:
             click.secho(f"Error loading stack '{stack}': {e}", fg="red")
             sys.exit(1)
     
     try:
-        if stack == "all":
-            container_result = subprocess.run(
-                ["docker", "ps", "--filter", f"label=com.docker.compose.project={PROJECT_NAME}", 
-                 "--format", "table {{.Names}}\t{{.Status}}\t{{.Ports}}"],
-                capture_output=True, text=True, check=False
-            )
-        else:
-            container_result = subprocess.run(
-                ["docker", "ps", "--filter", f"label=com.docker.compose.project={PROJECT_NAME}",
-                 "--format", "{{.Names}}\t{{.Status}}\t{{.Ports}}\t{{.Label \"com.docker.compose.service\"}}"],
-                capture_output=True, text=True, check=False
-            )
-            
+        container_result = subprocess.run(
+            ["docker", "ps", "-a", "--filter", f"label=com.docker.compose.project={PROJECT_NAME}",
+             "--format", "{{.Names}}\t{{.Status}}\t{{.Ports}}\t{{.Label \"com.docker.compose.service\"}}"],
+            capture_output=True, text=True, check=False
+        )
+        
+        all_containers = []
+        running_containers = []
+        stack_containers = []
+        stack_running = []
+        
         if container_result.returncode == 0 and container_result.stdout.strip():
             lines = container_result.stdout.strip().split('\n')
             
-            if stack != "all":
-                filtered_lines = []
-                headers = ["NAMES", "STATUS", "PORTS"]
+            for line in lines:
+                parts = line.split('\t')
+                if len(parts) >= 4:
+                    name, status, ports, service = parts[0], parts[1], parts[2], parts[3]
+                    container_info = [name, status, ports if ports else "-"]
+                    
+                    all_containers.append(container_info)
+                    if "Up" in status:
+                        running_containers.append(container_info)
+                    
+                    if stack != "all" and service in expected_services:
+                        stack_containers.append(container_info)
+                        if "Up" in status:
+                            stack_running.append(container_info)
+        
+        headers = ["NAME", "STATUS", "PORTS"]
+        
+        if stack == "all":
+            if all_containers:
+                click.secho("All containers:", fg="green")
+                table_output = tabulate(all_containers, headers=headers, tablefmt="plain")
+                click.echo(table_output)
+                click.echo("")
                 
-                for line in lines:
-                    parts = line.split('\t')
-                    if len(parts) >= 4:
-                        service_name = parts[3]
-                        if service_name in filter_services:
-                            filtered_lines.append(parts[:3])
-                
-                if filtered_lines:
-                    click.secho("Running containers:", fg="green")
-                    table_output = tabulate(filtered_lines, headers=headers, tablefmt="plain")
-                    click.echo(table_output)
+                if not running_containers:
+                    click.secho("No containers are currently running.", fg="yellow")
+                    click.echo("Start a stack with: app stack up -s <stack-name>")
+                elif len(running_containers) < len(all_containers):
+                    click.secho(f"{len(running_containers)} of {len(all_containers)} containers are running.", fg="yellow")
                 else:
-                    click.secho("No containers currently running for this stack", fg="yellow")
+                    click.secho("All containers are running.", fg="green")
             else:
-                click.secho("Running containers:", fg="green")
-                click.echo(lines[0] if lines else "")
-                for line in lines[1:] if len(lines) > 1 else []:
-                    click.echo(line)
+                click.secho("No containers found for this project.", fg="yellow")
+                click.echo("Start a stack with: app stack up -s <stack-name>")
         else:
-            click.secho("No containers currently running", fg="yellow")
-            click.echo("")
-            click.echo("Start the application with: app stack up")
+            if stack_containers:
+                click.secho(f"Containers in '{stack}' stack:", fg="green")
+                table_output = tabulate(stack_containers, headers=headers, tablefmt="plain")
+                click.echo(table_output)
+                click.echo("")
+                
+                if not stack_running:
+                    click.secho(f"The '{stack}' stack is not running.", fg="yellow")
+                    click.echo(f"Start the stack with: app stack up -s {stack}")
+                elif len(stack_running) < len(stack_containers):
+                    click.secho(f"The '{stack}' stack is partially running ({len(stack_running)} of {len(stack_containers)} containers).", fg="yellow")
+                    click.echo(f"Start all containers with: app stack up -s {stack}")
+                else:
+                    click.secho(f"The '{stack}' stack is fully running.", fg="green")
+            else:
+                click.secho(f"No containers found for the '{stack}' stack.", fg="yellow")
+                click.echo(f"Start the stack with: app stack up -s {stack}")
+                
     except Exception as e:
         click.secho(f"Error getting container status: {e}", fg="red")
     
