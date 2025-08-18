@@ -35,7 +35,9 @@ fi
 echo "${BLUE}Running '${TOOL_NAME}' command...${NC}"
 docker run --rm \
     -v "${TOOL_ROOT}":/code \
+    -v "${PROJECT_ROOT}":"${PROJECT_ROOT}" \
     -v /var/run/docker.sock:/var/run/docker.sock \
+    -e PROJECT_ROOT="${PROJECT_ROOT}" \
     --network="host" \
     "${IMAGE_NAME}" "$@"
 

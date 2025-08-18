@@ -1,6 +1,0 @@
-# Standard development environment with core services
-mysql
-redis
-nginx
-php-fpm
-node

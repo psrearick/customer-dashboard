@@ -42,11 +42,11 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 WORKDIR /var/www/html
 
 # Configuration files
-COPY docker/config/php/conf.d/performance.ini /usr/local/etc/php/conf.d/
-COPY docker/config/php/conf.d/opcache.ini /usr/local/etc/php/conf.d/
-COPY docker/config/php/conf.d/xdebug.ini /usr/local/etc/php/conf.d/
-COPY docker/config/php/conf.d/pdo_mysql.ini /usr/local/etc/php/conf.d/
-COPY docker/config/php/conf.d/docker-php-ext-redis.ini /usr/local/etc/php/conf.d/
+#COPY docker/config/php/conf.d/performance.ini /usr/local/etc/php/conf.d/
+#COPY docker/config/php/conf.d/opcache.ini /usr/local/etc/php/conf.d/
+#COPY docker/config/php/conf.d/xdebug.ini /usr/local/etc/php/conf.d/
+#COPY docker/config/php/conf.d/pdo_mysql.ini /usr/local/etc/php/conf.d/
+#COPY docker/config/php/conf.d/docker-php-ext-redis.ini /usr/local/etc/php/conf.d/
 COPY docker/config/php-fpm/www.conf /usr/local/etc/php-fpm.d/www.conf
 
 # Application code

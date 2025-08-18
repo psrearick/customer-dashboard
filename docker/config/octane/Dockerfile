@@ -39,12 +39,12 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 WORKDIR /app
 
 # Configuration files
-COPY docker/config/php/conf.d/performance.ini /usr/local/etc/php/conf.d/
-COPY docker/config/php/conf.d/opcache.ini /usr/local/etc/php/conf.d/
-COPY docker/config/php/conf.d/pdo_mysql.ini /usr/local/etc/php/conf.d/
-COPY docker/config/php/conf.d/pcntl.ini /usr/local/etc/php/conf.d/
-COPY docker/config/php/conf.d/swoole.ini /usr/local/etc/php/conf.d/
-COPY docker/config/php/conf.d/docker-php-ext-redis.ini /usr/local/etc/php/conf.d/
+#COPY docker/config/php/conf.d/performance.ini /usr/local/etc/php/conf.d/
+#COPY docker/config/php/conf.d/opcache.ini /usr/local/etc/php/conf.d/
+#COPY docker/config/php/conf.d/pdo_mysql.ini /usr/local/etc/php/conf.d/
+#COPY docker/config/php/conf.d/pcntl.ini /usr/local/etc/php/conf.d/
+#COPY docker/config/php/conf.d/docker-php-ext-redis.ini /usr/local/etc/php/conf.d/
+#COPY docker/config/octane/php/conf.d/swoole.ini /usr/local/etc/php/conf.d/
 COPY docker/config/octane/octane.conf /usr/local/etc/php/conf.d/octane.ini
 COPY docker/config/octane/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 

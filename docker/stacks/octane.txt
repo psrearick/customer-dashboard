@@ -1,5 +1,0 @@
-# High performance development environment with core services, using Laravel Octane
-octane
-mysql
-redis
-node
