@@ -215,9 +215,14 @@ docker logs customer-dashboard-node
 ./bin/dev npm run build
 
 # Clear Laravel caches
+./bin/dev artisan optimize:clear
+
+# Or clear Laravel caches individual as needed
 ./bin/dev artisan cache:clear
 ./bin/dev artisan config:clear
 ./bin/dev artisan view:clear
+./bin/dev artisan route:clear
+./bin/dev artisan event:clear
 ```
 
 ## When Switching Branches

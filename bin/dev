@@ -28,6 +28,7 @@ detect_node_container() {
         echo "customer-dashboard-node"
         return 0
     fi
+
     return 1
 }
 

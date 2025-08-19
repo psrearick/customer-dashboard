@@ -21,6 +21,8 @@ echo "Setting up Laravel application..."
 ./bin/dev artisan migrate:fresh --seed --force
 ./bin/dev npm install --silent
 ./bin/dev npm run build
+./bin/dev artisan optimize:clear
+./bin/dev artisan storage:link
 
 echo ""
 echo "Setup complete!"

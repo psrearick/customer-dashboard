@@ -1,8 +1,13 @@
 #!/bin/bash
 
+echo "Resetting application"
+
 ./bin/dev composer install --no-interaction
 ./bin/dev artisan migrate:fresh --seed --force
 ./bin/dev npm install --silent
 ./bin/dev npm run build
+./bin/dev artisan queue:clear
+./bin/dev artisan optimize:clear
+./bin/dev artisan storage:link
 
 echo "Application reset complete"
