@@ -23,11 +23,11 @@ Different blog posts explore different server technologies:
 ### Default Stack
 
 ```bash
-./bin/app stack up -d
+./bin/app stack up
 ```
 
-**What it includes:** Nginx + PHP-FPM + MySQL + Redis  
-**Access:** http://localhost  
+**What it includes:** Nginx + PHP-FPM + MySQL + Redis + Node
+**Access:** http://localhost
 **Best for:** First-time setup, most blog posts, general development
 
 This is the most common production setup you'll find in the Laravel ecosystem. Uses Nginx as a web server with PHP-FPM
@@ -36,11 +36,11 @@ handling PHP processing.
 ### FrankenPHP Stack
 
 ```bash
-./bin/app stack up -s frankenphp -d
+./bin/app stack up -s frankenphp
 ```
 
-**What it includes:** FrankenPHP + MySQL + Redis  
-**Access:** http://localhost:8080  
+**What it includes:** FrankenPHP + MySQL + Redis + Node
+**Access:** http://localhost:8080
 **Best for:** Exploring modern PHP server technology, HTTP/3 features
 
 FrankenPHP is a modern PHP server that includes HTTP/3 support, worker mode for better performance, and automatic HTTPS.
@@ -49,22 +49,20 @@ It's built on top of the Caddy web server.
 ### Octane Stack
 
 ```bash
-./bin/app stack up -s octane -d
+./bin/app stack up -s octane
 ```
 
-**What it includes:** Laravel Octane + Swoole + MySQL + Redis  
-**Access:** http://localhost:8000  
+**What it includes:** Laravel Octane + MySQL + Redis + Node
+**Access:** http://localhost:8000
 **Best for:** High-performance scenarios, testing long-running processes
 
 Laravel Octane keeps your application loaded in memory between requests, eliminating the bootstrap overhead. Uses Swoole
 for async processing and improved performance.
 
-### Performance Stack (Coming Soon)
+### Performance Stack
 
-**Note:** The performance stack with monitoring tools is planned for a future release.
-
-**What it will include:** Default stack + monitoring tools  
-**Access:** http://localhost (app), http://localhost:3000 (monitoring)  
+**What it will include:** Monitoring tools to be used in addition to a PHP server
+**Access:** http://localhost:3000 (monitoring)
 **Best for:** Performance testing, optimization blog posts, detailed metrics
 
 Will add comprehensive monitoring with Grafana dashboards, Prometheus metrics, and other performance analysis tools.
@@ -94,14 +92,14 @@ Try **frankenphp** for HTTP/3 and modern server features, or **octane** for high
 
 ## Switching Between Stacks
 
-You can only run one stack at a time. To switch:
+You will usually only run one stack at a time. To switch:
 
 ```bash
 # Stop current stack
-./bin/app stack down
+./bin/app stack stop
 
 # Start different stack
-./bin/app stack up -s octane -d
+./bin/app stack up -s octane
 ```
 
 ### What Changes Between Stacks
@@ -115,9 +113,8 @@ The Laravel application code remains the same - only the server environment chan
 
 ## Performance Monitoring
 
-### When Available
-
-Monitoring tools will be included with the **performance** stack (coming soon) and provide access to:
+The performance stack should be run in addition to a php server stack. Monitoring
+tools are included with the performance stack and provide access to:
 
 - **Grafana Dashboards:** http://localhost:3000 (login: admin/admin)
 - **Prometheus Metrics:** http://localhost:9090
@@ -133,8 +130,8 @@ Monitoring tools will be included with the **performance** stack (coming soon) a
 
 ### Using Monitoring for Blog Posts
 
-If you're following a performance-related blog post, the monitoring tools let you see the actual impact of optimizations
-in real-time graphs and metrics.
+If you're following a performance-related blog post, the monitoring tools let
+you see the actual impact of optimizations in real-time graphs and metrics.
 
 ## Stack Commands Quick Reference
 
@@ -142,10 +139,10 @@ in real-time graphs and metrics.
 
 ```bash
 # Start a stack in background
-./bin/app stack up -s [stack-name] -d
+./bin/app stack up -s [stack-name]
 
 # Stop a specific stack
-./bin/app stack down -s [stack-name]
+./bin/app stack stop -s [stack-name]
 
 # Restart a stack
 ./bin/app stack restart -s [stack-name]
@@ -168,7 +165,7 @@ in real-time graphs and metrics.
 
 ```bash
 # Stop all containers in current stack
-./bin/app stack down
+./bin/app stack stop
 
 # Complete cleanup (removes all data)
 ./bin/app stack clean
@@ -191,7 +188,7 @@ in real-time graphs and metrics.
 ### Tips for Resource Management
 
 - Use **default** stack for daily development
-- Stop stacks when not in use: `./bin/app stack down -s [stack-name]`
+- Stop stacks when not in use: `./bin/app stack stop -s [stack-name]`
 - If your system is slow, try reducing Docker's resource allocation and using only the default stack
 
 ## Troubleshooting Stack Issues
@@ -200,7 +197,7 @@ in real-time graphs and metrics.
 
 - Check if ports are already in use (see [troubleshooting.md](troubleshooting.md))
 - Ensure Docker has sufficient memory allocated
-- Try stopping current stack first: `./bin/app stack down`
+- Try stopping current stack first: `./bin/app stack stop`
 
 ### Different Behavior Between Stacks
 

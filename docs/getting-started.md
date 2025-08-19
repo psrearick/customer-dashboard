@@ -116,7 +116,7 @@ environment for testing and comparison.
 
 ```bash
 # Stop current stack
-./bin/app stack down
+./bin/app stack stop
 
 # Start different stack
 ./bin/app stack up -s octane

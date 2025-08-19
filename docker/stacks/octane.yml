@@ -1,7 +1,7 @@
 id: octane
 name: Octane
 description: High performance development environment with core services, using Laravel Octane
-stack_services:
+services:
   - octane
   - mysql
   - redis

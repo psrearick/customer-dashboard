@@ -1,0 +1,9 @@
+id: performance
+name: Performance
+description: Performance monitoring and analysis tools
+services:
+  - grafana
+  - prometheus
+  - redis-exporter
+  - mysql-exporter
+  - statsd
