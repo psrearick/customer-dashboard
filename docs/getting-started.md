@@ -102,6 +102,8 @@ environment for testing and comparison.
 
 ### Available Stacks
 
+You can discover all available stacks by running `./bin/app list`, which shows each stack's services and purpose.
+
 - **Default** (`./bin/app stack up` or `./bin/app stack up -s default`) - Standard Nginx + PHP-FPM setup
   - This is the default stack used when no `-s` option is provided
 - **FrankenPHP** (`./bin/app stack up -s frankenphp`) - Modern HTTP/3 server, accessible at http://localhost:8080
@@ -152,12 +154,14 @@ Blog post branches follow this pattern:
 To reset everything to a clean state:
 
 ```bash
-# Complete reset
+# Complete reset (WARNING: This deletes all data including databases)
 ./bin/app stack clean
 git checkout main
 ./bin/app stack up
 # Run setup steps again
 ```
+
+**Note:** Use `./bin/app stack stop` if you just want to pause work without losing data. The `clean` command permanently removes all volumes and data.
 
 ## Verifying Everything Works
 

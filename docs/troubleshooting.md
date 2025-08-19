@@ -310,6 +310,49 @@ lsof -i :5173  # Vite dev server
 docker port customer-dashboard-nginx
 ```
 
+## Debugging Individual Services
+
+When you need to troubleshoot a specific service without affecting others:
+
+### Using Container Commands
+
+```bash
+# View logs for just MySQL
+./bin/app container logs mysql
+
+# Restart only Redis without affecting other services
+./bin/app container restart redis
+
+# Stop a problematic service
+./bin/app container stop nginx
+
+# Check status of a specific container
+./bin/app container status php-fpm
+
+# Execute commands in a specific container
+./bin/app container exec mysql bash
+```
+
+### When to Use Container Commands
+
+- **Database issues:** Debug MySQL without restarting the entire stack
+- **Cache problems:** Clear or restart Redis independently
+- **Web server issues:** Restart nginx or PHP-FPM separately
+- **Performance testing:** Stop specific services to isolate problems
+
+Example troubleshooting flow:
+```bash
+# MySQL seems slow - check it individually
+./bin/app container logs mysql
+./bin/app container restart mysql
+
+# If that doesn't help, check resource usage
+docker stats customer-dashboard-mysql-1
+
+# Connect directly to investigate
+./bin/dev mysql
+```
+
 ## Nuclear Option
 
 When everything is broken, and you want to start completely fresh:

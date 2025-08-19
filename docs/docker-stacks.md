@@ -70,6 +70,49 @@ for async processing and improved performance.
 
 Will add comprehensive monitoring with Grafana dashboards, Prometheus metrics, and other performance analysis tools.
 
+## Understanding App Commands
+
+Before diving into stacks, it's helpful to understand the different types of commands available:
+
+### Stack vs Container Commands
+
+The `app` tool provides two levels of container management:
+
+- **Stack commands** (`./bin/app stack ...`) - Manage entire groups of related services
+  - Use when: Starting/stopping your whole application, switching between configurations
+  - Example: `./bin/app stack up` starts all services needed for development
+  
+- **Container commands** (`./bin/app container ...`) - Manage individual services
+  - Use when: Debugging specific services, restarting just one component
+  - Example: `./bin/app container restart mysql` to restart only MySQL
+
+### Command Lifecycle
+
+Understanding what each command does to your containers and data:
+
+| Command | Containers | Data/Volumes | When to Use |
+|---------|------------|--------------|-------------|
+| `up` | Creates & starts | Preserved | Starting work |
+| `stop` | Stops (kept) | Preserved | Taking a break |
+| `down` | Stops & removes | Preserved | Switching stacks |
+| `clean` | Stops & removes | **DELETED** | Fresh start (data loss!) |
+| `restart` | Stops & starts | Preserved | Fixing issues |
+
+**Important:** The `clean` command removes ALL data including databases. Always backup important data first!
+
+### Discovering Available Stacks
+
+Use `./bin/app list` to see all available stacks and their services:
+
+```bash
+./bin/app list
+```
+
+This shows:
+- Stack IDs (use with `-s` option)
+- Services included in each stack
+- Brief description of each stack's purpose
+
 ## Which Stack Should I Use?
 
 ### First Time Visitors
@@ -184,15 +227,21 @@ This applies to all stack commands - if you don't specify a stack, "default" is 
 ### Maintenance
 
 ```bash
-# Stop containers
+# Stop containers (preserves data)
 ./bin/app stack stop            # Stops default stack
 ./bin/app stack stop -s [stack-name]  # Stops specified stack
 ./bin/app stack stop-all        # Stops ALL containers across all stacks
 
-# Complete cleanup (removes all data)
-./bin/app stack clean           # Cleans default stack
-./bin/app stack clean -s [stack-name]  # Cleans specified stack
+# Remove containers but keep data
+./bin/app stack down            # Removes default stack containers
+./bin/app stack down -s [stack-name]  # Removes specified stack containers
+
+# WARNING: Complete cleanup (DELETES ALL DATA)
+./bin/app stack clean           # Removes containers AND data for default stack
+./bin/app stack clean -s [stack-name]  # Removes containers AND data for specified stack
 ```
+
+> **Data Loss Warning:** The `clean` command permanently deletes all volumes including databases, Redis cache, and any uploaded files. Use `stop` or `down` if you want to preserve your data.
 
 ## Resource Requirements
 
