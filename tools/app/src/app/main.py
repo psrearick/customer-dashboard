@@ -6,7 +6,9 @@ from .utils import get_stack_files
 from .container_commands import container_group
 from .stack_commands import stack_group
 
-@click.group()
+CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
+
+@click.group(context_settings=CONTEXT_SETTINGS)
 def cli():
     """Customer Dashboard Environment Manager"""
     pass
@@ -14,9 +16,14 @@ def cli():
 cli.add_command(stack_group)
 cli.add_command(container_group)
 
+@cli.command()
+@click.pass_context
+def help(ctx):
+    """Show this message and exit."""
+    click.echo(cli.get_help(ctx))
 
 @cli.command()
-def stacks():
+def list():
     """List all available stacks."""
     data = []
     for file_path in get_stack_files():
@@ -25,7 +32,7 @@ def stacks():
                 file_data = yaml.safe_load(file)
                 data.append([
                     file_data['id'],
-                    ', '.join(file_data['stack_services']),
+                    ', '.join(file_data['services']),
                     file_data['description']
                 ])
         except yaml.YAMLError as exc:

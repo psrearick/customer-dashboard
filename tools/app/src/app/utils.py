@@ -35,7 +35,7 @@ def get_service_files_for_stack(stack_name):
 
     with open(stack_file, 'r') as file:
         file_data = yaml.safe_load(file)
-        stack_file_service_list = file_data['stack_services']
+        stack_file_service_list = file_data['services']
 
     for service in stack_file_service_list:
         service_file = SERVICES_DIR / f"{service}.yml"

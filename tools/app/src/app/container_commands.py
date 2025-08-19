@@ -3,6 +3,8 @@ import subprocess
 import sys
 from .utils import get_services_files, build_compose_command, run_compose_command, stream_compose_command, PROJECT_NAME
 
+CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
+
 def get_service_file(service_name):
     """Find the service file for a given service name."""
     service_files = get_services_files()
@@ -13,10 +15,16 @@ def get_service_file(service_name):
     click.secho(f"Service '{service_name}' not found", fg="red")
     sys.exit(1)
 
-@click.group(name="container")
+@click.group(name="container", context_settings=CONTEXT_SETTINGS)
 def container_group():
     """Commands to manage a single container."""
     pass
+
+@container_group.command()
+@click.pass_context
+def help(ctx):
+    """Show this message and exit."""
+    click.echo(container_group.get_help(ctx))
 
 @container_group.command(name="up")
 @click.argument('name')

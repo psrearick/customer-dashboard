@@ -5,10 +5,18 @@ import subprocess
 from tabulate import tabulate
 from .utils import get_services_for_stack, build_compose_command, run_compose_command, stream_compose_command, PROJECT_NAME
 
-@click.group(name="stack")
+CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
+
+@click.group(name="stack", context_settings=CONTEXT_SETTINGS)
 def stack_group():
     """Commands to manage entire stacks of containers."""
     pass
+
+@stack_group.command()
+@click.pass_context
+def help(ctx):
+    """Show this message and exit."""
+    click.echo(stack_group.get_help(ctx))
 
 @stack_group.command(name="up")
 @click.option('--attach/--detach', '-a/-d', is_flag=True, default=False, show_default=True, help="detached mode: run containers in the background")

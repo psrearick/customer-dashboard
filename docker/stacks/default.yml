@@ -1,7 +1,7 @@
 id: default
 name: Default
 description: Standard development environment with core services
-stack_services:
+services:
   - mysql
   - redis
   - nginx

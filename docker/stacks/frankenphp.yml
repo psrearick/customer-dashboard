@@ -1,7 +1,7 @@
 id: frankenphp
 name: FrankenPHP
 description: Modern development environment with core services, using FrankenPHP
-stack_services:
+services:
   - frankenphp
   - mysql
   - redis
