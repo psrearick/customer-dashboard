@@ -96,6 +96,64 @@ def stop(stack, verbose):
 
     click.secho("Application Stopped", fg="green")
 
+@stack_group.command(name="stop-all")
+@click.option('--verbose', '-V', is_flag=True, default=False, show_default=True, help="Display more detailed output")
+def stop_all(verbose):
+    """Stop all containers across all stacks in the project"""
+    try:
+        container_result = subprocess.run(
+            ["docker", "ps", "-q", "--filter", f"label=com.docker.compose.project={PROJECT_NAME}"],
+            capture_output=True, text=True, check=False
+        )
+        
+        if container_result.returncode != 0:
+            click.secho(f"Error getting container list: {container_result.stderr}", fg="red")
+            sys.exit(1)
+        
+        container_ids = container_result.stdout.strip().split('\n')
+        container_ids = [cid for cid in container_ids if cid]
+        
+        if not container_ids:
+            click.secho("No running containers found for this project.", fg="yellow")
+            return
+        
+        click.secho(f"Stopping {len(container_ids)} container(s) across all stacks...", fg="blue")
+        
+        if verbose:
+            names_result = subprocess.run(
+                ["docker", "ps", "--filter", f"label=com.docker.compose.project={PROJECT_NAME}",
+                 "--format", "{{.Names}}"],
+                capture_output=True, text=True, check=False
+            )
+            if names_result.returncode == 0:
+                container_names = names_result.stdout.strip().split('\n')
+                click.echo("Containers to stop:")
+                for name in container_names:
+                    if name:
+                        click.echo(f"  - {name}")
+                click.echo("")
+        
+        stop_result = subprocess.run(
+            ["docker", "stop"] + container_ids,
+            capture_output=True, text=True, check=False
+        )
+        
+        if stop_result.returncode != 0:
+            click.secho(f"Error stopping containers: {stop_result.stderr}", fg="red")
+            sys.exit(1)
+        
+        if verbose and stop_result.stdout:
+            click.echo("Stopped containers:")
+            for container_id in stop_result.stdout.strip().split('\n'):
+                if container_id:
+                    click.echo(f"  - {container_id}")
+        
+        click.secho(f"Successfully stopped all containers in project '{PROJECT_NAME}'", fg="green")
+        
+    except Exception as e:
+        click.secho(f"An unexpected error occurred: {e}", fg="red")
+        sys.exit(1)
+
 @stack_group.command(name="build")
 @click.option('--stack', '-s', type=str, default="default", show_default=True, help="Stack of containers to build")
 @click.option('--no-cache', is_flag=True, default=False, help="Build without using cache")
