@@ -23,12 +23,15 @@ Different blog posts explore different server technologies:
 ### Default Stack
 
 ```bash
-./bin/app stack up
+./bin/app stack up              # No -s option needed
+./bin/app stack up -s default   # Explicitly specifying default (optional)
 ```
 
 **What it includes:** Nginx + PHP-FPM + MySQL + Redis + Node
 **Access:** http://localhost
 **Best for:** First-time setup, most blog posts, general development
+
+**Note:** The "default" stack is used automatically when no `-s` option is provided. This is why you'll see some commands in the documentation without the `-s` option - they're using the default stack.
 
 This is the most common production setup you'll find in the Laravel ecosystem. Uses Nginx as a web server with PHP-FPM
 handling PHP processing.
@@ -135,40 +138,60 @@ you see the actual impact of optimizations in real-time graphs and metrics.
 
 ## Stack Commands Quick Reference
 
+### Understanding the -s Option
+
+The `-s` option specifies which stack to use. When omitted, the "default" stack is used automatically:
+
+```bash
+./bin/app stack up           # Uses default stack
+./bin/app stack up -s octane # Uses octane stack
+```
+
+This applies to all stack commands - if you don't specify a stack, "default" is assumed.
+
 ### Starting and Stopping
 
 ```bash
 # Start a stack in background
-./bin/app stack up -s [stack-name]
+./bin/app stack up              # Starts default stack
+./bin/app stack up -s [stack-name]  # Starts specified stack
 
 # Stop a specific stack
-./bin/app stack stop -s [stack-name]
+./bin/app stack stop            # Stops default stack
+./bin/app stack stop -s [stack-name]  # Stops specified stack
 
 # Restart a stack
-./bin/app stack restart -s [stack-name]
+./bin/app stack restart         # Restarts default stack
+./bin/app stack restart -s [stack-name]  # Restarts specified stack
 ```
 
 ### Checking Status
 
 ```bash
 # See what's currently running
-./bin/app stack status
+./bin/app stack status          # Shows status of all stacks
+./bin/app stack status -s [stack-name]  # Shows status of specific stack
 
 # View logs for troubleshooting
-./bin/app stack logs -s [stack-name]
+./bin/app stack logs            # Shows logs for default stack
+./bin/app stack logs -s [stack-name]  # Shows logs for specified stack
 
 # Follow logs in real-time
-./bin/app stack logs -s [stack-name] -f
+./bin/app stack logs -f         # Follows default stack logs
+./bin/app stack logs -s [stack-name] -f  # Follows specified stack logs
 ```
 
 ### Maintenance
 
 ```bash
-# Stop all containers in current stack
-./bin/app stack stop
+# Stop containers
+./bin/app stack stop            # Stops default stack
+./bin/app stack stop -s [stack-name]  # Stops specified stack
+./bin/app stack stop-all        # Stops ALL containers across all stacks
 
 # Complete cleanup (removes all data)
-./bin/app stack clean
+./bin/app stack clean           # Cleans default stack
+./bin/app stack clean -s [stack-name]  # Cleans specified stack
 ```
 
 ## Resource Requirements

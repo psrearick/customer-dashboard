@@ -39,7 +39,7 @@ cp .env.example .env
 ### 3. Start the Application
 
 ```bash
-# Start the default Docker stack (most common)
+# Start the default Docker stack (no -s option needed for default)
 ./bin/app stack up
 
 # Generate application key
@@ -102,23 +102,24 @@ environment for testing and comparison.
 
 ### Available Stacks
 
-- **Default** (`./bin/app stack up`) - Standard Nginx + PHP-FPM setup
+- **Default** (`./bin/app stack up` or `./bin/app stack up -s default`) - Standard Nginx + PHP-FPM setup
+  - This is the default stack used when no `-s` option is provided
 - **FrankenPHP** (`./bin/app stack up -s frankenphp`) - Modern HTTP/3 server, accessible at http://localhost:8080
 - **Octane** (`./bin/app stack up -s octane`) - High-performance Laravel Octane, accessible at http://localhost:8000
 
 ### Which Stack to Use
 
-- **First time visitors:** Start with `default`
+- **First time visitors:** Start with default (just use `./bin/app stack up` without any options)
 - **Following a blog post:** Use the stack mentioned in the post
 - **Exploring modern PHP:** Try `frankenphp` or `octane`
 
 ### Switching Stacks
 
 ```bash
-# Stop current stack
+# Stop current stack (stops default if no -s specified)
 ./bin/app stack stop
 
-# Start different stack
+# Start different stack (must specify -s for non-default stacks)
 ./bin/app stack up -s octane
 ```
 

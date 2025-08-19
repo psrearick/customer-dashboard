@@ -312,7 +312,7 @@ docker port customer-dashboard-nginx
 
 ## Nuclear Option
 
-When everything is broken and you want to start completely fresh:
+When everything is broken, and you want to start completely fresh:
 
 ```bash
 # WARNING: This removes all containers, volumes, and data
