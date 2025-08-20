@@ -10,7 +10,6 @@ services:
       - "com.customer-dashboard.service.description=High-performance Laravel Octane with Swoole"
     volumes:
       - ../../:/var/www/html
-      - ../config/php/conf.d:/usr/local/etc/php/conf.d
     ports:
       - "8000:8000"
     environment:
