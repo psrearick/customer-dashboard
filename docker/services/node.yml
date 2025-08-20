@@ -2,6 +2,10 @@ services:
   node:
     image: node:20-alpine
     container_name: customer-dashboard-node
+    labels:
+      - "com.customer-dashboard.service.type=build"
+      - "com.customer-dashboard.service.roles=assets"
+      - "com.customer-dashboard.service.description=Node.js for asset compilation and Vite dev server"
     working_dir: /var/www/html
     volumes:
       - ../../:/var/www/html

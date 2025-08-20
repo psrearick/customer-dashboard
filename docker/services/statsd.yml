@@ -2,6 +2,10 @@ services:
   statsd:
     image: prom/statsd-exporter
     container_name: customer-dashboard-statsd
+    labels:
+      - "com.customer-dashboard.service.type=monitoring"
+      - "com.customer-dashboard.service.roles=metrics"
+      - "com.customer-dashboard.service.description=StatsD to Prometheus metrics bridge"
     ports:
       - "9102:9102"
       - "9125:9125/udp"

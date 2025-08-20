@@ -2,6 +2,10 @@ services:
   grafana:
     image: grafana/grafana:latest
     container_name: customer-dashboard-grafana
+    labels:
+      - "com.customer-dashboard.service.type=monitoring"
+      - "com.customer-dashboard.service.roles=metrics"
+      - "com.customer-dashboard.service.description=Grafana metrics visualization dashboard"
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
       - GF_FEATURE_TOGGLES_ENABLE=publicDashboards

@@ -2,6 +2,10 @@ services:
   mysql:
     image: mysql:8.4
     container_name: customer-dashboard-mysql
+    labels:
+      - "com.customer-dashboard.service.type=database"
+      - "com.customer-dashboard.service.roles=storage,primary"
+      - "com.customer-dashboard.service.description=MySQL database server"
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
       MYSQL_DATABASE: ${DB_DATABASE:-laravel_perf}

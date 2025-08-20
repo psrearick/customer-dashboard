@@ -5,6 +5,10 @@ services:
   proxysql:
     image: proxysql/proxysql:latest
     container_name: customer-dashboard-proxysql
+    labels:
+      - "com.customer-dashboard.service.type=proxy"
+      - "com.customer-dashboard.service.roles=database"
+      - "com.customer-dashboard.service.description=ProxySQL database load balancer and proxy"
     volumes:
       - ../config/proxysql/proxysql.cnf:/etc/proxysql.cnf
     ports:

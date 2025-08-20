@@ -1,6 +1,11 @@
 id: performance
 name: Performance
 description: Performance monitoring and analysis tools
+access_url: "http://localhost:3000"
+requirements:
+  min_memory: "6GB"
+  ports: [3000, 9090, 9104, 9121]
+  features: [monitoring, metrics, alerting]
 services:
   - grafana
   - prometheus

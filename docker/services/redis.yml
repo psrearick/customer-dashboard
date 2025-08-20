@@ -2,6 +2,10 @@ services:
   redis:
     image: redis:8-alpine
     container_name: customer-dashboard-redis
+    labels:
+      - "com.customer-dashboard.service.type=cache"
+      - "com.customer-dashboard.service.roles=cache,session,queue"
+      - "com.customer-dashboard.service.description=Redis cache and queue backend"
     command: redis-server /usr/local/etc/redis/redis.conf --maxmemory ${REDIS_MAX_MEMORY:-256mb} --maxmemory-policy allkeys-lru
     volumes:
       - redis_data:/data

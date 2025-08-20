@@ -3,6 +3,10 @@ services:
   percona-toolkit:
     image: percona/percona-toolkit
     container_name: customer-dashboard-percona-toolkit
+    labels:
+      - "com.customer-dashboard.service.type=monitoring"
+      - "com.customer-dashboard.service.roles=metrics"
+      - "com.customer-dashboard.service.description=Percona toolkit for MySQL performance analysis"
     volumes:
       - ../config/percona:/scripts
       - mysql_data:/var/lib/mysql

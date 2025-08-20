@@ -2,6 +2,10 @@ services:
   jaeger:
     image: jaegertracing/all-in-one:latest
     container_name: customer-dashboard-jaeger
+    labels:
+      - "com.customer-dashboard.service.type=monitoring"
+      - "com.customer-dashboard.service.roles=tracing"
+      - "com.customer-dashboard.service.description=Jaeger distributed tracing system"
     environment:
       - COLLECTOR_ZIPKIN_HOST_PORT=:9411
     ports:

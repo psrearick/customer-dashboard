@@ -2,6 +2,10 @@ services:
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.15.4
     container_name: customer-dashboard-elasticsearch
+    labels:
+      - "com.customer-dashboard.service.type=search"
+      - "com.customer-dashboard.service.roles=storage"
+      - "com.customer-dashboard.service.description=Elasticsearch search and analytics engine"
     environment:
       - discovery.type=single-node
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"

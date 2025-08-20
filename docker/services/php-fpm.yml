@@ -4,6 +4,10 @@ services:
       context: ../..
       dockerfile: docker/config/php-fpm/Dockerfile
     container_name: customer-dashboard-php-fpm
+    labels:
+      - "com.customer-dashboard.service.type=php"
+      - "com.customer-dashboard.service.roles=web,cli"
+      - "com.customer-dashboard.service.description=PHP-FPM processor for traditional LAMP stack"
     volumes:
       - ../../:/var/www/html
       - ../config/php/conf.d:/usr/local/etc/php/conf.d

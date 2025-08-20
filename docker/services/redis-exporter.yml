@@ -5,6 +5,10 @@ services:
   redis-exporter:
     image: oliver006/redis_exporter
     container_name: customer-dashboard-redis-exporter
+    labels:
+      - "com.customer-dashboard.service.type=monitoring"
+      - "com.customer-dashboard.service.roles=metrics"
+      - "com.customer-dashboard.service.description=Redis metrics exporter for Prometheus"
     environment:
       - REDIS_ADDR=redis://redis:6379
     ports:

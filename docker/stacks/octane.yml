@@ -1,6 +1,11 @@
 id: octane
 name: Octane
-description: High performance development environment with core services, using Laravel Octane
+description: High-performance environment with Laravel Octane + Swoole
+access_url: "http://localhost:8000"
+requirements:
+  min_memory: "4GB"
+  ports: [8000, 3306, 6379, 5173]
+  features: [swoole, long_running_processes, async_processing]
 services:
   - octane
   - mysql

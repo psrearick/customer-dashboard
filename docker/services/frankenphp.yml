@@ -8,6 +8,10 @@ services:
       context: ../..
       dockerfile: docker/config/frankenphp/Dockerfile
     container_name: customer-dashboard-frankenphp
+    labels:
+      - "com.customer-dashboard.service.type=php"
+      - "com.customer-dashboard.service.roles=web,cli"
+      - "com.customer-dashboard.service.description=Modern PHP app server with HTTP/3 support"
     volumes:
       - ../../:/app
       - ../config/php/conf.d:/usr/local/etc/php/conf.d

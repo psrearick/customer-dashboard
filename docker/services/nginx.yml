@@ -2,6 +2,10 @@ services:
   nginx:
     image: nginx:alpine
     container_name: customer-dashboard-nginx
+    labels:
+      - "com.customer-dashboard.service.type=proxy"
+      - "com.customer-dashboard.service.roles=web"
+      - "com.customer-dashboard.service.description=Nginx reverse proxy and web server"
     volumes:
       - ../../:/var/www/html
       - ../config/nginx/nginx.conf:/etc/nginx/nginx.conf

@@ -2,6 +2,10 @@ services:
   prometheus:
     image: prom/prometheus:v3.5.0
     container_name: customer-dashboard-prometheus
+    labels:
+      - "com.customer-dashboard.service.type=monitoring"
+      - "com.customer-dashboard.service.roles=metrics"
+      - "com.customer-dashboard.service.description=Prometheus metrics collection and storage"
     volumes:
       - ../config/prometheus:/etc/prometheus
       - prometheus_data:/prometheus

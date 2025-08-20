@@ -5,6 +5,10 @@ services:
   mysql-exporter:
     image: prom/mysqld-exporter:v0.15.1
     container_name: customer-dashboard-mysql-exporter
+    labels:
+      - "com.customer-dashboard.service.type=monitoring"
+      - "com.customer-dashboard.service.roles=metrics"
+      - "com.customer-dashboard.service.description=MySQL metrics exporter for Prometheus"
     command:
       - '--mysqld.address=mysql:3306'
       - '--mysqld.username=root'

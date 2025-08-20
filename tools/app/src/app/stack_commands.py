@@ -25,6 +25,8 @@ def help(ctx):
 @click.option('--verbose', '-V', is_flag=True, default=False, show_default=True, help="Display more detailed output")
 def up(attach, stack, build, verbose):
     """Start every container in the specified stack"""
+    from .state_manager import StateManager
+    
     services = get_services_for_stack(stack)
 
     options = []
@@ -39,10 +41,14 @@ def up(attach, stack, build, verbose):
 
     if verbose:
         stream_compose_command(command)
-        return
-
-    run_compose_command(command)
-
+    else:
+        run_compose_command(command)
+    
+    # Track the stack as active (convert Path objects to service names)
+    from .stack_config import StackConfig
+    service_names = StackConfig.get_stack_services(stack)
+    StateManager.mark_stack_active(stack, service_names)
+    
     click.secho("Application Started", fg="green")
 
 @stack_group.command(name="down")
@@ -50,15 +56,19 @@ def up(attach, stack, build, verbose):
 @click.option('--verbose', '-V', is_flag=True, default=False, show_default=True, help="Display more detailed output")
 def down(stack, verbose):
     """Stop every container in the specified stack"""
+    from .state_manager import StateManager
+    
     services = get_services_for_stack(stack)
 
     command = build_compose_command(services, 'down')
 
     if verbose:
         stream_compose_command(command)
-        return
-
-    run_compose_command(command)
+    else:
+        run_compose_command(command)
+    
+    # Mark the stack as inactive
+    StateManager.mark_stack_inactive(stack)
 
     click.secho("Application Stopped", fg="green")
 

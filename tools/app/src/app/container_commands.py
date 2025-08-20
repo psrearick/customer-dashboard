@@ -126,34 +126,42 @@ def logs(name, follow, tail):
     command = build_compose_command(service, 'logs', [], options)
     stream_compose_command(command, continuous)
 
-@container_group.command(name="exec")
-@click.argument('name')
-@click.argument('command', nargs=-1, required=True)
+@container_group.command(name="exec", context_settings=dict(ignore_unknown_options=True, allow_extra_args=True))
 @click.option('--user', '-u', help="Username or UID to run the command as")
 @click.option('--env', '-e', multiple=True, help="Set environment variables (can be used multiple times)")
 @click.option('--workdir', '-w', help="Working directory inside the container")
-def exec(name, command, user, env, workdir):
+@click.argument('name')
+@click.pass_context
+def exec(ctx, name, user, env, workdir):
     """Execute a command inside a running container."""
     service = get_service_file(name)
     
-    # Build the exec command options
-    options = []
+    # Get the command from remaining args
+    command = ctx.args
+    if not command:
+        click.echo("Error: No command specified")
+        sys.exit(1)
     
+    # Build the docker compose exec command manually for proper argument order
+    # docker compose -f service.yml exec [options] service_name command...
+    compose_command = [
+        "docker", "compose", "--project-name", "customer-dashboard",
+        "-f", str(service[0]['path']),
+        "exec"
+    ]
+    
+    # Add exec options
     if user:
-        options.extend(["--user", user])
-    
+        compose_command.extend(["--user", user])
     if workdir:
-        options.extend(["--workdir", workdir])
-    
+        compose_command.extend(["--workdir", workdir])
     for env_var in env:
-        options.extend(["--env", env_var])
+        compose_command.extend(["--env", env_var])
     
-    # Add the command to execute
-    command_str = " ".join(command)
-    options.append(command_str)
+    # Add service name and command
+    compose_command.append(service[0]['service'])
+    compose_command.extend(command)
     
-    # Build and run the docker compose exec command
-    compose_command = build_compose_command(service, 'exec', [], options)
     
     # Use subprocess directly for exec to allow interactive commands
     try:

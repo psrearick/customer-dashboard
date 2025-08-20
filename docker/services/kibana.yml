@@ -5,6 +5,10 @@ services:
   kibana:
     image: docker.elastic.co/kibana/kibana:8.15.4
     container_name: customer-dashboard-kibana
+    labels:
+      - "com.customer-dashboard.service.type=monitoring"
+      - "com.customer-dashboard.service.roles=logs"
+      - "com.customer-dashboard.service.description=Kibana log visualization and exploration"
     environment:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
       - XPACK_SECURITY_ENABLED=false

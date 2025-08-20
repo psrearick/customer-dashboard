@@ -1,6 +1,11 @@
 id: frankenphp
 name: FrankenPHP
-description: Modern development environment with core services, using FrankenPHP
+description: Modern development environment with HTTP/3 support
+access_url: "http://localhost:8080"
+requirements:
+  min_memory: "3GB"
+  ports: [8080, 8443, 3306, 6379, 5173]
+  features: [http3, worker_mode, automatic_https]
 services:
   - frankenphp
   - mysql

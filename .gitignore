@@ -30,6 +30,7 @@ yarn-error.log
 # Docker
 .docker/
 docker-compose.override.yml
+.docker-state.json
 
 # Performance Testing Data
 /storage/logs/xdebug/*
@@ -63,3 +64,6 @@ coverage/
 # Temporary files
 /tmp/
 /temp/
+
+# Other
+__pycache__

@@ -1,6 +1,11 @@
 id: default
 name: Default
-description: Standard development environment with core services
+description: Standard development environment with Nginx + PHP-FPM
+access_url: "http://localhost"
+requirements:
+  min_memory: "2GB"
+  ports: [80, 3306, 6379, 5173]
+  features: [traditional_lamp]
 services:
   - mysql
   - redis

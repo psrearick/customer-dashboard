@@ -1,0 +1,89 @@
+branches:
+  "demo/performance/query-optimized":
+    title: "Database Query Optimization"
+    description: "Demonstrates N+1 query fixes, eager loading, and database indexing strategies"
+    blog_post: "https://philliprearick.com/posts/laravel-query-optimization"
+    stack: "default"
+    alternative_stacks: ["performance"]
+    setup_commands:
+      - "artisan migrate:fresh --seed"
+      - "artisan db:seed --class=LargeDatasetSeeder"
+      - "artisan query-analyzer:setup"
+    features: ["performance", "database", "n_plus_one", "indexing"]
+    requirements:
+      min_memory: "4GB"
+      notes: "Includes large dataset for realistic performance testing"
+
+  "demo/performance/caching-strategies":
+    title: "Laravel Caching Strategies"
+    description: "Model caching, query caching, and distributed cache patterns"
+    blog_post: "https://philliprearick.com/posts/laravel-caching-strategies"
+    stack: "default"
+    alternative_stacks: ["performance"]
+    setup_commands:
+      - "artisan migrate:fresh --seed"
+      - "artisan cache:clear"
+      - "artisan cache-demo:setup"
+    features: ["performance", "caching", "redis", "model_caching"]
+
+  "demo/architecture/event-sourcing":
+    title: "Event Sourcing Implementation"
+    description: "Event sourcing patterns with Laravel event store and projections"
+    blog_post: "https://philliprearick.com/posts/event-sourcing-laravel"
+    stack: "octane"
+    additional_services: ["elasticsearch"]
+    setup_commands:
+      - "artisan migrate:fresh"
+      - "artisan event-store:setup"
+      - "artisan projections:create"
+    features: ["architecture", "event_sourcing", "cqrs", "elasticsearch"]
+    requirements:
+      min_memory: "6GB"
+
+  "demo/architecture/hexagonal":
+    title: "Hexagonal Architecture"
+    description: "Ports and adapters pattern implementation in Laravel"
+    blog_post: "https://philliprearick.com/posts/hexagonal-architecture-laravel"
+    stack: "default"
+    setup_commands:
+      - "artisan migrate:fresh --seed"
+      - "artisan hex:demo-setup"
+    features: ["architecture", "hexagonal", "ddd", "ports_adapters"]
+
+  "demo/ai/vector-search":
+    title: "AI-Powered Vector Search"
+    description: "Implementing semantic search with embeddings and vector databases"
+    blog_post: "https://philliprearick.com/posts/vector-search-laravel"
+    stack: "octane"
+    additional_services: ["elasticsearch"]
+    setup_commands:
+      - "artisan migrate:fresh --seed"
+      - "artisan vector:setup"
+      - "artisan embeddings:generate"
+    features: ["ai", "vector_search", "embeddings", "semantic_search"]
+    requirements:
+      min_memory: "8GB"
+      notes: "Vector processing requires significant memory"
+
+  "demo/performance/octane-optimization":
+    title: "Laravel Octane Performance Optimization"
+    description: "Memory management, worker optimization, and performance tuning"
+    blog_post: "https://philliprearick.com/posts/octane-optimization"
+    stack: "octane"
+    alternative_stacks: ["performance"]
+    setup_commands:
+      - "artisan migrate:fresh --seed"
+      - "artisan octane:install --server=swoole"
+      - "artisan octane-demo:setup"
+    features: ["performance", "octane", "swoole", "memory_management"]
+
+  "demo/integrations/realtime":
+    title: "Real-time Features with Broadcasting"
+    description: "WebSocket integration, real-time notifications, and live updates"
+    stack: "octane"
+    additional_services: ["redis"]
+    setup_commands:
+      - "artisan migrate:fresh --seed"
+      - "artisan broadcasting:install"
+      - "artisan realtime:demo-setup"
+    features: ["realtime", "websockets", "broadcasting", "notifications"]
