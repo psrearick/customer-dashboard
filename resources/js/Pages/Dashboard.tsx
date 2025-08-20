@@ -5,7 +5,7 @@ import { Button } from '@/Components/Button';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import {DotsVerticalIcon, PersonIcon, MixIcon, GearIcon } from '@radix-ui/react-icons';
 
-export default function Dashboard({ auth }: PageProps) {
+export default function Dashboard({ }: PageProps) {
     return (
         <AppLayout title="Dashboard">
             <div className="space-y-6">

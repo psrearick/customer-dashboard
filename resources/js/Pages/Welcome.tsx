@@ -1,10 +1,9 @@
-import React from 'react';
 import type {PageProps} from '@/types';
 import AppLayout from '@/Layouts/AppLayout';
 import * as Dialog from '@radix-ui/react-dialog';
 import { Cross1Icon } from '@radix-ui/react-icons';
 
-export default function Welcome({ auth }: PageProps) {
+export default function Welcome({ }: PageProps) {
     return (
         <AppLayout title="Welcome">
             <div className="overflow-hidden bg-white py-24 sm:py-32">

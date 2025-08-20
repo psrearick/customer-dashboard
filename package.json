@@ -3,12 +3,14 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "build": "vite build",
+        "build": "npm run type-check && vite build",
+        "build:no-check": "vite build",
         "dev": "vite",
         "dev:host": "vite --host",
         "preview": "vite preview",
         "type-check": "tsc --noEmit",
-        "lint": "echo 'Add linting setup later'"
+        "lint": "echo 'Add linting setup later'",
+        "types:generate": "php artisan wayfinder:generate"
     },
     "devDependencies": {
         "@tailwindcss/vite": "^4.0.0",
