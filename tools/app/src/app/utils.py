@@ -21,11 +21,21 @@ def get_stack_files():
 def get_stack_file(stack_name):
     stack_file = STACKS_DIR / f"{stack_name}.yml"
     if not stack_file.exists():
-        raise FileNotFoundError(
-            errno.ENOENT,
-            os.strerror(errno.ENOENT),
-            stack_file
-        )
+        click.echo(f"Error: Stack '{stack_name}' not found", file=sys.stderr)
+        click.echo(f"Available stacks:", file=sys.stderr)
+        
+        # List available stacks
+        available_stacks = []
+        for yml_file in STACKS_DIR.glob("*.yml"):
+            available_stacks.append(yml_file.stem)
+        
+        if available_stacks:
+            for stack in sorted(available_stacks):
+                click.echo(f"  - {stack}", file=sys.stderr)
+        else:
+            click.echo("  No stacks found in docker/stacks/", file=sys.stderr)
+        
+        sys.exit(1)
     return stack_file
 
 def get_service_files_for_stack(stack_name):

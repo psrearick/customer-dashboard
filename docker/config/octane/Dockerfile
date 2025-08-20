@@ -1,9 +1,11 @@
 FROM php:8.4-cli-bookworm
 
-# System dependencies
 RUN apt-get update && apt-get install -y \
     git \
+    zip \
+    unzip \
     curl \
+    supervisor \
     libpng-dev \
     libonig-dev \
     libxml2-dev \
@@ -11,13 +13,9 @@ RUN apt-get update && apt-get install -y \
     libicu-dev \
     libpq-dev \
     libbrotli-dev \
-    zip \
-    unzip \
     default-mysql-client \
-    supervisor \
     && rm -rf /var/lib/apt/lists/*
 
-# PHP extensions for Laravel and Octane
 RUN docker-php-ext-install \
     bcmath \
     fileinfo \
@@ -30,7 +28,6 @@ RUN docker-php-ext-install \
     sockets \
     opcache
 
-# PECL extensions including Swoole for Octane
 RUN pecl install redis swoole apcu xhprof \
     && docker-php-ext-enable redis swoole apcu xhprof
 
@@ -38,17 +35,9 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /app
 
-# Configuration files
-#COPY docker/config/php/conf.d/performance.ini /usr/local/etc/php/conf.d/
-#COPY docker/config/php/conf.d/opcache.ini /usr/local/etc/php/conf.d/
-#COPY docker/config/php/conf.d/pdo_mysql.ini /usr/local/etc/php/conf.d/
-#COPY docker/config/php/conf.d/pcntl.ini /usr/local/etc/php/conf.d/
-#COPY docker/config/php/conf.d/docker-php-ext-redis.ini /usr/local/etc/php/conf.d/
-#COPY docker/config/octane/php/conf.d/swoole.ini /usr/local/etc/php/conf.d/
 COPY docker/config/octane/octane.conf /usr/local/etc/php/conf.d/octane.ini
 COPY docker/config/octane/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-# Application files
 COPY . /app
 
 RUN if [ -f composer.json ]; then \
@@ -58,7 +47,6 @@ RUN if [ -f composer.json ]; then \
         php artisan octane:install --server=swoole --no-interaction 2>/dev/null || true; \
     fi
 
-# Set permissions for Laravel directories if they exist
 RUN if [ -d "/app/storage" ]; then \
         chown -R www-data:www-data /app/storage; \
         chmod -R 775 /app/storage; \
@@ -70,7 +58,6 @@ RUN if [ -d "/app/storage" ]; then \
 
 RUN chown -R www-data:www-data /app
 
-# Create startup script
 RUN echo '#!/bin/bash\n\
 php artisan config:cache\n\
 php artisan route:cache\n\

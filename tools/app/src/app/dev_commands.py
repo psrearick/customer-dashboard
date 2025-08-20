@@ -342,7 +342,8 @@ def redis_cli(host, port, password, database, dry_run):
 @dev_group.command(name="cache-clear")
 @click.option('--container', '-c', help="Specific PHP container to use")
 @click.option('--all', is_flag=True, help="Clear all caches including compiled views, routes, config")
-def cache_clear(container, all):
+@click.option('--dry-run', is_flag=True, help="Show commands that would be executed")
+def cache_clear(container, all, dry_run):
     """Clear Laravel caches."""
     if not container:
         container = ServiceDiscovery.get_php_container()
@@ -359,20 +360,30 @@ def cache_clear(container, all):
             ['docker', 'exec', container, 'php', 'artisan', 'event:clear']
         ]
         for cmd in commands:
-            click.echo(f"Running: {' '.join(cmd[-2:])}")
-            subprocess.run(cmd)
+            if dry_run:
+                click.echo(f"Would run: {' '.join(cmd)}")
+            else:
+                click.echo(f"Running: {' '.join(cmd[-2:])}")
+                subprocess.run(cmd)
     else:
         cmd = ['docker', 'exec', container, 'php', 'artisan', 'optimize:clear']
-        subprocess.run(cmd)
+        if dry_run:
+            click.echo(f"Would run: {' '.join(cmd)}")
+        else:
+            subprocess.run(cmd)
     
-    click.echo("Caches cleared")
+    if not dry_run:
+        click.echo("Caches cleared")
+    else:
+        click.echo("Dry run complete - no commands executed")
 
 
 @dev_group.command(name="queue-clear")
 @click.option('--container', '-c', help="Specific PHP container to use")
 @click.option('--queue', help="Specific queue to clear")
 @click.option('--connection', help="Queue connection to clear")
-def queue_clear(container, queue, connection):
+@click.option('--dry-run', is_flag=True, help="Show command that would be executed")
+def queue_clear(container, queue, connection, dry_run):
     """Clear Laravel queue jobs."""
     if not container:
         container = ServiceDiscovery.get_php_container()
@@ -388,8 +399,11 @@ def queue_clear(container, queue, connection):
     if queue:
         cmd.extend(['--queue', queue])
     
-    subprocess.run(cmd)
-    click.echo("Queue cleared")
+    if dry_run:
+        click.echo(f"Would run: {' '.join(cmd)}")
+    else:
+        subprocess.run(cmd)
+        click.echo("Queue cleared")
 
 
 @dev_group.command(name="queue-work", context_settings={'ignore_unknown_options': True})

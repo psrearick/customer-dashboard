@@ -12,7 +12,19 @@ def get_service_file(service_name):
         if service_file.stem == service_name:
             return [{'service': service_file.stem, 'path': service_file}]
     
-    click.secho(f"Service '{service_name}' not found", fg="red")
+    click.secho(f"Error: Service '{service_name}' not found", fg="red")
+    click.echo("Available services:")
+    
+    available_services = []
+    for service_file in service_files:
+        available_services.append(service_file.stem)
+    
+    if available_services:
+        for service in sorted(available_services):
+            click.echo(f"  - {service}")
+    else:
+        click.echo("  No services found in docker/services/")
+    
     sys.exit(1)
 
 @click.group(name="container", context_settings=CONTEXT_SETTINGS)
@@ -212,7 +224,8 @@ def status(name):
 @click.argument('name')
 @click.option('--no-cache', is_flag=True, default=False, help="Build without using cache")
 @click.option('--pull', is_flag=True, default=False, help="Always pull latest base images")
-def build(name, no_cache, pull):
+@click.option('--verbose', '-V', is_flag=True, default=False, help="Display detailed build output")
+def build(name, no_cache, pull, verbose):
     """Build or rebuild image for a single container."""
     service = get_service_file(name)
     
@@ -225,6 +238,19 @@ def build(name, no_cache, pull):
         options.append('--pull')
     
     command = build_compose_command(service, 'build', [], options)
-    run_compose_command(command)
+    
+    click.echo(f"Building container '{name}'...")
+    
+    if no_cache:
+        click.echo("  Using --no-cache (build will be slower but completely fresh)")
+    if pull:
+        click.echo("  Using --pull (will fetch latest base images)")
+    
+    if verbose:
+        click.echo("Build output:")
+        stream_compose_command(command)
+    else:
+        click.echo("Building... (use --verbose to see detailed output)")
+        run_compose_command(command)
     
     click.secho(f"Container '{name}' built successfully", fg="green")

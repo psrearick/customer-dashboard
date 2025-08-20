@@ -183,10 +183,23 @@ def build(stack, no_cache, pull, verbose):
 
     command = build_compose_command(services, 'build', [], options)
 
+    # Show what's being built
+    service_names = [s['service'] for s in services]
+    click.echo(f"Building stack '{stack}' ({len(service_names)} services)...")
+    
+    for i, service_name in enumerate(service_names, 1):
+        click.echo(f"  {i}/{len(service_names)}: {service_name}")
+    
+    click.echo()
+    
     if verbose:
         stream_compose_command(command)
         return
 
+    # For non-verbose, show a progress indicator
+    click.echo("Building... (this may take several minutes)")
+    click.echo("Use --verbose to see detailed build output")
+    
     run_compose_command(command)
 
     click.secho(f"Stack '{stack}' built successfully", fg="green")

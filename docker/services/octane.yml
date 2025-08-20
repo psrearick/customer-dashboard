@@ -9,7 +9,7 @@ services:
       - "com.customer-dashboard.service.roles=web,cli,queue"
       - "com.customer-dashboard.service.description=High-performance Laravel Octane with Swoole"
     volumes:
-      - ../../:/app
+      - ../../:/var/www/html
       - ../config/php/conf.d:/usr/local/etc/php/conf.d
     ports:
       - "8000:8000"

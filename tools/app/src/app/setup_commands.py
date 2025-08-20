@@ -320,7 +320,8 @@ def branch(branch_name, stack, no_setup, dry_run):
 @click.option('--container', '-c', help="Specific PHP container to use")
 @click.option('--production', is_flag=True, help="Use production optimizations")
 @click.option('--clear-first', is_flag=True, help="Clear caches before optimizing")
-def optimize(container, production, clear_first):
+@click.option('--dry-run', is_flag=True, help="Show commands that would be executed")
+def optimize(container, production, clear_first, dry_run):
     """Run Laravel optimizations for better performance."""
     if not container:
         container = ServiceDiscovery.get_php_container()
@@ -329,11 +330,12 @@ def optimize(container, production, clear_first):
             sys.exit(1)
     
     if clear_first:
-        subprocess.run(
-            ['docker', 'exec', container, 'php', 'artisan', 'optimize:clear'],
-            capture_output=True
-        )
-        click.echo("Cleared existing caches")
+        clear_cmd = ['docker', 'exec', container, 'php', 'artisan', 'optimize:clear']
+        if dry_run:
+            click.echo(f"Would run: {' '.join(clear_cmd)}")
+        else:
+            subprocess.run(clear_cmd, capture_output=True)
+            click.echo("Cleared existing caches")
     
     # Standard optimizations
     commands = [
@@ -342,30 +344,36 @@ def optimize(container, production, clear_first):
         ('view:cache', 'Views cached')
     ]
     
-    # Check if we can cache routes (no closures)
-    result = subprocess.run(
-        ['docker', 'exec', container, 'php', 'artisan', 'route:list'],
-        capture_output=True,
-        text=True
-    )
+    # Check if we can cache routes (no closures) - only if not dry-run
+    can_cache_routes = True
+    if not dry_run:
+        result = subprocess.run(
+            ['docker', 'exec', container, 'php', 'artisan', 'route:list'],
+            capture_output=True,
+            text=True
+        )
+        can_cache_routes = 'Closure' not in result.stdout
     
     for cmd, message in commands:
-        if cmd == 'route:cache' and 'Closure' in result.stdout:
+        artisan_cmd = ['docker', 'exec', container, 'php', 'artisan', cmd]
+        
+        if cmd == 'route:cache' and not can_cache_routes:
             click.echo("Skipping route cache (closures detected)")
             continue
         
-        subprocess.run(
-            ['docker', 'exec', container, 'php', 'artisan', cmd],
-            capture_output=True
-        )
-        click.echo(f"{message}")
+        if dry_run:
+            click.echo(f"Would run: {' '.join(artisan_cmd)}")
+        else:
+            subprocess.run(artisan_cmd, capture_output=True)
+            click.echo(f"{message}")
     
     if production:
-        subprocess.run(
-            ['docker', 'exec', container, 'composer', 'dump-autoload', '--optimize', '--classmap-authoritative'],
-            capture_output=True
-        )
-        click.echo("Optimized composer autoloader")
+        composer_cmd = ['docker', 'exec', container, 'composer', 'dump-autoload', '--optimize', '--classmap-authoritative']
+        if dry_run:
+            click.echo(f"Would run: {' '.join(composer_cmd)}")
+        else:
+            subprocess.run(composer_cmd, capture_output=True)
+            click.echo("Optimized composer autoloader")
     
     click.echo("\nOptimization complete!")
 
@@ -413,7 +421,8 @@ def permissions(user, group, dry_run):
 
 @setup_group.command(name="clean-state")
 @click.option('--force', '-f', is_flag=True, help="Don't ask for confirmation")
-def clean_state(force):
+@click.option('--no-rediscover', is_flag=True, help="Don't attempt to rediscover running stacks")
+def clean_state(force, no_rediscover):
     """Clean up Docker state and temporary files."""
     if not force:
         if not click.confirm("This will reset all Docker state tracking. Continue?"):
@@ -421,3 +430,11 @@ def clean_state(force):
     
     StateManager.reset_state()
     click.echo("State reset complete")
+    
+    if not no_rediscover:
+        click.echo("Attempting to rediscover running stacks...")
+        discovered = StateManager.rediscover_running_stacks()
+        if discovered > 0:
+            click.echo(f"Re-discovered {discovered} active stack(s)")
+        else:
+            click.echo("No running stacks detected")

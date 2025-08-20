@@ -57,6 +57,7 @@ class StateManager:
         # Record stack information
         state['active_stacks'][stack_name] = {
             'started_at': datetime.now().isoformat(),
+            'explicitly_started': True,  # This stack was intentionally started by user
             'services': services,
             'access_url': access_url,
             'monitoring_urls': monitoring_urls,
@@ -86,13 +87,21 @@ class StateManager:
         if not stack_info:
             return False
         
-        # Check critical containers (at least one PHP container should be running)
         containers = stack_info.get('containers', {})
-        for container_name, status in containers.items():
-            if cls._verify_container_running(container_name):
-                return True
+        explicitly_started = stack_info.get('explicitly_started', True)  # Default to True for backwards compatibility
         
-        return False
+        if explicitly_started:
+            # Explicit stacks: require at least one container running (user started them intentionally)
+            for container_name, status in containers.items():
+                if cls._verify_container_running(container_name):
+                    return True
+            return False
+        else:
+            # Implicit stacks: require ALL containers running (inferred from running containers)
+            for container_name, status in containers.items():
+                if not cls._verify_container_running(container_name):
+                    return False
+            return len(containers) > 0
     
     @classmethod
     def cleanup_stale_state(cls) -> int:
@@ -311,6 +320,113 @@ class StateManager:
     def reset_state(cls) -> None:
         """Reset all state (use with caution)."""
         state = cls._create_empty_state()
+        cls._save_state(state)
+    
+    @classmethod
+    def rediscover_running_stacks(cls) -> int:
+        """Re-discover and track any currently running stacks."""
+        import subprocess
+        
+        discovered_count = 0
+        try:
+            # Find all running containers with our project label
+            result = subprocess.run(
+                [
+                    'docker', 'ps', '--format', '{{json .}}',
+                    '--filter', f'label=com.docker.compose.project={cls.COMPOSE_PROJECT}'
+                ],
+                capture_output=True,
+                text=True,
+                check=True
+            )
+            
+            # Get all running services
+            services_running = set()
+            for line in result.stdout.strip().split('\n'):
+                if line:
+                    try:
+                        container_data = json.loads(line)
+                        labels = container_data.get('Labels', '')
+                        
+                        # Extract service name from labels
+                        for label_pair in labels.split(','):
+                            if 'com.docker.compose.service=' in label_pair:
+                                service_name = label_pair.split('=', 1)[1]
+                                services_running.add(service_name)
+                                break
+                    except json.JSONDecodeError:
+                        continue
+            
+            # Find the best matching stack for running services
+            if services_running:
+                from .stack_config import StackConfig
+                all_stacks = StackConfig.get_all_stacks()
+                
+                # Find stacks that have 100% of their services running (complete matches only)
+                complete_matches = []
+                for stack_info in all_stacks:
+                    stack_id = stack_info['id']
+                    stack_services = set(stack_info['services'])
+                    
+                    # Only consider stacks where ALL services are running
+                    if stack_services.issubset(services_running):
+                        complete_matches.append((stack_id, stack_services, len(stack_services)))
+                
+                # Sort by number of services (prefer more specific stacks)
+                complete_matches.sort(key=lambda x: x[2], reverse=True)
+                
+                # Mark the most specific non-overlapping stacks as active
+                used_services = set()
+                for stack_id, stack_services, service_count in complete_matches:
+                    # Only add if this stack doesn't overlap with already used services
+                    if not stack_services.intersection(used_services):
+                        # Mark as implicitly started (not explicitly by user)
+                        cls._mark_stack_active_implicit(stack_id, list(stack_services))
+                        used_services.update(stack_services)
+                        discovered_count += 1
+        
+        except (subprocess.CalledProcessError, Exception):
+            pass
+        
+        return discovered_count
+    
+    @classmethod
+    def _mark_stack_active_implicit(cls, stack_name: str, services: List[str]) -> None:
+        """Mark a stack as active but implicitly discovered (not explicitly started)."""
+        from .stack_config import StackConfig
+        
+        state = cls._load_state()
+        
+        # Get stack configuration
+        try:
+            access_url = StackConfig.get_stack_access_url(stack_name)
+            requirements = StackConfig.get_stack_requirements(stack_name)
+            monitoring_urls = StackConfig.get_monitoring_urls(stack_name)
+            ports = StackConfig.get_stack_ports(stack_name)
+        except Exception:
+            access_url = "http://localhost"
+            requirements = {}
+            monitoring_urls = {}
+            ports = []
+        
+        # Generate container names
+        container_names = cls._get_container_names_for_stack(stack_name, services)
+        
+        # Record stack information (marked as implicitly discovered)
+        state['active_stacks'][stack_name] = {
+            'started_at': datetime.now().isoformat(),
+            'explicitly_started': False,  # This stack was inferred from running containers
+            'services': services,
+            'access_url': access_url,
+            'monitoring_urls': monitoring_urls,
+            'ports': ports,
+            'stack_config': {
+                'min_memory': requirements.get('min_memory', '2GB'),
+                'features': requirements.get('features', [])
+            },
+            'containers': container_names
+        }
+        
         cls._save_state(state)
     
     @classmethod
