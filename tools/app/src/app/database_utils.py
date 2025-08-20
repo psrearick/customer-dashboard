@@ -22,7 +22,6 @@ class DatabaseUtils:
             'database': 'laravel_perf'
         }
         
-        # Try to read from .env file first
         env_vars = cls.parse_laravel_env()
         if env_vars:
             credentials['host'] = env_vars.get('DB_HOST', 'localhost')
@@ -31,11 +30,11 @@ class DatabaseUtils:
             credentials['password'] = env_vars.get('DB_PASSWORD', 'password')
             credentials['database'] = env_vars.get('DB_DATABASE', 'laravel_perf')
         
-        # Try to get from running MySQL container if host is a container name
+        # Container names need localhost mapping for external access
         if credentials['host'] in ['mysql', 'customer-dashboard-mysql']:
             container_env = cls.query_container_env('customer-dashboard-mysql')
             if container_env:
-                credentials['host'] = 'localhost'  # Connect via exposed port
+                credentials['host'] = 'localhost'
                 credentials['password'] = container_env.get('MYSQL_PASSWORD', credentials['password'])
                 credentials['database'] = container_env.get('MYSQL_DATABASE', credentials['database'])
         
@@ -51,18 +50,16 @@ class DatabaseUtils:
             'database': '0'
         }
         
-        # Try to read from .env file
         env_vars = cls.parse_laravel_env()
         if env_vars:
             credentials['host'] = env_vars.get('REDIS_HOST', 'localhost')
             credentials['port'] = env_vars.get('REDIS_PORT', '6379')
             credentials['password'] = env_vars.get('REDIS_PASSWORD')
             
-            # Parse database number from cache database setting
             cache_db = env_vars.get('REDIS_CACHE_DB', '1')
             credentials['database'] = cache_db
         
-        # Adjust host for container connections
+        # Container names need localhost mapping for external access
         if credentials['host'] in ['redis', 'customer-dashboard-redis']:
             credentials['host'] = 'localhost'
         
@@ -80,17 +77,14 @@ class DatabaseUtils:
             with open(cls.ENV_FILE, 'r') as f:
                 for line in f:
                     line = line.strip()
-                    # Skip comments and empty lines
                     if not line or line.startswith('#'):
                         continue
                     
-                    # Parse KEY=VALUE format
                     match = re.match(r'^([A-Z_][A-Z0-9_]*)=(.*)$', line)
                     if match:
                         key = match.group(1)
                         value = match.group(2)
                         
-                        # Remove quotes if present
                         if value.startswith('"') and value.endswith('"'):
                             value = value[1:-1]
                         elif value.startswith("'") and value.endswith("'"):
@@ -127,7 +121,6 @@ class DatabaseUtils:
     @classmethod
     def get_database_connection_string(cls, credentials: Dict) -> str:
         """Generate connection string for mysql command."""
-        # Don't include password in the string for security
         return (
             f"-h {credentials['host']} "
             f"-P {credentials['port']} "

@@ -8,7 +8,6 @@ from pathlib import Path
 import yaml
 import sys
 
-# Add the src directory to the path
 sys.path.insert(0, str(Path(__file__).parent.parent / 'src'))
 
 from app.stack_config import StackConfig
@@ -23,7 +22,6 @@ class TestStackConfig(unittest.TestCase):
         self.stacks_dir = Path(self.test_dir) / 'docker' / 'stacks'
         self.stacks_dir.mkdir(parents=True)
         
-        # Create sample stack files
         self.create_test_stack('default', {
             'id': 'default',
             'name': 'Default',
@@ -50,14 +48,11 @@ class TestStackConfig(unittest.TestCase):
             'services': ['octane', 'mysql', 'redis']
         })
         
-        # Store original values
         self.original_project_root = os.environ.get('PROJECT_ROOT')
         
-        # Create service files directory for validation tests
         services_dir = Path(self.test_dir) / 'docker' / 'services'
         services_dir.mkdir(parents=True, exist_ok=True)
         
-        # Create basic service files for validation
         for service in ['nginx', 'php-fpm', 'mysql', 'redis', 'octane']:
             service_file = services_dir / f'{service}.yml'
             service_content = {
@@ -71,15 +66,12 @@ class TestStackConfig(unittest.TestCase):
             with open(service_file, 'w') as f:
                 yaml.dump(service_content, f)
         
-        # Set PROJECT_ROOT environment variable for tests
         os.environ['PROJECT_ROOT'] = self.test_dir
         
-        # Update class variables to use test directory
         StackConfig.PROJECT_ROOT = Path(self.test_dir)
         StackConfig.STACK_DIR = Path(self.test_dir) / "docker" / "stacks"
         StackConfig.SERVICE_DIR = Path(self.test_dir) / "docker" / "services"
         
-        # Clear any caches (StackConfig uses lru_cache on methods)
         if hasattr(StackConfig, 'load_stack_config'):
             StackConfig.load_stack_config.cache_clear()
     
@@ -88,18 +80,15 @@ class TestStackConfig(unittest.TestCase):
         import shutil
         shutil.rmtree(self.test_dir)
         
-        # Restore original PROJECT_ROOT
         if self.original_project_root is not None:
             os.environ['PROJECT_ROOT'] = self.original_project_root
         elif 'PROJECT_ROOT' in os.environ:
             del os.environ['PROJECT_ROOT']
         
-        # Restore class variables
         StackConfig.PROJECT_ROOT = Path(os.environ.get('PROJECT_ROOT', Path(__file__).parent.parent.parent.parent.parent))
         StackConfig.STACK_DIR = StackConfig.PROJECT_ROOT / "docker" / "stacks"
         StackConfig.SERVICE_DIR = StackConfig.PROJECT_ROOT / "docker" / "services"
         
-        # Clear any caches
         if hasattr(StackConfig, 'load_stack_config'):
             StackConfig.load_stack_config.cache_clear()
     
@@ -116,7 +105,6 @@ class TestStackConfig(unittest.TestCase):
         self.assertEqual(config['name'], 'Default')
         self.assertEqual(config['access_url'], 'http://localhost')
         
-        # Test non-existent stack
         with self.assertRaises(FileNotFoundError):
             StackConfig.load_stack_config('nonexistent')
     
@@ -134,9 +122,8 @@ class TestStackConfig(unittest.TestCase):
         url = StackConfig.get_stack_access_url('octane')
         self.assertEqual(url, 'http://localhost:8000')
         
-        # Test non-existent stack
         url = StackConfig.get_stack_access_url('nonexistent')
-        self.assertEqual(url, 'http://localhost')  # Default fallback
+        self.assertEqual(url, 'http://localhost')
     
     def test_get_stack_requirements(self):
         """Test getting stack requirements."""
@@ -185,7 +172,6 @@ class TestStackConfig(unittest.TestCase):
     
     def test_validate_stack_config(self):
         """Test stack configuration validation."""
-        # Valid stacks should have no errors
         errors = StackConfig.validate_stack_config('default')
         self.assertEqual(errors, [])
         
@@ -198,7 +184,6 @@ class TestStackConfig(unittest.TestCase):
     
     def test_get_monitoring_urls(self):
         """Test getting monitoring URLs."""
-        # For test stacks without monitoring services
         urls = StackConfig.get_monitoring_urls('default')
         self.assertEqual(urls, {})
         

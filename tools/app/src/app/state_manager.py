@@ -19,13 +19,12 @@ class StateManager:
         state = cls._load_state()
         active_stacks = state.get('active_stacks', {})
 
-        # Verify and clean up stale entries
+        # Remove stacks that are no longer actually running
         verified_stacks = {}
         for stack_name, stack_info in active_stacks.items():
             if cls.verify_stack_running(stack_name):
                 verified_stacks[stack_name] = stack_info
 
-        # Update state if any were removed
         if len(verified_stacks) != len(active_stacks):
             state['active_stacks'] = verified_stacks
             cls._save_state(state)
@@ -39,7 +38,6 @@ class StateManager:
 
         state = cls._load_state()
 
-        # Get stack configuration
         try:
             access_url = StackConfig.get_stack_access_url(stack_name)
             requirements = StackConfig.get_stack_requirements(stack_name)
@@ -51,13 +49,11 @@ class StateManager:
             monitoring_urls = {}
             ports = []
 
-        # Generate container names
         container_names = cls._get_container_names_for_stack(stack_name, services)
 
-        # Record stack information
         state['active_stacks'][stack_name] = {
             'started_at': datetime.now().isoformat(),
-            'explicitly_started': True,  # This stack was intentionally started by user
+            'explicitly_started': True,
             'services': services,
             'access_url': access_url,
             'monitoring_urls': monitoring_urls,
@@ -188,7 +184,6 @@ class StateManager:
         state = cls._load_state()
         containers = stack_info.get('containers', {})
 
-        # Update status for each container
         for container_name in containers:
             containers[container_name] = 'running' if cls._verify_container_running(container_name) else 'stopped'
 
@@ -212,19 +207,16 @@ class StateManager:
         """Check if starting a stack would cause port conflicts."""
         from .stack_config import StackConfig
 
-        # Get ports needed by the stack
         try:
             needed_ports = StackConfig.get_stack_ports(stack_name)
         except Exception:
             return []
 
-        # Get ports currently in use
         used_ports = cls.get_all_ports_in_use()
 
-        # Find conflicts
         conflicts = [port for port in needed_ports if port in used_ports]
 
-        # Exclude ports used by the same stack (if restarting)
+        # Allow restarting same stack without port conflict error
         stack_info = cls.get_stack_info(stack_name)
         if stack_info:
             stack_ports = stack_info.get('ports', [])
@@ -243,7 +235,6 @@ class StateManager:
             'main': stack_info.get('access_url', 'http://localhost')
         }
 
-        # Add monitoring URLs
         monitoring_urls = stack_info.get('monitoring_urls', {})
         access_info.update(monitoring_urls)
 
@@ -258,7 +249,6 @@ class StateManager:
         try:
             with open(cls.STATE_FILE, 'r') as f:
                 state = json.load(f)
-                # Ensure required keys exist
                 if 'version' not in state:
                     state['version'] = '1.0'
                 if 'active_stacks' not in state:
@@ -267,7 +257,7 @@ class StateManager:
                     state['metadata'] = {}
                 return state
         except (json.JSONDecodeError, IOError):
-            # Backup corrupt file and create new one
+            # Preserve corrupted state for debugging
             if cls.STATE_FILE.exists():
                 backup_file = cls.STATE_FILE.with_suffix('.json.backup')
                 cls.STATE_FILE.rename(backup_file)
@@ -281,15 +271,14 @@ class StateManager:
         state['metadata']['docker_compose_project'] = cls.COMPOSE_PROJECT
 
         try:
-            # Write to temporary file first
+            # Atomic write prevents corruption during save
             temp_file = cls.STATE_FILE.with_suffix('.tmp')
             with open(temp_file, 'w') as f:
                 json.dump(state, f, indent=2)
 
-            # Atomic rename
             temp_file.replace(cls.STATE_FILE)
 
-            # Set proper permissions (user read/write only)
+            # Restrict access to state file for security
             os.chmod(cls.STATE_FILE, 0o600)
         except IOError as e:
             print(f"Warning: Could not save state: {e}")
@@ -361,7 +350,6 @@ class StateManager:
 
         discovered_count = 0
         try:
-            # Find all running containers with our project label
             result = subprocess.run(
                 [
                     'docker', 'ps', '--format', '{{json .}}',
@@ -372,7 +360,6 @@ class StateManager:
                 check=True
             )
 
-            # Get all running services
             services_running = set()
             for line in result.stdout.strip().split('\n'):
                 if line:
@@ -380,7 +367,6 @@ class StateManager:
                         container_data = json.loads(line)
                         labels = container_data.get('Labels', '')
 
-                        # Extract service name from labels
                         for label_pair in labels.split(','):
                             if 'com.docker.compose.service=' in label_pair:
                                 service_name = label_pair.split('=', 1)[1]
@@ -389,30 +375,27 @@ class StateManager:
                     except json.JSONDecodeError:
                         continue
 
-            # Find the best matching stack for running services
             if services_running:
                 from .stack_config import StackConfig
                 all_stacks = StackConfig.get_all_stacks()
 
-                # Find stacks that have 100% of their services running (complete matches only)
+                # Only match stacks where ALL services are currently running
                 complete_matches = []
                 for stack_info in all_stacks:
                     stack_id = stack_info['id']
                     stack_services = set(stack_info['services'])
 
-                    # Only consider stacks where ALL services are running
                     if stack_services.issubset(services_running):
                         complete_matches.append((stack_id, stack_services, len(stack_services)))
 
-                # Sort by number of services (prefer more specific stacks)
+                # Prefer more specific stacks over generic ones
                 complete_matches.sort(key=lambda x: x[2], reverse=True)
 
-                # Mark the most specific non-overlapping stacks as active
+                # Avoid double-counting services across multiple stacks
                 used_services = set()
                 for stack_id, stack_services, service_count in complete_matches:
-                    # Only add if this stack doesn't overlap with already used services
                     if not stack_services.intersection(used_services):
-                        # Mark as implicitly started (not explicitly by user)
+                        # Discovered stacks weren't started by user command
                         cls._mark_stack_active_implicit(stack_id, list(stack_services))
                         used_services.update(stack_services)
                         discovered_count += 1
@@ -429,7 +412,6 @@ class StateManager:
 
         state = cls._load_state()
 
-        # Get stack configuration
         try:
             access_url = StackConfig.get_stack_access_url(stack_name)
             requirements = StackConfig.get_stack_requirements(stack_name)
@@ -441,13 +423,12 @@ class StateManager:
             monitoring_urls = {}
             ports = []
 
-        # Generate container names
         container_names = cls._get_container_names_for_stack(stack_name, services)
 
         # Record stack information (marked as implicitly discovered)
         state['active_stacks'][stack_name] = {
             'started_at': datetime.now().isoformat(),
-            'explicitly_started': False,  # This stack was inferred from running containers
+            'explicitly_started': False,
             'services': services,
             'access_url': access_url,
             'monitoring_urls': monitoring_urls,

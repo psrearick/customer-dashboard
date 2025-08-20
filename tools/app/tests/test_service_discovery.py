@@ -8,7 +8,6 @@ from pathlib import Path
 import yaml
 import sys
 
-# Add the src directory to the path
 sys.path.insert(0, str(Path(__file__).parent.parent / 'src'))
 
 from app.service_discovery import ServiceDiscovery
@@ -23,23 +22,18 @@ class TestServiceDiscovery(unittest.TestCase):
         self.services_dir = Path(self.test_dir) / 'docker' / 'services'
         self.services_dir.mkdir(parents=True)
         
-        # Create sample service files
         self.create_test_service('php-fpm', 'php', ['web', 'cli'], 'PHP-FPM processor')
         self.create_test_service('mysql', 'database', ['storage', 'primary'], 'MySQL database')
         self.create_test_service('redis', 'cache', ['cache', 'session', 'queue'], 'Redis server')
         self.create_test_service('nginx', 'proxy', ['web'], 'Nginx reverse proxy')
         
-        # Store original values
         self.original_project_root = os.environ.get('PROJECT_ROOT')
         
-        # Set PROJECT_ROOT environment variable for tests
         os.environ['PROJECT_ROOT'] = self.test_dir
         
-        # Update class variables to use test directory
         ServiceDiscovery.PROJECT_ROOT = Path(self.test_dir)
         ServiceDiscovery.SERVICE_DIR = Path(self.test_dir) / "docker" / "services"
         
-        # Clear any caches
         ServiceDiscovery._load_service_file.cache_clear()
     
     def tearDown(self):
@@ -47,17 +41,14 @@ class TestServiceDiscovery(unittest.TestCase):
         import shutil
         shutil.rmtree(self.test_dir)
         
-        # Restore original PROJECT_ROOT
         if self.original_project_root is not None:
             os.environ['PROJECT_ROOT'] = self.original_project_root
         elif 'PROJECT_ROOT' in os.environ:
             del os.environ['PROJECT_ROOT']
         
-        # Restore class variables
         ServiceDiscovery.PROJECT_ROOT = Path(os.environ.get('PROJECT_ROOT', Path(__file__).parent.parent.parent.parent.parent))
         ServiceDiscovery.SERVICE_DIR = ServiceDiscovery.PROJECT_ROOT / "docker" / "services"
         
-        # Clear any caches
         ServiceDiscovery._load_service_file.cache_clear()
     
     def create_test_service(self, name, service_type, roles, description):
@@ -89,7 +80,6 @@ class TestServiceDiscovery(unittest.TestCase):
         self.assertEqual(len(cache_services), 1)
         self.assertEqual(cache_services[0]['name'], 'redis')
         
-        # Test non-existent type
         missing_services = ServiceDiscovery.find_services_by_type('nonexistent')
         self.assertEqual(len(missing_services), 0)
     
@@ -105,7 +95,6 @@ class TestServiceDiscovery(unittest.TestCase):
         self.assertEqual(len(storage_services), 1)
         self.assertEqual(storage_services[0]['name'], 'mysql')
         
-        # Test role that appears in multiple services
         queue_services = ServiceDiscovery.find_services_by_role('queue')
         self.assertEqual(len(queue_services), 1)
         self.assertEqual(queue_services[0]['name'], 'redis')
@@ -118,7 +107,6 @@ class TestServiceDiscovery(unittest.TestCase):
         self.assertEqual(set(metadata['roles']), {'web', 'cli'})
         self.assertEqual(metadata['description'], 'PHP-FPM processor')
         
-        # Test non-existent service
         missing_metadata = ServiceDiscovery.get_service_metadata('nonexistent')
         self.assertIsNone(missing_metadata)
     
@@ -133,7 +121,6 @@ class TestServiceDiscovery(unittest.TestCase):
         roles = ServiceDiscovery.parse_csv_roles('')
         self.assertEqual(roles, [])
         
-        # Test with spaces (should be stripped)
         roles = ServiceDiscovery.parse_csv_roles('web, cli, queue')
         self.assertEqual(roles, ['web', 'cli', 'queue'])
 

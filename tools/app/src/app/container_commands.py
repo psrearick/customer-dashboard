@@ -13,7 +13,7 @@ def get_service_file(service_name):
         if service_file.stem == service_name:
             return [{'service': service_file.stem, 'path': service_file}]
 
-    # Enhanced error message with service metadata
+    # Provide context about missing service
     metadata = ServiceDiscovery.get_service_metadata(service_name)
     if metadata:
         click.secho(f"Error: Service '{service_name}' found but file missing", fg="red")
@@ -24,7 +24,6 @@ def get_service_file(service_name):
 
     click.echo("Available services:")
 
-    # Show services with their types and roles
     available_services = []
     for service_file in service_files:
         service_name_iter = service_file.stem
@@ -63,7 +62,6 @@ def up(name, attach, build):
     """Start a single container by name."""
     from .state_manager import StateManager
 
-    # Show service metadata
     metadata = ServiceDiscovery.get_service_metadata(name)
     if metadata:
         click.echo(f"Starting {metadata.get('type', 'unknown')} service: {name}")
@@ -82,16 +80,15 @@ def up(name, attach, build):
     command = build_compose_command(service, 'up', [], options)
     run_compose_command(command)
 
-    # Update state tracking for affected stacks
+    # Keep state manager in sync with container changes
     try:
         active_stacks = StateManager.get_active_stacks()
         for stack_name, stack_info in active_stacks.items():
             if name in stack_info.get('services', []):
-                # Update container status in state
                 StateManager.mark_stack_active(stack_name, stack_info.get('services', []))
                 break
     except Exception:
-        pass  # Ignore state tracking errors for individual containers
+        pass
 
     click.secho(f"Container '{name}' started", fg="green")
 
@@ -101,7 +98,6 @@ def down(name):
     """Stop and remove a single container by name."""
     from .state_manager import StateManager
 
-    # Show service metadata
     metadata = ServiceDiscovery.get_service_metadata(name)
     if metadata:
         click.echo(f"Stopping {metadata.get('type', 'unknown')} service: {name}")
@@ -114,17 +110,17 @@ def down(name):
     command = build_compose_command(service, 'down')
     run_compose_command(command)
 
-    # Update state tracking for affected stacks
+    # Keep state manager in sync with container changes
     try:
         active_stacks = StateManager.get_active_stacks()
         for stack_name, stack_info in active_stacks.items():
             if name in stack_info.get('services', []):
-                # Re-verify stack state after container removal
+                # Stack may no longer be running after container removal
                 if not StateManager.verify_stack_running(stack_name):
                     StateManager.mark_stack_inactive(stack_name)
                 break
     except Exception:
-        pass  # Ignore state tracking errors for individual containers
+        pass
 
     click.secho(f"Container '{name}' stopped and removed", fg="green")
 
@@ -134,7 +130,6 @@ def restart(name):
     """Restart a single container by name."""
     from .state_manager import StateManager
 
-    # Show service metadata
     metadata = ServiceDiscovery.get_service_metadata(name)
     if metadata:
         click.echo(f"Restarting {metadata.get('type', 'unknown')} service: {name}")
@@ -147,16 +142,15 @@ def restart(name):
     command = build_compose_command(service, 'restart')
     run_compose_command(command)
 
-    # Update state tracking for affected stacks
+    # Keep state manager in sync with container changes
     try:
         active_stacks = StateManager.get_active_stacks()
         for stack_name, stack_info in active_stacks.items():
             if name in stack_info.get('services', []):
-                # Update container status in state
                 StateManager.mark_stack_active(stack_name, stack_info.get('services', []))
                 break
     except Exception:
-        pass  # Ignore state tracking errors for individual containers
+        pass
 
     click.secho(f"Container '{name}' restarted", fg="green")
 
@@ -227,13 +221,12 @@ def exec(ctx, name, user, env, workdir):
     """Execute a command inside a running container."""
     service = get_service_file(name)
 
-    # Get the command from remaining args
     command = ctx.args
     if not command:
         click.echo("Error: No command specified")
         sys.exit(1)
 
-    # Build the docker compose exec command manually for proper argument order
+    # Manual command building required for proper exec argument handling
     # docker compose -f service.yml exec [options] service_name command...
     compose_command = [
         "docker", "compose", "--project-name", "customer-dashboard",
@@ -241,7 +234,6 @@ def exec(ctx, name, user, env, workdir):
         "exec"
     ]
 
-    # Add exec options
     if user:
         compose_command.extend(["--user", user])
     if workdir:
@@ -249,12 +241,11 @@ def exec(ctx, name, user, env, workdir):
     for env_var in env:
         compose_command.extend(["--env", env_var])
 
-    # Add service name and command
     compose_command.append(service[0]['service'])
     compose_command.extend(command)
 
 
-    # Use subprocess directly for exec to allow interactive commands
+    # Direct subprocess call preserves TTY for interactive commands
     try:
         subprocess.run(compose_command, check=True)
     except subprocess.CalledProcessError as e:

@@ -197,23 +197,19 @@ class ErrorHandler:
         """Check for common configuration issues."""
         issues = []
         
-        # Check if Docker is running
         try:
             subprocess.run(['docker', 'info'], capture_output=True, check=True)
         except (subprocess.CalledProcessError, FileNotFoundError):
             issues.append("Docker is not running or not installed")
         
-        # Check if in Laravel project
         from .laravel_utils import LaravelUtils
         if not LaravelUtils.validate_laravel_project():
             issues.append("Not in a Laravel project directory")
         
-        # Check .env file
         env_path = LaravelUtils.get_laravel_env_path()
         if not env_path.exists():
             issues.append(".env file not found")
         
-        # Check git repository
         try:
             subprocess.run(['git', 'status'], capture_output=True, check=True)
         except (subprocess.CalledProcessError, FileNotFoundError):

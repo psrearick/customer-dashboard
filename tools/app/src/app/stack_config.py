@@ -70,29 +70,25 @@ class StackConfig:
         except FileNotFoundError:
             return [f"Stack configuration file not found: {stack_name}.yml"]
         
-        # Validate required fields
         required_fields = ['id', 'name', 'description', 'services']
         for field in required_fields:
             if field not in config:
                 errors.append(f"Missing required field: {field}")
         
-        # Validate services exist
         if 'services' in config:
             for service in config['services']:
                 service_file = cls.SERVICE_DIR / f"{service}.yml"
                 if not service_file.exists():
-                    # Check if service is defined in another service file
+                    # Service might be defined in a multi-service file
                     if not cls._service_exists_in_any_file(service):
                         errors.append(f"Service not found: {service}")
         
-        # Validate ports are numbers
         requirements = config.get('requirements', {})
         ports = requirements.get('ports', [])
         for port in ports:
             if not isinstance(port, int):
                 errors.append(f"Invalid port number: {port}")
         
-        # Validate access URL format
         access_url = config.get('access_url', '')
         if access_url and not (access_url.startswith('http://') or access_url.startswith('https://')):
             errors.append(f"Invalid access URL format: {access_url}")
@@ -115,7 +111,6 @@ class StackConfig:
                     'services': config.get('services', [])
                 })
             except Exception:
-                # Skip invalid stack files
                 continue
         
         return sorted(stacks, key=lambda x: x['id'])
@@ -138,7 +133,6 @@ class StackConfig:
         urls = {}
         services = cls.get_stack_services(stack_name)
         
-        # Define monitoring service URLs
         monitoring_services = {
             'grafana': 'http://localhost:3000',
             'prometheus': 'http://localhost:9090',

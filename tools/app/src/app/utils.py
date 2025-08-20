@@ -1,5 +1,4 @@
 import os
-import errno
 import click
 import sys
 import subprocess
@@ -23,18 +22,17 @@ def get_stack_file(stack_name):
     if not stack_file.exists():
         click.echo(f"Error: Stack '{stack_name}' not found", file=sys.stderr)
         click.echo(f"Available stacks:", file=sys.stderr)
-        
-        # List available stacks
+
         available_stacks = []
         for yml_file in STACKS_DIR.glob("*.yml"):
             available_stacks.append(yml_file.stem)
-        
+
         if available_stacks:
             for stack in sorted(available_stacks):
                 click.echo(f"  - {stack}", file=sys.stderr)
         else:
             click.echo("  No stacks found in docker/stacks/", file=sys.stderr)
-        
+
         sys.exit(1)
     return stack_file
 

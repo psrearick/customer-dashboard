@@ -9,12 +9,12 @@ from functools import lru_cache
 
 class ServiceDiscovery:
     """Intelligent service discovery using Docker labels and service metadata."""
-    
+
     PROJECT_ROOT = Path(os.environ.get('PROJECT_ROOT', Path(__file__).parent.parent.parent.parent.parent))
     SERVICE_DIR = PROJECT_ROOT / "docker" / "services"
     LABEL_PREFIX = "com.customer-dashboard.service"
     CONTAINER_PREFIX = "customer-dashboard"
-    
+
     @classmethod
     @lru_cache(maxsize=32)
     def _load_service_file(cls, file_path: Path) -> Dict:
@@ -24,7 +24,7 @@ class ServiceDiscovery:
                 return yaml.safe_load(f)
         except Exception:
             return {}
-    
+
     @classmethod
     def find_services_by_type(cls, service_type: str) -> List[Dict]:
         """Find all services of a specific type from service files."""
@@ -43,7 +43,7 @@ class ServiceDiscovery:
                             })
                             break
         return services
-    
+
     @classmethod
     def find_services_by_role(cls, role: str) -> List[Dict]:
         """Find all services with a specific role from service files."""
@@ -62,7 +62,7 @@ class ServiceDiscovery:
                             'labels': parsed_labels
                         })
         return services
-    
+
     @classmethod
     def get_running_containers_by_type(cls, service_type: str) -> List[str]:
         """Get running container names for a specific service type."""
@@ -80,7 +80,7 @@ class ServiceDiscovery:
             return [name.strip() for name in result.stdout.strip().split('\n') if name.strip()]
         except subprocess.CalledProcessError:
             return []
-    
+
     @classmethod
     def get_running_containers_by_role(cls, role: str) -> List[str]:
         """Get running container names for a specific role."""
@@ -97,7 +97,6 @@ class ServiceDiscovery:
                     container = json.loads(line)
                     labels = container.get('Labels', '')
                     if f'{cls.LABEL_PREFIX}.roles' in labels:
-                        # Extract roles value from labels string
                         for label_pair in labels.split(','):
                             if f'{cls.LABEL_PREFIX}.roles=' in label_pair:
                                 roles_value = label_pair.split('=', 1)[1]
@@ -107,30 +106,29 @@ class ServiceDiscovery:
         except (subprocess.CalledProcessError, json.JSONDecodeError):
             pass
         return containers
-    
+
     @classmethod
     def get_php_container(cls) -> Optional[str]:
         """Get the currently running PHP container name."""
         containers = cls.get_running_containers_by_type('php')
         return containers[0] if containers else None
-    
+
     @classmethod
     def get_database_container(cls) -> Optional[str]:
         """Get the currently running database container name."""
         containers = cls.get_running_containers_by_type('database')
-        # Prefer primary database
         for container in containers:
             labels = cls._get_container_labels(container)
             if 'primary' in cls.parse_csv_roles(labels.get('roles', '')):
                 return container
         return containers[0] if containers else None
-    
+
     @classmethod
     def get_cache_container(cls) -> Optional[str]:
         """Get the currently running cache container name."""
         containers = cls.get_running_containers_by_type('cache')
         return containers[0] if containers else None
-    
+
     @classmethod
     def get_node_container(cls) -> Optional[str]:
         """Get the currently running Node.js container name."""
@@ -139,7 +137,7 @@ class ServiceDiscovery:
             if 'node' in container.lower():
                 return container
         return containers[0] if containers else None
-    
+
     @classmethod
     def query_docker_labels(cls, label_filter: str) -> List[Dict]:
         """Query Docker daemon for containers with specific labels."""
@@ -166,14 +164,14 @@ class ServiceDiscovery:
         except (subprocess.CalledProcessError, json.JSONDecodeError):
             pass
         return containers
-    
+
     @classmethod
     def parse_csv_roles(cls, roles_string: str) -> List[str]:
         """Parse CSV role string into list."""
         if not roles_string:
             return []
         return [role.strip() for role in roles_string.split(',')]
-    
+
     @classmethod
     def get_service_metadata(cls, service_name: str) -> Optional[Dict]:
         """Get complete metadata for a service from its YAML file."""
@@ -188,22 +186,21 @@ class ServiceDiscovery:
                     'description': labels.get('description', '')
                 }
         return None
-    
+
     @classmethod
     def _parse_labels(cls, labels: List[str]) -> Dict[str, str]:
         """Parse label list into dictionary."""
         parsed = {}
         for label in labels:
             if '=' in label:
-                # Remove quotes if present
                 label = label.strip('"').strip("'")
                 if label.startswith(cls.LABEL_PREFIX):
-                    key_value = label[len(cls.LABEL_PREFIX) + 1:]  # Skip prefix and dot
+                    key_value = label[len(cls.LABEL_PREFIX) + 1:]
                     if '=' in key_value:
                         key, value = key_value.split('=', 1)
                         parsed[key] = value
         return parsed
-    
+
     @classmethod
     def _parse_label_string(cls, label_string: str) -> Dict[str, str]:
         """Parse Docker label string format into dictionary."""
@@ -215,7 +212,7 @@ class ServiceDiscovery:
                     key = key_full.split('.')[-1]
                     parsed[key] = value
         return parsed
-    
+
     @classmethod
     def _get_container_labels(cls, container_name: str) -> Dict[str, str]:
         """Get labels for a specific container."""
@@ -230,7 +227,7 @@ class ServiceDiscovery:
             return cls._parse_labels_dict(labels)
         except (subprocess.CalledProcessError, json.JSONDecodeError):
             return {}
-    
+
     @classmethod
     def _parse_labels_dict(cls, labels: Dict) -> Dict[str, str]:
         """Parse Docker labels dictionary."""

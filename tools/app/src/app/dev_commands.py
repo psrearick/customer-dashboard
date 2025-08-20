@@ -149,7 +149,7 @@ def shell(container, user, shell):
             click.echo("Error: No PHP container is running", err=True)
             sys.exit(1)
     
-    # Auto-detect best available shell
+    # Fallback to more compatible shells if preferred ones aren't available
     if not shell:
         for sh in ['bash', 'zsh', 'sh']:
             result = subprocess.run(
@@ -160,7 +160,7 @@ def shell(container, user, shell):
                 shell = sh
                 break
         else:
-            shell = 'sh'  # Fallback
+            shell = 'sh'
     
     cmd = ['docker', 'exec', '-it']
     
@@ -187,7 +187,6 @@ def node_shell(container, user):
     if user:
         cmd.extend(['-u', user])
     
-    # Alpine Linux typically uses sh
     cmd.extend([container, 'sh'])
     subprocess.run(cmd)
 
@@ -203,7 +202,6 @@ def mysql(host, port, user, password, database, dry_run):
     """Connect to MySQL database with auto-discovered credentials."""
     credentials = DatabaseUtils.get_mysql_credentials()
     
-    # Override with provided options
     if host:
         credentials['host'] = host
     if port:
@@ -223,7 +221,6 @@ def mysql(host, port, user, password, database, dry_run):
         click.echo(f"  Database: {credentials['database']}")
         return
     
-    # Check if mysql container is running
     mysql_container = ServiceDiscovery.get_database_container()
     if mysql_container:
         cmd = [
@@ -234,7 +231,6 @@ def mysql(host, port, user, password, database, dry_run):
             credentials['database']
         ]
     else:
-        # Try local mysql client
         cmd = [
             'mysql',
             '-h', credentials['host'],

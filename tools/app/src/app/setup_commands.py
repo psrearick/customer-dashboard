@@ -30,7 +30,6 @@ def fresh(stack, no_seed, skip_assets, env_file, force_env):
     """Complete fresh setup for new installation."""
     click.echo("Setting up Customer Dashboard...")
     
-    # Environment file setup
     env_path = LaravelUtils.get_laravel_env_path()
     if not env_path.exists() or force_env:
         source_env = Path(env_file) if env_file else Path(".env.example")
@@ -40,11 +39,9 @@ def fresh(stack, no_seed, skip_assets, env_file, force_env):
         else:
             click.echo(f"Warning: {source_env} not found", err=True)
     
-    # Stop any currently running stacks
     click.echo("Stopping current stacks")
     subprocess.run(['docker', 'compose', 'down'], capture_output=True)
     
-    # Start specified stack
     click.echo(f"Starting {stack} stack")
     from .utils import get_services_for_stack, build_compose_command, run_compose_command
     from .state_manager import StateManager
@@ -54,7 +51,6 @@ def fresh(stack, no_seed, skip_assets, env_file, force_env):
     run_compose_command(command)
     StateManager.mark_stack_active(stack, services)
     
-    # Wait for services
     click.echo("Waiting for services...")
     services = StackConfig.get_stack_services(stack)
     if LaravelUtils.wait_for_services(services, timeout=60):
@@ -62,22 +58,18 @@ def fresh(stack, no_seed, skip_assets, env_file, force_env):
     else:
         click.echo("Some services may not be ready", err=True)
     
-    # Update state tracking
     StateManager.mark_stack_active(stack, services)
     
-    # Laravel application setup
     php_container = ServiceDiscovery.get_php_container()
     if not php_container:
         click.echo("Error: PHP container not running", err=True)
         sys.exit(1)
     
-    # Generate app key if missing
     env_check = LaravelUtils.check_env_file()
     if not env_check['has_app_key']:
         LaravelUtils.generate_app_key()
         click.echo("Generated application key")
     
-    # Install Composer dependencies
     click.echo("Installing dependencies...")
     subprocess.run(
         ['docker', 'exec', php_container, 'composer', 'install', '--no-interaction'],
@@ -85,7 +77,6 @@ def fresh(stack, no_seed, skip_assets, env_file, force_env):
     )
     click.echo("Dependencies installed")
     
-    # Run migrations
     migrate_cmd = ['docker', 'exec', php_container, 'php', 'artisan', 'migrate:fresh', '--force']
     if not no_seed:
         migrate_cmd.append('--seed')
@@ -93,13 +84,11 @@ def fresh(stack, no_seed, skip_assets, env_file, force_env):
     subprocess.run(migrate_cmd, capture_output=True)
     click.echo("Database migrated" + (" and seeded" if not no_seed else ""))
     
-    # Create storage link
     subprocess.run(
         ['docker', 'exec', php_container, 'php', 'artisan', 'storage:link'],
         capture_output=True
     )
     
-    # Frontend assets
     if not skip_assets:
         node_container = ServiceDiscovery.get_node_container()
         if node_container:
@@ -114,12 +103,10 @@ def fresh(stack, no_seed, skip_assets, env_file, force_env):
             )
             click.echo("Assets built")
     
-    # Clear and optimize caches
     LaravelUtils.clear_laravel_queues(stack)
     LaravelUtils.optimize_laravel_caches(stack)
     click.echo("Caches optimized")
     
-    # Display success message
     access_url = StackConfig.get_stack_access_url(stack)
     click.echo(f"\nSetup complete!")
     click.echo(f"Access your application: {access_url}")
@@ -137,22 +124,18 @@ def reset(no_seed, skip_assets, keep_data, stack):
     """Reset existing environment to clean state."""
     click.echo("Resetting environment...")
     
-    # Ensure .env file exists
     env_path = LaravelUtils.get_laravel_env_path()
     if not env_path.exists():
         click.echo("Error: .env file not found", err=True)
         click.echo("Run 'app setup fresh' for initial setup", err=True)
         sys.exit(1)
     
-    # Switch stack if specified
     if stack:
         click.echo(f"Switching to {stack} stack...")
         from .utils import get_services_for_stack, build_compose_command, run_compose_command
         
-        # Stop current stack
         subprocess.run(['docker', 'compose', 'down'], capture_output=True)
         
-        # Start new stack
         services = get_services_for_stack(stack)
         command = build_compose_command(services, 'up', [], ['--detach'])
         run_compose_command(command)
@@ -164,21 +147,18 @@ def reset(no_seed, skip_assets, keep_data, stack):
         click.echo("Error: PHP container not running", err=True)
         sys.exit(1)
     
-    # Clear queues and caches first
     LaravelUtils.clear_laravel_queues(stack or 'default')
     subprocess.run(
         ['docker', 'exec', php_container, 'php', 'artisan', 'optimize:clear'],
         capture_output=True
     )
     
-    # Reinstall dependencies
     click.echo("Reinstalling dependencies...")
     subprocess.run(
         ['docker', 'exec', php_container, 'composer', 'install', '--no-interaction'],
         capture_output=True
     )
     
-    # Database migration
     if keep_data:
         migrate_cmd = ['docker', 'exec', php_container, 'php', 'artisan', 'migrate', '--force']
     else:
@@ -189,7 +169,6 @@ def reset(no_seed, skip_assets, keep_data, stack):
     subprocess.run(migrate_cmd, capture_output=True)
     click.echo("Database reset")
     
-    # Frontend assets
     if not skip_assets:
         node_container = ServiceDiscovery.get_node_container()
         if node_container:
@@ -204,13 +183,11 @@ def reset(no_seed, skip_assets, keep_data, stack):
             )
             click.echo("Assets rebuilt")
     
-    # Recreate storage link
     subprocess.run(
         ['docker', 'exec', php_container, 'php', 'artisan', 'storage:link'],
         capture_output=True
     )
     
-    # Optimize caches
     LaravelUtils.optimize_laravel_caches(stack or 'default')
     
     click.echo("\nReset complete!")
@@ -223,7 +200,6 @@ def reset(no_seed, skip_assets, keep_data, stack):
 @click.option('--dry-run', is_flag=True, help="Show what would be done without executing")
 def branch(branch_name, stack, no_setup, dry_run):
     """Switch to blog post branch with automatic setup."""
-    # Load branch configuration
     branch_config = BranchManager.load_branch_config(branch_name)
     if not branch_config:
         click.echo(f"Error: Branch '{branch_name}' not found in registry", err=True)
@@ -232,7 +208,6 @@ def branch(branch_name, stack, no_setup, dry_run):
             click.echo(f"  - {branch['name']}: {branch['title']}", err=True)
         sys.exit(1)
     
-    # Determine stack
     target_stack = stack or branch_config.get('stack', 'default')
     
     if dry_run:
@@ -243,7 +218,6 @@ def branch(branch_name, stack, no_setup, dry_run):
             click.echo(f"  - {cmd}")
         return
     
-    # Check for uncommitted changes
     result = subprocess.run(
         ['git', 'status', '--porcelain'],
         capture_output=True,
@@ -254,7 +228,6 @@ def branch(branch_name, stack, no_setup, dry_run):
         if not click.confirm("Continue anyway?"):
             sys.exit(1)
     
-    # Switch git branch
     click.echo(f"Switching to branch: {branch_name}")
     result = subprocess.run(
         ['git', 'checkout', branch_name],
@@ -262,7 +235,7 @@ def branch(branch_name, stack, no_setup, dry_run):
         text=True
     )
     if result.returncode != 0:
-        # Try fetching and checking out remote branch
+        # Remote branch fallback
         subprocess.run(['git', 'fetch', 'origin'], capture_output=True)
         result = subprocess.run(
             ['git', 'checkout', '-b', branch_name, f'origin/{branch_name}'],
@@ -274,14 +247,11 @@ def branch(branch_name, stack, no_setup, dry_run):
             click.echo(result.stderr, err=True)
             sys.exit(1)
     
-    # Switch to required stack
     click.echo(f"Starting {target_stack} stack...")
     from .utils import get_services_for_stack, build_compose_command, run_compose_command
     
-    # Stop current stack
     subprocess.run(['docker', 'compose', 'down'], capture_output=True)
     
-    # Start new stack
     services = get_services_for_stack(target_stack)
     command = build_compose_command(services, 'up', [], ['--detach'])
     run_compose_command(command)
@@ -289,7 +259,6 @@ def branch(branch_name, stack, no_setup, dry_run):
     services = StackConfig.get_stack_services(target_stack)
     StateManager.mark_stack_active(target_stack, services)
     
-    # Run branch-specific setup
     if not no_setup:
         php_container = ServiceDiscovery.get_php_container()
         if php_container:
@@ -304,7 +273,6 @@ def branch(branch_name, stack, no_setup, dry_run):
                 
                 subprocess.run(full_cmd, capture_output=True)
     
-    # Display branch information
     click.echo(f"\nSwitched to: {branch_config.get('title', branch_name)}")
     click.echo(f"Description: {branch_config.get('description', '')}")
     
@@ -337,14 +305,13 @@ def optimize(container, production, clear_first, dry_run):
             subprocess.run(clear_cmd, capture_output=True)
             click.echo("Cleared existing caches")
     
-    # Standard optimizations
     commands = [
         ('config:cache', 'Configuration cached'),
         ('route:cache', 'Routes cached'),
         ('view:cache', 'Views cached')
     ]
     
-    # Check if we can cache routes (no closures) - only if not dry-run
+    # Route caching fails with closure-based routes
     can_cache_routes = True
     if not dry_run:
         result = subprocess.run(
@@ -404,13 +371,12 @@ def permissions(user, group, dry_run):
         click.echo(f"  Bootstrap cache: {bootstrap_cache}")
         return
     
-    # Fix storage permissions
     if storage_path.exists():
         subprocess.run(['chmod', '-R', '775', str(storage_path)])
         subprocess.run(['chown', '-R', f'{user}:{group}', str(storage_path)])
         click.echo(f"Fixed storage permissions")
     
-    # Fix bootstrap cache permissions  
+  
     if bootstrap_cache.exists():
         subprocess.run(['chmod', '-R', '775', str(bootstrap_cache)])
         subprocess.run(['chown', '-R', f'{user}:{group}', str(bootstrap_cache)])

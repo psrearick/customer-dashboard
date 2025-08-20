@@ -1,5 +1,4 @@
 import click
-import json
 import sys
 from datetime import datetime
 from .container_commands import container_group
@@ -23,7 +22,6 @@ def cli():
     pass
 
 
-# Add command groups
 cli.add_command(stack_group)
 cli.add_command(container_group)
 cli.add_command(dev_group)
@@ -62,7 +60,6 @@ def list(verbose):
                     if features:
                         click.echo(f"  Features: {', '.join(features)}")
         else:
-            # Simple table format
             headers = ['ID', 'Name', 'Services', 'Description']
             rows = []
 
@@ -207,7 +204,6 @@ def urls(stack, type, copy, open):
 
             access_info = StateManager.get_stack_access_info(stack_name)
 
-            # Main application URL
             main_url = access_info.get('main')
             if main_url:
                 all_urls.append({
@@ -217,7 +213,6 @@ def urls(stack, type, copy, open):
                     'type': 'web'
                 })
 
-            # Monitoring URLs
             for service, url in access_info.items():
                 if service != 'main':
                     all_urls.append({
@@ -227,7 +222,6 @@ def urls(stack, type, copy, open):
                         'type': 'monitoring'
                     })
 
-        # Add database connections
         try:
             from .database_utils import DatabaseUtils
             mysql_creds = DatabaseUtils.get_mysql_credentials()
@@ -250,7 +244,6 @@ def urls(stack, type, copy, open):
         except Exception:
             pass
 
-        # Filter by type if specified
         if type:
             all_urls = [url for url in all_urls if url.get('type') == type]
 
@@ -258,7 +251,6 @@ def urls(stack, type, copy, open):
             click.echo("No URLs found")
             return
 
-        # Group by type
         web_urls = [u for u in all_urls if u.get('type') == 'web']
         monitoring_urls = [u for u in all_urls if u.get('type') == 'monitoring']
         database_urls = [u for u in all_urls if u.get('type') == 'database']
@@ -280,7 +272,6 @@ def urls(stack, type, copy, open):
             click.echo("Database Connections:")
             click.echo(OutputFormatter.format_url_table(database_urls))
 
-        # Handle copy/open options
         if copy or open:
             main_urls = [u for u in all_urls if 'app' in u['name'].lower()]
             if main_urls:
@@ -314,7 +305,6 @@ def info(verbose, check_requirements):
     click.echo("Customer Dashboard - System Information")
     click.echo()
 
-    # Docker environment
     click.echo("Docker Environment:")
     try:
         docker_version = subprocess.run(['docker', '--version'], capture_output=True, text=True)
@@ -327,7 +317,6 @@ def info(verbose, check_requirements):
             version = compose_version.stdout.split()[3]
             click.echo(f"  Compose: {version}")
 
-        # Check resources if verbose
         if verbose:
             docker_info = subprocess.run(['docker', 'system', 'df'], capture_output=True, text=True)
             if docker_info.returncode == 0:
@@ -336,13 +325,11 @@ def info(verbose, check_requirements):
     except Exception:
         click.echo("  Docker: Not available")
 
-    # Project information
     click.echo()
     click.echo("Project:")
     project_path = Path.cwd()
     click.echo(f"  Location: {project_path}")
 
-    # Laravel version
     composer_json = project_path / "composer.json"
     if composer_json.exists():
         try:
@@ -354,7 +341,6 @@ def info(verbose, check_requirements):
         except Exception:
             click.echo("  Laravel: Version unknown")
 
-    # Git status
     try:
         git_branch = subprocess.run(['git', 'branch', '--show-current'], capture_output=True, text=True)
         if git_branch.returncode == 0:
@@ -367,12 +353,10 @@ def info(verbose, check_requirements):
     except Exception:
         click.echo("  Git: Not available")
 
-    # Environment file
     env_file = project_path / ".env"
     status = 'exists' if env_file.exists() else 'missing'
     click.echo(f"  Environment: .env {status}")
 
-    # Available stacks
     try:
         stacks = StackConfig.get_all_stacks()
         click.echo(f"\nAvailable Stacks: {len(stacks)}")
@@ -385,7 +369,6 @@ def info(verbose, check_requirements):
     except Exception:
         click.echo("\nAvailable Stacks: Error loading")
 
-    # Registered branches
     try:
         branches = BranchManager.list_available_branches()
         click.echo(f"\nRegistered Branches: {len(branches)}")

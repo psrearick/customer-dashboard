@@ -30,7 +30,7 @@ class OutputFormatter:
     def format_memory_usage(bytes_value: int) -> str:
         """Format memory usage with appropriate units."""
         if isinstance(bytes_value, str):
-            # Handle string inputs like "256M", "2GB"
+            # Handle Docker-style memory notation (256M, 2GB, etc.)
             bytes_value = bytes_value.upper()
             if bytes_value.endswith('K'):
                 return bytes_value.replace('K', 'KB')
@@ -40,7 +40,6 @@ class OutputFormatter:
                 return bytes_value.replace('G', 'GB')
             return bytes_value
         
-        # Convert bytes to appropriate unit
         for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
             if bytes_value < 1024.0:
                 return f"{bytes_value:.1f}{unit}"
@@ -53,11 +52,9 @@ class OutputFormatter:
         if not urls:
             return "No URLs available"
         
-        # Calculate column widths
         name_width = max(len(url.get('name', '')) for url in urls)
         url_width = max(len(url.get('url', '')) for url in urls)
         
-        # Minimum widths
         name_width = max(name_width, 10)
         url_width = max(url_width, 20)
         
@@ -128,7 +125,6 @@ class OutputFormatter:
         if not headers or not rows:
             return ""
         
-        # Calculate column widths
         col_widths = [len(header) for header in headers]
         
         for row in rows:
@@ -136,11 +132,9 @@ class OutputFormatter:
                 if i < len(col_widths):
                     col_widths[i] = max(col_widths[i], len(str(cell)))
         
-        # Format header
         header_line = " | ".join(header.ljust(col_widths[i]) for i, header in enumerate(headers))
         separator = "-+-".join("-" * width for width in col_widths)
         
-        # Format rows
         formatted_rows = []
         for row in rows:
             formatted_row = " | ".join(
@@ -149,7 +143,6 @@ class OutputFormatter:
             )
             formatted_rows.append(formatted_row)
         
-        # Combine all parts
         result = [header_line, separator] + formatted_rows
         return '\n'.join(result)
     
@@ -177,7 +170,6 @@ class OutputFormatter:
         """Format stack summary information."""
         lines = []
         
-        # Stack name and uptime
         name = stack_info.get('name', 'Unknown')
         uptime = stack_info.get('uptime')
         if uptime:
@@ -186,18 +178,15 @@ class OutputFormatter:
         else:
             lines.append(name)
         
-        # Access URL
         access_url = stack_info.get('access_url')
         if access_url:
             lines.append(f"    {access_url}")
         
-        # Container count
         containers = stack_info.get('containers', {})
         running_count = sum(1 for status in containers.values() if status == 'running')
         total_count = len(containers)
         lines.append(f"    {running_count}/{total_count} containers running")
         
-        # Memory usage
         memory = stack_info.get('memory_usage')
         if memory:
             lines.append(f"    Memory usage: {memory}")
