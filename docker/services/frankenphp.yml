@@ -13,7 +13,7 @@ services:
       - "com.customer-dashboard.service.roles=web,cli"
       - "com.customer-dashboard.service.description=Modern PHP app server with HTTP/3 support"
     volumes:
-      - ../../:/app
+      - ../../:/var/www/html
       - ../config/php/conf.d:/usr/local/etc/php/conf.d
     ports:
       - "8080:80"

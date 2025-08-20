@@ -3,7 +3,7 @@
 }
 
 :80 {
-	root * /app/public
+	root * /var/www/html/public
 	encode zstd gzip
 
 	header {
@@ -28,8 +28,7 @@
 	handle @api {
 		header Cache-Control "no-cache, no-store, must-revalidate"
 		header Pragma "no-cache"
-		try_files {path} /index.php?{query}
-		php
+		php_server
 	}
 	
 	@blocked {
@@ -38,7 +37,6 @@
 	respond @blocked 404
 	
 	handle {
-		try_files {path} /index.php?{query}
-		php
+		php_server
 	}
 }

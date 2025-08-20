@@ -42,7 +42,7 @@ RUN version=$(php -r "echo PHP_MAJOR_VERSION.PHP_MINOR_VERSION;") \
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-WORKDIR /app
+WORKDIR /var/www/html
 
 # Configuration files
 COPY docker/config/php/conf.d/performance.ini /usr/local/etc/php/conf.d/
@@ -53,7 +53,7 @@ COPY docker/config/php/conf.d/docker-php-ext-redis.ini /usr/local/etc/php/conf.d
 COPY docker/config/frankenphp/Caddyfile /etc/caddy/Caddyfile
 
 # Application files
-COPY . /app
+COPY . /var/www/html
 
 RUN if [ -f composer.json ]; then \
         composer install --no-dev --optimize-autoloader --no-scripts; \
@@ -61,16 +61,16 @@ RUN if [ -f composer.json ]; then \
     fi
 
 # Set permissions for Laravel directories
-RUN if [ -d "/app/storage" ]; then \
-        chown -R www-data:www-data /app/storage; \
-        chmod -R 775 /app/storage; \
+RUN if [ -d "/var/www/html/storage" ]; then \
+        chown -R www-data:www-data /var/www/html/storage; \
+        chmod -R 775 /var/www/html/storage; \
     fi \
-    && if [ -d "/app/bootstrap/cache" ]; then \
-        chown -R www-data:www-data /app/bootstrap/cache; \
-        chmod -R 775 /app/bootstrap/cache; \
+    && if [ -d "/var/www/html/bootstrap/cache" ]; then \
+        chown -R www-data:www-data /var/www/html/bootstrap/cache; \
+        chmod -R 775 /var/www/html/bootstrap/cache; \
     fi
 
-RUN chown -R www-data:www-data /app
+RUN chown -R www-data:www-data /var/www/html
 
 EXPOSE 80 443
 
