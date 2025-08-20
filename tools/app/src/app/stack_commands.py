@@ -23,9 +23,28 @@ def help(ctx):
 @click.option('--stack', '-s', type=str, default="default", show_default=True, help="stack of containers to run")
 @click.option('--build', '-b', is_flag=True, default=False, show_default=True, help="build images before starting containers")
 @click.option('--verbose', '-V', is_flag=True, default=False, show_default=True, help="Display more detailed output")
-def up(attach, stack, build, verbose):
-    """Start every container in the specified stack"""
+@click.option('--check-ports', is_flag=True, default=True, show_default=True, help="check for port conflicts before starting")
+def up(attach, stack, build, verbose, check_ports):
+    """Start every container in the specified stack with integrated state tracking"""
     from .state_manager import StateManager
+    from .stack_config import StackConfig
+    from .laravel_utils import LaravelUtils
+    
+    # Validate stack exists
+    if not StackConfig.stack_exists(stack):
+        click.secho(f"Error: Stack '{stack}' not found", fg="red")
+        click.echo(f"Available stacks: {', '.join([s['id'] for s in StackConfig.get_all_stacks()])}")
+        sys.exit(1)
+    
+    # Check for port conflicts if requested
+    if check_ports:
+        conflicts = StateManager.check_port_conflicts(stack)
+        if conflicts:
+            click.secho("Port conflicts detected:", fg="red")
+            for conflict in conflicts:
+                click.echo(f"  Port {conflict['port']}: used by {conflict['existing_stack']} (service: {conflict['service']})")
+            click.echo("\nStop conflicting stacks or use different ports.")
+            sys.exit(1)
     
     services = get_services_for_stack(stack)
 
@@ -44,19 +63,42 @@ def up(attach, stack, build, verbose):
     else:
         run_compose_command(command)
     
-    # Track the stack as active (convert Path objects to service names)
-    from .stack_config import StackConfig
+    # Track the stack as active and optimize Laravel caches
     service_names = StackConfig.get_stack_services(stack)
     StateManager.mark_stack_active(stack, service_names)
     
+    # Optimize Laravel caches after starting
+    try:
+        LaravelUtils.optimize_laravel_caches()
+        if verbose:
+            click.echo("Laravel caches optimized")
+    except Exception as e:
+        if verbose:
+            click.echo(f"Cache optimization skipped: {e}")
+    
+    # Show stack access information
+    stack_info = StackConfig.get_stack_access_url(stack)
     click.secho("Application Started", fg="green")
+    click.echo(f"Access URL: {stack_info}")
 
 @stack_group.command(name="down")
 @click.option('--stack', '-s', type=str, default="default", show_default=True, help="Stack of containers to stop")
 @click.option('--verbose', '-V', is_flag=True, default=False, show_default=True, help="Display more detailed output")
-def down(stack, verbose):
-    """Stop every container in the specified stack"""
+@click.option('--clear-queues', is_flag=True, default=True, show_default=True, help="clear Laravel queues before stopping")
+def down(stack, verbose, clear_queues):
+    """Stop every container in the specified stack with queue cleanup"""
     from .state_manager import StateManager
+    from .laravel_utils import LaravelUtils
+    
+    # Clear Laravel queues before stopping if requested
+    if clear_queues:
+        try:
+            LaravelUtils.clear_laravel_queues()
+            if verbose:
+                click.echo("Laravel queues cleared")
+        except Exception as e:
+            if verbose:
+                click.echo(f"Queue clearing skipped: {e}")
     
     services = get_services_for_stack(stack)
 
@@ -75,8 +117,22 @@ def down(stack, verbose):
 @stack_group.command(name="restart")
 @click.option('--stack', '-s', type=str, default="default", show_default=True, help="Stack of containers to restart")
 @click.option('--verbose', '-V', is_flag=True, default=False, show_default=True, help="Display more detailed output")
-def restart(stack, verbose):
-    """Restart every container in the specified stack"""
+@click.option('--clear-queues', is_flag=True, default=True, show_default=True, help="clear Laravel queues before restarting")
+def restart(stack, verbose, clear_queues):
+    """Restart every container in the specified stack with queue management"""
+    from .state_manager import StateManager
+    from .laravel_utils import LaravelUtils
+    
+    # Clear Laravel queues before restarting if requested
+    if clear_queues:
+        try:
+            LaravelUtils.clear_laravel_queues()
+            if verbose:
+                click.echo("Laravel queues cleared")
+        except Exception as e:
+            if verbose:
+                click.echo(f"Queue clearing skipped: {e}")
+    
     services = get_services_for_stack(stack)
 
     command = build_compose_command(services, 'restart')
@@ -86,6 +142,20 @@ def restart(stack, verbose):
         return
 
     run_compose_command(command)
+    
+    # Update state tracking after restart
+    from .stack_config import StackConfig
+    service_names = StackConfig.get_stack_services(stack)
+    StateManager.mark_stack_active(stack, service_names)
+    
+    # Optimize caches after restart
+    try:
+        LaravelUtils.optimize_laravel_caches()
+        if verbose:
+            click.echo("Laravel caches optimized")
+    except Exception as e:
+        if verbose:
+            click.echo(f"Cache optimization skipped: {e}")
 
     click.secho("Application Restarted", fg="green")
 
@@ -245,12 +315,28 @@ def logs(follow, tail, stack):
 @stack_group.command(name="status")
 @click.option('--stack', '-s', type=str, default="all", show_default=True, help="Stack of containers to view the status of")
 def status(stack):
-    """Show status of all containers"""
+    """Show comprehensive status with state information"""
+    from .state_manager import StateManager
+    from .stack_config import StackConfig
+    
     if stack == "all":
         click.secho("Customer Dashboard Status - All Stacks", fg="blue", bold=True)
     else:
         click.secho(f"Customer Dashboard Status - {stack.title()} Stack", fg="blue", bold=True)
     click.echo("")
+    
+    # Show active stacks from state manager
+    active_stacks = StateManager.get_active_stacks()
+    if active_stacks:
+        click.secho("Active Stacks (from state):", fg="green")
+        for stack_name, stack_info in active_stacks.items():
+            uptime = StateManager.get_stack_uptime(stack_name)
+            access_url = stack_info.get('access_url', 'N/A')
+            click.echo(f"  {stack_name}: {access_url} (uptime: {uptime})")
+        click.echo("")
+    else:
+        click.secho("No active stacks (from state)", fg="yellow")
+        click.echo("")
     
     expected_services = []
     if stack != "all":
@@ -307,6 +393,14 @@ def status(stack):
                     click.secho(f"{len(running_containers)} of {len(all_containers)} containers are running.", fg="yellow")
                 else:
                     click.secho("All containers are running.", fg="green")
+                
+                # Show monitoring URLs if available
+                for stack_name in active_stacks.keys():
+                    monitoring_urls = StackConfig.get_monitoring_urls(stack_name)
+                    if monitoring_urls:
+                        click.secho(f"\nMonitoring URLs for '{stack_name}':", fg="cyan")
+                        for service, url in monitoring_urls.items():
+                            click.echo(f"  {service}: {url}")
             else:
                 click.secho("No containers found for this project.", fg="yellow")
                 click.echo("Start a stack with: app stack up -s <stack-name>")
@@ -325,12 +419,38 @@ def status(stack):
                     click.echo(f"Start all containers with: app stack up -s {stack}")
                 else:
                     click.secho(f"The '{stack}' stack is fully running.", fg="green")
+                    
+                    # Show additional stack info if it's active in state
+                    if stack in active_stacks:
+                        stack_info = active_stacks[stack]
+                        uptime = StateManager.get_stack_uptime(stack)
+                        click.echo(f"Access URL: {stack_info.get('access_url', 'N/A')}")
+                        click.echo(f"Uptime: {uptime}")
+                        
+                        monitoring_urls = StackConfig.get_monitoring_urls(stack)
+                        if monitoring_urls:
+                            click.secho("\nMonitoring URLs:", fg="cyan")
+                            for service, url in monitoring_urls.items():
+                                click.echo(f"  {service}: {url}")
             else:
                 click.secho(f"No containers found for the '{stack}' stack.", fg="yellow")
                 click.echo(f"Start the stack with: app stack up -s {stack}")
                 
+                # Check if stack exists but isn't running
+                if StackConfig.stack_exists(stack):
+                    requirements = StackConfig.get_stack_requirements(stack)
+                    click.echo(f"\nStack requirements:")
+                    click.echo(f"  Memory: {requirements.get('min_memory', 'N/A')}")
+                    click.echo(f"  Ports: {', '.join(map(str, requirements.get('ports', [])))}")
+                    click.echo(f"  Features: {', '.join(requirements.get('features', []))}")
+                
     except Exception as e:
         click.secho(f"Error getting container status: {e}", fg="red")
+    
+    # Clean up stale state
+    cleaned = StateManager.cleanup_stale_state()
+    if cleaned > 0 and stack == "all":
+        click.echo(f"\nCleaned up {cleaned} stale state entries.")
     
     click.echo("")
     
@@ -375,6 +495,17 @@ def status(stack):
             click.secho("No created volumes", fg="yellow")
     except Exception as e:
         click.secho(f"Error getting volume status: {e}", fg="red")
+    
+    # Show port conflicts if any
+    if stack != "all":
+        try:
+            conflicts = StateManager.check_port_conflicts(stack)
+            if conflicts:
+                click.secho("\nPort conflicts detected:", fg="red")
+                for conflict in conflicts:
+                    click.echo(f"  Port {conflict['port']}: used by {conflict['existing_stack']}")
+        except Exception:
+            pass  # Ignore errors in conflict checking for status display
 
 @stack_group.command(name="clean")
 @click.option('--stack', '-s', type=str, default="default", show_default=True, help="Stack of containers to remove")

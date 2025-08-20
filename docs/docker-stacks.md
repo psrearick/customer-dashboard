@@ -20,6 +20,26 @@ Different blog posts explore different server technologies:
 
 ## Available Stacks
 
+Stacks are defined using a structured configuration schema that includes metadata about services, resource requirements, and access information.
+
+### Stack Configuration Schema
+
+Each stack is defined in YAML format with the following schema:
+
+```yaml
+id: stack_name
+name: Display Name  
+description: Human readable description
+access_url: "http://localhost:port"
+requirements:
+  min_memory: "4GB"
+  ports: [8000, 3306]
+  features: [feature1, feature2]
+services:
+  - service_name_1
+  - service_name_2
+```
+
 ### Default Stack
 
 ```bash
@@ -27,14 +47,17 @@ Different blog posts explore different server technologies:
 ./bin/app stack up -s default   # Explicitly specifying default (optional)
 ```
 
-**What it includes:** Nginx + PHP-FPM + MySQL + Redis + Node
-**Access:** http://localhost
+**Configuration:**
+- **ID:** `default`
+- **Services:** mysql, redis, nginx, php-fpm, node
+- **Access:** http://localhost
+- **Memory:** 2GB minimum
+- **Ports:** 80, 3306, 6379, 5173
+- **Features:** traditional_lamp
+
 **Best for:** First-time setup, most blog posts, general development
 
-**Note:** The "default" stack is used automatically when no `-s` option is provided. This is why you'll see some commands in the documentation without the `-s` option - they're using the default stack.
-
-This is the most common production setup you'll find in the Laravel ecosystem. Uses Nginx as a web server with PHP-FPM
-handling PHP processing.
+This is the most common production setup you'll find in the Laravel ecosystem. Uses Nginx as a web server with PHP-FPM handling PHP processing.
 
 ### FrankenPHP Stack
 
@@ -42,12 +65,17 @@ handling PHP processing.
 ./bin/app stack up -s frankenphp
 ```
 
-**What it includes:** FrankenPHP + MySQL + Redis + Node
-**Access:** http://localhost:8080
+**Configuration:**
+- **ID:** `frankenphp`
+- **Services:** frankenphp, mysql, redis, node
+- **Access:** http://localhost:8080
+- **Memory:** 3GB minimum
+- **Ports:** 8080, 8443, 3306, 6379, 5173
+- **Features:** http3, worker_mode, automatic_https
+
 **Best for:** Exploring modern PHP server technology, HTTP/3 features
 
-FrankenPHP is a modern PHP server that includes HTTP/3 support, worker mode for better performance, and automatic HTTPS.
-It's built on top of the Caddy web server.
+FrankenPHP is a modern PHP server that includes HTTP/3 support, worker mode for better performance, and automatic HTTPS. It's built on top of the Caddy web server.
 
 ### Octane Stack
 
@@ -55,20 +83,119 @@ It's built on top of the Caddy web server.
 ./bin/app stack up -s octane
 ```
 
-**What it includes:** Laravel Octane + MySQL + Redis + Node
-**Access:** http://localhost:8000
+**Configuration:**
+- **ID:** `octane`
+- **Services:** octane, mysql, redis, node
+- **Access:** http://localhost:8000
+- **Memory:** 4GB minimum
+- **Ports:** 8000, 3306, 6379, 5173
+- **Features:** swoole, long_running_processes, async_processing
+
 **Best for:** High-performance scenarios, testing long-running processes
 
-Laravel Octane keeps your application loaded in memory between requests, eliminating the bootstrap overhead. Uses Swoole
-for async processing and improved performance.
+Laravel Octane keeps your application loaded in memory between requests, eliminating the bootstrap overhead. Uses Swoole for async processing and improved performance.
 
 ### Performance Stack
 
-**What it will include:** Monitoring tools to be used in addition to a PHP server
-**Access:** http://localhost:3000 (monitoring)
+```bash
+./bin/app stack up -s performance
+```
+
+**Configuration:**
+- **ID:** `performance`
+- **Services:** grafana, prometheus, redis-exporter, mysql-exporter, statsd
+- **Access:** http://localhost:3000
+- **Memory:** 6GB minimum
+- **Ports:** 3000, 9090, 9104, 9121
+- **Features:** monitoring, metrics, alerting
+
 **Best for:** Performance testing, optimization blog posts, detailed metrics
 
-Will add comprehensive monitoring with Grafana dashboards, Prometheus metrics, and other performance analysis tools.
+Comprehensive monitoring with Grafana dashboards, Prometheus metrics, and other performance analysis tools.
+
+## Stack Configuration Technical Details
+
+### Service Discovery Integration
+
+Stack configurations work with the service metadata system to provide intelligent container management. Services are referenced by name only in stack files - their types, roles, and capabilities come from service discovery.
+
+**Example relationship:**
+```yaml
+# In docker/stacks/octane.yml
+services:
+  - octane  # Just the service name
+
+# Service metadata comes from docker/services/octane.yml
+labels:
+  - "com.customer-dashboard.service.type=php"
+  - "com.customer-dashboard.service.roles=web,cli,queue"
+```
+
+### Resource Requirements
+
+The `requirements` section helps with:
+- **Port conflict detection** - Prevents starting stacks with overlapping ports
+- **Memory validation** - Warns if system doesn't meet minimum requirements
+- **Feature compatibility** - Documents what technologies the stack demonstrates
+
+### Available Features
+
+Common feature tags used across stacks:
+
+| Feature | Description | Stacks |
+|---------|-------------|--------|
+| `traditional_lamp` | Classic LAMP stack architecture | default |
+| `http3` | HTTP/3 protocol support | frankenphp |
+| `worker_mode` | Long-running worker processes | frankenphp |
+| `automatic_https` | Automatic SSL certificate management | frankenphp |
+| `swoole` | Swoole async processing | octane |
+| `long_running_processes` | Persistent process architecture | octane |
+| `async_processing` | Asynchronous request handling | octane |
+| `monitoring` | Performance monitoring tools | performance |
+| `metrics` | Metrics collection and visualization | performance |
+| `alerting` | Monitoring alerts and notifications | performance |
+
+### Creating Custom Stacks
+
+To create a new stack:
+
+1. **Create stack file** in `docker/stacks/your-stack.yml`:
+```yaml
+id: your-stack
+name: Your Custom Stack
+description: Description of what this stack demonstrates
+access_url: "http://localhost:9000"
+requirements:
+  min_memory: "2GB"
+  ports: [9000, 3306, 6379]
+  features: [custom_feature]
+services:
+  - your-service
+  - mysql
+  - redis
+```
+
+2. **Ensure referenced services exist** in `docker/services/` with proper metadata
+3. **Test the stack** with `./bin/app stack up -s your-stack`
+4. **Validate configuration** using `./bin/app list` to see your stack appear
+
+### Stack Validation
+
+The system automatically validates:
+- All referenced services exist in `docker/services/`
+- Port numbers are valid
+- Required stack files are properly formatted
+- Service dependencies are available
+
+### State Tracking
+
+Active stacks are tracked in `.docker-state.json` with:
+- Start time and uptime calculation
+- Service health status
+- Access URLs and port mappings
+- Resource usage information
+
+Use `./bin/app status` to see current state information.
 
 ## Understanding App Commands
 

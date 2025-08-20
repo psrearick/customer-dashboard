@@ -42,7 +42,8 @@ class BranchManager:
         return {
             'stack': config.get('stack', 'default'),
             'min_memory': config.get('requirements', {}).get('min_memory', '2GB'),
-            'additional_services': config.get('additional_services', [])
+            'additional_services': config.get('additional_services', []),
+            'alternative_stacks': config.get('alternative_stacks', [])
         }
     
     @classmethod

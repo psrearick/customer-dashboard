@@ -125,21 +125,37 @@ class StateManager:
         return stale_count
     
     @classmethod
-    def get_stack_uptime(cls, stack_name: str) -> Optional[timedelta]:
-        """Get uptime for a specific stack."""
+    def get_stack_uptime(cls, stack_name: str) -> str:
+        """Get formatted uptime string for a specific stack."""
         stack_info = cls.get_stack_info(stack_name)
         if not stack_info:
-            return None
+            return "Not running"
         
         started_at_str = stack_info.get('started_at')
         if not started_at_str:
-            return None
+            return "Not running"
         
         try:
             started_at = datetime.fromisoformat(started_at_str)
-            return datetime.now() - started_at
+            uptime = datetime.now() - started_at
+            
+            # Format the uptime
+            total_seconds = int(uptime.total_seconds())
+            if total_seconds < 60:
+                return f"{total_seconds} seconds"
+            elif total_seconds < 3600:
+                minutes = total_seconds // 60
+                return f"{minutes} minutes"
+            elif total_seconds < 86400:
+                hours = total_seconds // 3600
+                minutes = (total_seconds % 3600) // 60
+                return f"{hours}h {minutes}m"
+            else:
+                days = total_seconds // 86400
+                hours = (total_seconds % 86400) // 3600
+                return f"{days}d {hours}h"
         except (ValueError, TypeError):
-            return None
+            return "Unknown"
     
     @classmethod
     def get_stack_info(cls, stack_name: str) -> Optional[Dict]:
