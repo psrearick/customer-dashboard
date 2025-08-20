@@ -1,4 +1,5 @@
 import type {PageProps} from '@/types';
+import { Link } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/Card';
 import { Button } from '@/Components/Button';
@@ -77,9 +78,19 @@ export default function Dashboard({ }: PageProps) {
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="flex flex-wrap gap-4">
-                            <Button>Create New User</Button>
-                            <Button variant="secondary">View Reports</Button>
-                            <Button variant="ghost">Export Data</Button>
+                            <Link href="/contact" preserveScroll>
+                                <Button>Contact Form Example</Button>
+                            </Link>
+                            <Link 
+                                href="/dashboard" 
+                                preserveState
+                                only={['stats']}
+                            >
+                                <Button variant="secondary">Refresh Stats</Button>
+                            </Link>
+                            <Link href="/" as="button" method="get">
+                                <Button variant="ghost">Home Page</Button>
+                            </Link>
                             
                             <DropdownMenu.Root>
                                 <DropdownMenu.Trigger asChild>

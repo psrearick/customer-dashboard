@@ -1,4 +1,5 @@
 import type {PageProps} from '@/types';
+import { Link } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import * as Dialog from '@radix-ui/react-dialog';
 import { Cross1Icon } from '@radix-ui/react-icons';
@@ -23,12 +24,12 @@ export default function Welcome({ }: PageProps) {
                                 </p>
                                 
                                 <div className="mt-8 flex gap-4">
-                                    <a
+                                    <Link
                                         href="/dashboard"
                                         className="inline-flex items-center gap-x-2 rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                                     >
                                         View Dashboard
-                                    </a>
+                                    </Link>
                                     
                                     <Dialog.Root>
                                         <Dialog.Trigger asChild>

@@ -59,7 +59,8 @@
         "test": [
             "@php artisan config:clear --ansi",
             "@php artisan test"
-        ]
+        ],
+        "types:generate": "php artisan wayfinder:generate"
     },
     "extra": {
         "laravel": {
