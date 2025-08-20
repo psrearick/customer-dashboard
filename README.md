@@ -38,7 +38,7 @@ git clone https://github.com/psrearick/customer-dashboard.git
 cd customer-dashboard
 
 # Complete setup in one command
-./bin/setup
+./bin/app setup fresh
 
 # Access the application
 open http://localhost
@@ -50,7 +50,7 @@ If you're here from a specific blog post, you can jump directly to the relevant 
 
 ```bash
 # Switch to a blog post branch (example)
-./bin/branch demo/performance/query-optimized
+./bin/app setup branch demo/performance/query-optimized
 ```
 
 Many blog posts link to specific branches that demonstrate the techniques being discussed. If the branch you're on has

@@ -37,7 +37,7 @@ at [philliprearick.com](https://philliprearick.com). Contributions should align 
 
 2. **Set up the development environment:**
    ```bash
-   ./bin/setup
+   ./bin/app setup fresh
    ```
 
 3. **Create a feature branch:**
@@ -53,23 +53,23 @@ Before submitting a pull request:
 
 1. **Test the setup process:**
    ```bash
-   ./bin/app clean
-   ./bin/setup
+   ./bin/app stack clean
+   ./bin/app setup fresh
    # Verify everything works from scratch
    ```
 
 2. **Test stack switching:**
    ```bash
-   ./bin/app up -s frankenphp
-   ./bin/app up -s octane
-   ./bin/app up -s default
+   ./bin/app stack up -s frankenphp
+   ./bin/app stack up -s octane
+   ./bin/app stack up -s default
    # Ensure all stacks work with your changes
    ```
 
 3. **Test helper commands:**
    ```bash
-   ./bin/reset
-   ./bin/branch main
+   ./bin/app setup reset
+   ./bin/app setup branch main
    # Verify utilities still function correctly
    ```
 
@@ -175,26 +175,26 @@ Before submitting:
 
 The project requires significant system resources for the full monitoring stack. When developing:
 
-- Use `./bin/app up` for most development work
+- Use `./bin/app stack up` for most development work
 - Only use the performance stack when testing monitoring features
-- Clean up regularly with `./bin/app clean` to free resources
+- Clean up regularly with `./bin/app stack clean` to free resources
 
 ### Common Development Tasks
 
 ```bash
 # Working with application code
-./bin/dev artisan tinker
-./bin/dev artisan test
-./bin/dev composer require package-name
+./bin/app dev artisan tinker
+./bin/app dev test
+./bin/app dev composer require package-name
 
 # Testing Docker changes
-./bin/app clean
-./bin/app up
-./bin/app validate
+./bin/app stack clean
+./bin/app stack up
+./bin/app info --check-requirements
 
 # Checking logs
-./bin/app logs -s default -f
-./bin/dev artisan log:clear
+./bin/app stack logs -s default -f
+./bin/app dev artisan log:clear
 ```
 
 ## Questions or Help

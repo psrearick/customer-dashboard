@@ -339,8 +339,8 @@ This applies to all stack commands - if you don't specify a stack, "default" is 
 
 ```bash
 # See what's currently running
-./bin/app stack status          # Shows status of all stacks
-./bin/app stack status -s [stack-name]  # Shows status of specific stack
+./bin/app status                 # Shows status of all stacks
+./bin/app status -s [stack-name] # Shows status of specific stack
 
 # View logs for troubleshooting
 ./bin/app stack logs            # Shows logs for default stack

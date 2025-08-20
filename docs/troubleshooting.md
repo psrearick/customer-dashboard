@@ -13,7 +13,7 @@ application.
 
 ```bash
 # Check if containers are running
-./bin/app stack status
+./bin/app status
 
 # Restart the stack
 ./bin/app stack restart -s frankenphp
@@ -73,7 +73,7 @@ sudo systemctl stop mysql
 
 ```bash
 # Make scripts executable
-chmod +x bin/dev bin/app
+chmod +x bin/app
 
 # Fix Laravel storage permissions (Linux/macOS)
 sudo chmod -R 775 storage bootstrap/cache
@@ -163,11 +163,11 @@ docker ps | grep mysql
 cat .env | grep DB_
 
 # Test database connection
-./bin/dev mysql
+./bin/app dev mysql
 # Password: password
 
 # Reset database completely
-./bin/dev artisan migrate:fresh --seed
+./bin/app dev artisan migrate:fresh --seed
 ```
 
 ### Laravel Key Not Set Errors
@@ -177,7 +177,7 @@ cat .env | grep DB_
 **Solution:**
 
 ```bash
-./bin/dev artisan key:generate
+./bin/app dev artisan key:generate
 ```
 
 ### Frontend Assets Not Loading
@@ -191,11 +191,11 @@ cat .env | grep DB_
 docker ps | grep node
 
 # Rebuild assets
-./bin/dev npm install
-./bin/dev npm run build
+./bin/app dev npm install
+./bin/app dev npm run build
 
 # For development with auto-reload
-./bin/dev npm run dev
+./bin/app dev npm run dev
 
 # Check Node container logs
 docker logs customer-dashboard-node
@@ -209,20 +209,20 @@ docker logs customer-dashboard-node
 
 ```bash
 # Always run after switching branches:
-./bin/dev composer install
-./bin/dev artisan migrate:fresh --seed
-./bin/dev npm install
-./bin/dev npm run build
+./bin/app dev composer install
+./bin/app dev artisan migrate:fresh --seed
+./bin/app dev npm install
+./bin/app dev npm run build
 
 # Clear Laravel caches
-./bin/dev artisan optimize:clear
+./bin/app dev artisan optimize:clear
 
 # Or clear Laravel caches individual as needed
-./bin/dev artisan cache:clear
-./bin/dev artisan config:clear
-./bin/dev artisan view:clear
-./bin/dev artisan route:clear
-./bin/dev artisan event:clear
+./bin/app dev artisan cache:clear
+./bin/app dev artisan config:clear
+./bin/app dev artisan view:clear
+./bin/app dev artisan route:clear
+./bin/app dev artisan event:clear
 ```
 
 ## When Switching Branches
@@ -235,7 +235,7 @@ docker logs customer-dashboard-node
 
 ```bash
 # Fresh start with new branch
-./bin/dev artisan migrate:fresh --seed
+./bin/app dev artisan migrate:fresh --seed
 ```
 
 ### Dependency Conflicts
@@ -246,13 +246,13 @@ docker logs customer-dashboard-node
 
 ```bash
 # Update PHP dependencies
-./bin/dev composer install
+./bin/app dev composer install
 
 # Update Node dependencies
-./bin/dev npm install
+./bin/app dev npm install
 
 # If still having issues, clear caches
-./bin/dev composer dump-autoload
+./bin/app dev composer dump-autoload
 ```
 
 ### Cache Problems
@@ -263,13 +263,13 @@ docker logs customer-dashboard-node
 
 ```bash
 # Clear all Laravel caches
-./bin/dev artisan optimize:clear
+./bin/app dev artisan optimize:clear
 
 # Or individually:
-./bin/dev artisan cache:clear
-./bin/dev artisan config:clear
-./bin/dev artisan route:clear
-./bin/dev artisan view:clear
+./bin/app dev artisan cache:clear
+./bin/app dev artisan config:clear
+./bin/app dev artisan route:clear
+./bin/app dev artisan view:clear
 ```
 
 ## Getting More Information
@@ -278,7 +278,7 @@ docker logs customer-dashboard-node
 
 ```bash
 # See what's running
-./bin/app stack status
+./bin/app status
 
 # More detailed container info
 docker ps -a
@@ -355,7 +355,7 @@ Example troubleshooting flow:
 docker stats customer-dashboard-mysql-1
 
 # Connect directly to investigate
-./bin/dev mysql
+./bin/app dev mysql
 ```
 
 ## Nuclear Option
@@ -373,11 +373,11 @@ docker system prune -f
 git checkout main
 cp .env.example .env
 ./bin/app stack up
-./bin/dev artisan key:generate
-./bin/dev composer install
-./bin/dev artisan migrate:fresh --seed
-./bin/dev npm install
-./bin/dev npm run build
+./bin/app dev artisan key:generate
+./bin/app dev composer install
+./bin/app dev artisan migrate:fresh --seed
+./bin/app dev npm install
+./bin/app dev npm run build
 ```
 
 **This will delete:**
@@ -400,7 +400,7 @@ cp .env.example .env
 # System information
 docker --version
 docker-compose --version
-./bin/app stack status
+./bin/app status
 
 # Save logs for troubleshooting
 ./bin/app stack logs > debug-logs.txt

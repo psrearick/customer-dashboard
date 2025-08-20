@@ -43,17 +43,17 @@ cp .env.example .env
 ./bin/app stack up
 
 # Generate application key
-./bin/dev artisan key:generate
+./bin/app dev artisan key:generate
 
 # Install dependencies
-./bin/dev composer install
+./bin/app dev composer install
 
 # Set up the database with sample data
-./bin/dev artisan migrate --seed
+./bin/app dev artisan migrate --seed
 
 # Install and build frontend assets
-./bin/dev npm install
-./bin/dev npm run build
+./bin/app dev npm install
+./bin/app dev npm run build
 ```
 
 ### 4. Access the Application
@@ -136,9 +136,9 @@ If you're following a specific blog post, switch to the corresponding branch:
 git checkout demo/performance/query-optimized
 
 # After switching, update dependencies and database
-./bin/dev composer install
-./bin/dev artisan migrate:fresh --seed
-./bin/dev npm install && ./bin/dev npm run build
+./bin/app dev composer install
+./bin/app dev artisan migrate:fresh --seed
+./bin/app dev npm install && ./bin/app dev npm run build
 ```
 
 ### Branch Naming Convention
@@ -199,7 +199,7 @@ The project includes several utility scripts to make common tasks easier:
 
 ```bash
 # Complete setup in one command
-./bin/setup
+./bin/app setup fresh
 ```
 
 This handles the entire initial setup: copies environment files, starts Docker containers, installs dependencies, sets
@@ -209,7 +209,7 @@ up the database, and builds frontend assets. Perfect for first-time setup or whe
 
 ```bash
 # Reset database and dependencies after switching branches
-./bin/reset
+./bin/app setup reset
 ```
 
 Use this after switching to a different branch or when you need a clean slate. Resets the database with fresh seed data,
@@ -219,7 +219,7 @@ reinstalls dependencies, and rebuilds assets.
 
 ```bash
 # Switch to a specific branch and reset everything
-./bin/branch demo/performance/query-optimized
+./bin/app setup branch demo/performance/query-optimized
 ```
 
 Combines `git checkout` with a complete application reset. This is the easiest way to switch between different blog post
@@ -227,10 +227,10 @@ demonstrations.
 
 ### When to Use Each Command
 
-- **First time setup:** `./bin/setup`
-- **Following a blog post:** `./bin/branch <branch-name>`
-- **Things seem broken:** `./bin/reset`
-- **Switched branches manually:** `./bin/reset`
+- **First time setup:** `./bin/app setup fresh`
+- **Following a blog post:** `./bin/app setup branch <branch-name>`
+- **Things seem broken:** `./bin/app setup reset`
+- **Switched branches manually:** `./bin/app setup reset`
 
 These commands handle all the repetitive tasks so you can focus on exploring the code and concepts discussed in the blog
 posts.
