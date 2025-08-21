@@ -1,5 +1,5 @@
 import { Head } from '@inertiajs/react';
-import { Button } from '@/Components/Button';
+import { Button } from '@/Components/ui/Button';
 
 interface ErrorPageProps {
     status: number;

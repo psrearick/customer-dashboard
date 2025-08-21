@@ -3,6 +3,7 @@ import { Link } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { Dialog } from 'radix-ui';
 import { Cross1Icon } from '@radix-ui/react-icons';
+import {Button} from "@/Components/ui/Button";
 
 export default function Welcome({ }: PageProps) {
     return (
@@ -26,16 +27,17 @@ export default function Welcome({ }: PageProps) {
                                 <div className="mt-8 flex gap-4">
                                     <Link
                                         href="/dashboard"
-                                        className="inline-flex items-center gap-x-2 rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                                        variant="secondary"
+                                        as={Button}
                                     >
                                         View Dashboard
                                     </Link>
                                     
                                     <Dialog.Root>
                                         <Dialog.Trigger asChild>
-                                            <button className="inline-flex items-center gap-x-2 rounded-md bg-gray-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-gray-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-600">
+                                            <Button type="button">
                                                 Try Radix UI Dialog
-                                            </button>
+                                            </Button>
                                         </Dialog.Trigger>
                                         <Dialog.Portal>
                                             <Dialog.Overlay className="fixed inset-0 bg-black/50" />
@@ -72,13 +74,13 @@ export default function Welcome({ }: PageProps) {
                                         Technology Stack
                                     </h3>
                                     <ul className="space-y-2 text-sm text-gray-600">
-                                        <li>• Laravel 12 - Backend framework</li>
-                                        <li>• React 19 - Frontend library with latest features</li>
-                                        <li>• Inertia.js 2 - SPA without API complexity</li>
-                                        <li>• Radix UI - Accessible component library</li>
-                                        <li>• TypeScript - Type safety</li>
-                                        <li>• Tailwind CSS 4 - Utility-first styling</li>
-                                        <li>• Docker - Containerized development</li>
+                                        <li>Laravel 12 - Backend framework</li>
+                                        <li>React 19 - Frontend library with latest features</li>
+                                        <li>Inertia.js 2 - SPA without API complexity</li>
+                                        <li>Radix UI - Accessible component library</li>
+                                        <li>TypeScript - Type safety</li>
+                                        <li>Tailwind CSS 4 - Utility-first styling</li>
+                                        <li>Docker - Containerized development</li>
                                     </ul>
                                 </div>
                             </div>

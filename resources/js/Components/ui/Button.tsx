@@ -9,7 +9,7 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
     ref?: React.Ref<HTMLButtonElement>;
 }
 
-const Button = ({ className, variant = 'default', size = 'default', asChild = false, ref, ...props }: ButtonProps) => {
+const Button = ({ className, children, variant = 'default', size = 'default', asChild = false, ref, ...props }: ButtonProps) => {
         if (asChild) {
             return (
                 <Slot.Slot
@@ -31,7 +31,9 @@ const Button = ({ className, variant = 'default', size = 'default', asChild = fa
                         className
                     )}
                     {...props}
-                />
+                >
+                    {children}
+                </Slot.Slot>
             );
         }
         
@@ -56,7 +58,9 @@ const Button = ({ className, variant = 'default', size = 'default', asChild = fa
                 )}
                 ref={ref}
                 {...props}
-            />
+            >
+                {children}
+            </button>
         );
 };
 

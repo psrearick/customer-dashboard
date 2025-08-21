@@ -2,7 +2,7 @@ import type { FormEvent } from 'react';
 import { useForm } from '@inertiajs/react';
 import type { PageProps } from '@/types';
 import AppLayout from '@/Layouts/AppLayout';
-import { Button } from '@/Components/Button';
+import { Button } from '@/Components/ui/Button';
 
 export default function ContactForm({ }: PageProps) {
     const { data, setData, post, processing, errors, reset, clearErrors } = useForm({

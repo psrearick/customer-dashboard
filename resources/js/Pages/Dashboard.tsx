@@ -1,8 +1,8 @@
 import type {PageProps} from '@/types';
 import { Link } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/Card';
-import { Button } from '@/Components/Button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/Card';
+import { Button } from '@/Components/ui/Button';
 import { DropdownMenu } from 'radix-ui';
 import {DotsVerticalIcon, PersonIcon, MixIcon, GearIcon } from '@radix-ui/react-icons';
 
