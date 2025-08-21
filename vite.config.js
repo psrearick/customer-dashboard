@@ -24,21 +24,19 @@ export default defineConfig({
         sourcemap: true,
         rollupOptions: {
             output: {
-                manualChunks: {
-                    'react-vendor': ['react', 'react-dom'],
-                    'inertia-vendor': ['@inertiajs/react'],
-                    'radix-vendor': [
-                        '@radix-ui/react-accordion',
-                        '@radix-ui/react-dialog',
-                        '@radix-ui/react-dropdown-menu',
-                        '@radix-ui/react-form',
-                        '@radix-ui/react-icons',
-                        '@radix-ui/react-label',
-                        '@radix-ui/react-navigation-menu',
-                        '@radix-ui/react-popover',
-                        '@radix-ui/react-slot',
-                        '@radix-ui/react-toast',
-                    ],
+                manualChunks(id) {
+                    if (id.includes('node_modules')) {
+                        if (id.includes('react') || id.includes('react-dom')) {
+                            return 'react-vendor';
+                        }
+                        if (id.includes('@inertiajs')) {
+                            return 'inertia-vendor';
+                        }
+                        if (id.includes('radix-ui') || id.includes('@radix-ui')) {
+                            return 'radix-vendor';
+                        }
+                        return 'vendor';
+                    }
                 },
             },
         },

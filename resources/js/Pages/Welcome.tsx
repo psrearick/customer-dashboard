@@ -1,7 +1,7 @@
 import type {PageProps} from '@/types';
 import { Link } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
-import * as Dialog from '@radix-ui/react-dialog';
+import { Dialog } from 'radix-ui';
 import { Cross1Icon } from '@radix-ui/react-icons';
 
 export default function Welcome({ }: PageProps) {
